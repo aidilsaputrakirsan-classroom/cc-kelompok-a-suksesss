@@ -1,0 +1,1 @@
+Nama: Rizki Abdul Aziz | NIM: 10231085 | Peran: DevOps
