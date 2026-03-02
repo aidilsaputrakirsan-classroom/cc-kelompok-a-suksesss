@@ -1,16 +1,75 @@
-# React + Vite
+# ☁️ Cloud App - SafeSpace
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SafeSpace adalah aplikasi manajemen bimbingan konseling berbasis cloud yang dirancang untuk memfasilitasi siswa dalam mengajukan layanan konseling secara aman, privat, dan fleksibel. Melalui aplikasi ini, siswa dapat mengisi formulir pengajuan konseling, memilih guru BK yang diinginkan, serta berkomunikasi langsung melalui fitur chat. Sistem memastikan bahwa hanya guru BK yang dipilih yang dapat mengakses data dan riwayat konseling siswa, sehingga menjaga kerahasiaan informasi. Di sisi guru BK, tersedia dashboard untuk melihat daftar pengajuan, menerima atau menolak permintaan konseling, mengakses kontak siswa jika diperlukan, serta mencatat perkembangan hasil bimbingan. Urgensi pengembangan SafeSpace didasarkan pada kebutuhan akan layanan konseling yang lebih mudah diakses, menjaga privasi siswa, serta mendukung proses pendampingan yang terdokumentasi dan terkelola secara digital melalui teknologi cloud computing.
 
-Currently, two official plugins are available:
+## 👥 Tim
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Nama | NIM | Peran |
+|------|-----|-------|
+| Rendy Rifandi Kurnia | 10231081 | Lead Backend |
+| Riska Fadlun Khairiyah Purba | 10231083 | Lead Frontend |
+| Rizki Abdul Aziz | 10231085 | Lead DevOps |
+| Siti Nur Azizah Putri Awni | 10231087 | Lead QA & Docs |
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Teknologi | Fungsi |
+|-----------|--------|
+| FastAPI   | Backend REST API |
+| React     | Frontend SPA |
+| PostgreSQL | Database |
+| Docker    | Containerization |
+| GitHub Actions | CI/CD |
+| Railway/Render | Cloud Deployment |
 
-## Expanding the ESLint configuration
+## 🏗️ Architecture
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+[React Frontend] <--HTTP--> [FastAPI Backend] <--SQL--> [PostgreSQL]
+```
+
+*(Diagram ini akan berkembang setiap minggu)*
+
+## 🚀 Getting Started
+
+### Prasyarat
+- Python 3.10+
+- Node.js 18+
+- Git
+
+### Backend
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 📅 Roadmap
+
+| Minggu | Target | Status |
+|--------|--------|--------|
+| 1 | Setup & Hello World | ✅ |
+| 2 | REST API + Database | ⬜ |
+| 3 | React Frontend | ⬜ |
+| 4 | Full-Stack Integration | ⬜ |
+| 5-7 | Docker & Compose | ⬜ |
+| 8 | UTS Demo | ⬜ |
+| 9-11 | CI/CD Pipeline | ⬜ |
+| 12-14 | Microservices | ⬜ |
+| 15-16 | Final & UAS | ⬜ |
+
+### Informasi Pengumpulan
+
+| Item | Keterangan |
+|------|------------|
+| **Deadline** | Sebelum pertemuan 2 dimulai |
+| **Format** | Push ke repository tim di GitHub Classroom |
+| **Yang dikumpulkan** | README.md + endpoint `/team` dengan data asli + commit dari semua anggota |
+| **Penilaian** | Kelengkapan isi, kejelasan penjelasan, setiap anggota punya minimal 1 commit |
