@@ -17,14 +17,30 @@ Di sisi guru BK, tersedia dashboard untuk melihat daftar pengajuan, menerima ata
 
 ## 🛠️ Tech Stack
 
+Berdasarkan struktur proyek di `backend/` dan `frontend/`:
+
+### Backend (`backend/`)
 | Teknologi | Fungsi |
 |-----------|--------|
-| FastAPI   | Backend REST API |
-| React     | Frontend SPA |
-| PostgreSQL | Database |
-| Docker    | Containerization |
+| FastAPI | REST API & web framework |
+| Uvicorn | ASGI server |
+| Azure AI Document Intelligence | OCR & ekstraksi dokumen |
+| LangChain & OpenAI | AI review & orkestrasi LLM |
+| PyMuPDF, pdf2image, Pillow | Pemrosesan PDF & gambar |
+| Pydantic | Validasi data & schema |
+| SQLAlchemy | ORM & akses database |
+| python-dotenv | Konfigurasi environment |
+| Pytest | Testing |
+
+### Frontend (`frontend/`)
+
+### Infrastruktur & DevOps
+| Teknologi | Fungsi |
+|-----------|--------|
+| Docker | Containerization |
 | GitHub Actions | CI/CD |
-| Railway/Render | Cloud Deployment |
+| Railway/Render | Cloud deployment |
+
 
 ## 🏗️ Architecture
 
@@ -47,6 +63,7 @@ cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
+API: http://localhost:8000 — Docs: http://localhost:8000/docs
 
 ### Frontend
 ```bash
@@ -60,7 +77,7 @@ npm run dev
 | Minggu | Target | Status |
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
-| 2 | REST API + Database | ⬜ |
+| 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ⬜ |
 | 4 | Full-Stack Integration | ⬜ |
 | 5-7 | Docker & Compose | ⬜ |
@@ -73,10 +90,10 @@ npm run dev
 
 | Item | Keterangan |
 |------|------------|
-| **Deadline** | Sebelum pertemuan 2 dimulai |
+| **Deadline** | Sebelum pertemuan 3 dimulai |
 | **Format** | Push ke repository tim di GitHub Classroom |
-| **Yang dikumpulkan** | README.md + endpoint `/team` dengan data asli + commit dari semua anggota |
-| **Penilaian** | Kelengkapan isi, kejelasan penjelasan, setiap anggota punya minimal 1 commit |
+| **Yang dikumpulkan** | Endpoint `/items/stats` berjalan + dokumentasi + setiap anggota punya commit |
+| **Penilaian** | Fungsionalitas endpoint, kelengkapan dokumentasi, setiap anggota punya ≥1 commit |
 
 ### Hasil
 <img src="SS1.png" width="400"/>

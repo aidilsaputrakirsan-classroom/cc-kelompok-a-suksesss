@@ -71,3 +71,38 @@ def delete_item(db: Session, item_id: int) -> bool:
     db.delete(db_item)
     db.commit()
     return True
+
+def get_items_stats(db: Session):
+    """
+    Statistik inventory.
+    Return: total items, total value, item termahal, item termurah
+    """
+    items = db.query(Item).all()
+    
+    if not items:
+        return {
+            "total_items": 0,
+            "total_value": 0,
+            "most_expensive": None,
+            "cheapest": None
+        }
+    
+    # Hitung total value (sum of price × quantity)
+    total_value = sum(item.price * item.quantity for item in items)
+    
+    # Cari item termahal dan termurah
+    most_expensive_item = max(items, key=lambda x: x.price)
+    cheapest_item = min(items, key=lambda x: x.price)
+    
+    return {
+        "total_items": len(items),
+        "total_value": total_value,
+        "most_expensive": {
+            "name": most_expensive_item.name,
+            "price": most_expensive_item.price
+        },
+        "cheapest": {
+            "name": cheapest_item.name,
+            "price": cheapest_item.price
+        }
+    }
