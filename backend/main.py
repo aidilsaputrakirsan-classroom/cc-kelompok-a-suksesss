@@ -12,7 +12,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Cloud App API",
-    description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
+    description= "REST API untuk mata kuliah Komputasi Awan — SI ITK",
     version="0.2.0",
 )
 
@@ -31,7 +31,8 @@ app.add_middleware(
 @app.get("/health")
 def health_check():
     """Endpoint untuk mengecek apakah API berjalan."""
-    return {"status": "healthy", "version": "0.2.0"}
+    return {"status": "healthy", 
+            "version": "0.2.0"}
 
 
 # ==================== CRUD ENDPOINTS ====================
@@ -102,7 +103,7 @@ def delete_item(item_id: int, db: Session = Depends(get_db)):
 def team_info():
     """Informasi tim."""
     return {
-        "team": "cloud-team-XX",
+        "team": "cloud-team-suksesss",
         "members": [
             # TODO: Isi dengan data tim Anda
             {"name": "Rendy Rifandy Kurnia", "nim": "10231081", "role": "Lead Backend"},
