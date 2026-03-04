@@ -96,4 +96,4 @@ npm run dev
 | **Penilaian** | Fungsionalitas endpoint, kelengkapan dokumentasi, setiap anggota punya ≥1 commit |
 
 ### Hasil
-<img src="SS1.png" width="400"/>
+<img src="SS2.png" width="700"/>
