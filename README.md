@@ -1,10 +1,17 @@
 # ☁️ Cloud App - SafeSpace
 
+## 📌 Deskripsi Proyek
 SafeSpace adalah aplikasi manajemen bimbingan konseling berbasis cloud yang dirancang untuk memfasilitasi siswa dalam mengajukan layanan konseling secara aman, privat, dan fleksibel. 
 
 Melalui aplikasi ini, siswa dapat mengisi formulir pengajuan konseling, memilih guru BK yang diinginkan, serta berkomunikasi langsung melalui fitur chat. Sistem memastikan bahwa hanya guru BK yang dipilih yang dapat mengakses data dan riwayat konseling siswa, sehingga menjaga kerahasiaan informasi. 
 
 Di sisi guru BK, tersedia dashboard untuk melihat daftar pengajuan, menerima atau menolak permintaan konseling, mengakses kontak siswa jika diperlukan, serta mencatat perkembangan hasil bimbingan. Urgensi pengembangan SafeSpace didasarkan pada kebutuhan akan layanan konseling yang lebih mudah diakses, menjaga privasi siswa, serta mendukung proses pendampingan yang terdokumentasi dan terkelola secara digital melalui teknologi cloud computing.
+
+## 🎯 Tujuan Pengembangan
+* Menyediakan platform konseling digital yang aman dan mudah diakses.
+* Menjaga kerahasiaan data siswa melalui sistem otorisasi berbasis peran.
+* Mendukung proses monitoring dan dokumentasi bimbingan secara terpusat.
+* Mengimplementasikan konsep cloud computing pada aplikasi nyata.
 
 ## 👥 Tim
 
@@ -71,6 +78,19 @@ cd frontend
 npm install
 npm run dev
 ```
+## 📡 API Endpoints
+
+Base URL: http://localhost:8000  
+Swagger Documentation: http://localhost:8000/docs
+
+| Method | Endpoint | Deskripsi | Request Body | Response |
+|---|---|---|---|---|
+| GET | `/items` | Mengambil daftar seluruh item (mendukung pagination & search) | - | List item + total data |
+| POST | `/items` | Menambahkan item baru | name, description, price, quantity | Data item yang dibuat |
+| GET | `/items/{id}` | Mengambil detail item berdasarkan ID | - | Detail item |
+| PUT | `/items/{id}` | Memperbarui data item berdasarkan ID | field yang ingin diupdate | Data item terbaru |
+| DELETE | `/items/{id}` | Menghapus item berdasarkan ID | - | 204 No Content |
+| GET | `/items/stats` | Menampilkan statistik inventory | - | Statistik inventory |
 
 ## 📅 Roadmap
 
