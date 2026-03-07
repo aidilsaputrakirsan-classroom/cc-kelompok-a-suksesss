@@ -106,14 +106,37 @@ Swagger Documentation: http://localhost:8000/docs
 | 12-14 | Microservices | ⬜ |
 | 15-16 | Final & UAS | ⬜ |
 
-### Informasi Pengumpulan
+## 📁 Project Structure
 
-| Item | Keterangan |
-|------|------------|
-| **Deadline** | Sebelum pertemuan 3 dimulai |
-| **Format** | Push ke repository tim di GitHub Classroom |
-| **Yang dikumpulkan** | Endpoint `/items/stats` berjalan + dokumentasi + setiap anggota punya commit |
-| **Penilaian** | Fungsionalitas endpoint, kelengkapan dokumentasi, setiap anggota punya ≥1 commit |
+```
+cc-kelompok-a-suksesss/
+├── backend/                    # FastAPI Backend
+│   ├── main.py                 # Entry point, FastAPI app
+│   ├── database.py             # Koneksi database
+│   ├── models.py               # SQLAlchemy models (tabel database)
+│   ├── schemas.py              # Pydantic schemas (validasi request/response)
+│   ├── crud.py                 # Fungsi CRUD (business logic)
+│   ├── requirements.txt        # Dependencies
+│   └── .env                    # Environment variables
+│
+├── frontend/                   # React Frontend (Vite)
+│   ├── public/                 # Aset statis publik
+│   ├── src/                    # Source code utama
+│   ├── index.html              # Template HTML utama
+│   ├── package.json            # Dependensi & scripts Node.js
+│   ├── vite.config.js          # Konfigurasi Vite
+│   └── eslint.config.js        # Konfigurasi ESLint
+│
+├── docs/                       # Dokumentasi tim
+│   ├── member-Azizah.md
+│   ├── member-Rendy.md
+│   ├── member-Riska.md
+│   └── member-Rizki.md
+│
+├── .gitignore
+└── README.md
+```
+---
 
 ### Hasil
 <img src="SS2.png" width="700"/>
