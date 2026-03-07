@@ -78,19 +78,23 @@ cd frontend
 npm install
 npm run dev
 ```
-## 📡 API Endpoints
+## 📡 API Endpoints Week 2
 
 Base URL: http://localhost:8000  
 Swagger Documentation: http://localhost:8000/docs
 
-| Method | Endpoint | Deskripsi | Request Body | Response |
-|---|---|---|---|---|
-| GET | `/items` | Mengambil daftar seluruh item (mendukung pagination & search) | - | List item + total data |
-| POST | `/items` | Menambahkan item baru | name, description, price, quantity | Data item yang dibuat |
-| GET | `/items/{id}` | Mengambil detail item berdasarkan ID | - | Detail item |
-| PUT | `/items/{id}` | Memperbarui data item berdasarkan ID | field yang ingin diupdate | Data item terbaru |
-| DELETE | `/items/{id}` | Menghapus item berdasarkan ID | - | 204 No Content |
-| GET | `/items/stats` | Menampilkan statistik inventory | - | Statistik inventory |
+| Method | URL | Request Body | Response Example | Status Code | Status Pengujian |
+|--------|-----|--------------|------------------|-------------|------------------|
+| POST | `/items` | `{name, price, description, quantity}` | Mengembalikan data item yang berhasil dibuat beserta `id` | 201 Created | ✅ Berhasil |
+| GET | `/items` | - | `{ total: 3, items: [...] }` menampilkan seluruh daftar item | 200 OK | ✅ Berhasil |
+| GET | `/items/1` | - | Mengembalikan detail item dengan `id = 1` | 200 OK | ✅ Berhasil |
+| PUT | `/items/1` | `{price: 14000000}` | Data item berhasil diperbarui dengan nilai terbaru | 200 OK | ✅ Berhasil |
+| GET | `/items/1` | - | Menampilkan kembali data item setelah dilakukan update | 200 OK | ✅ Berhasil |
+| GET | `/items?search=laptop` | - | `{ total: 1, items: [...] }` menampilkan hasil pencarian item | 200 OK | ✅ Berhasil |
+| DELETE | `/items/1` | - | Item berhasil dihapus dari database | 204 No Content | ✅ Berhasil |
+| GET | `/items/1` | - | `{detail: "item tidak ditemukan"}` karena data sudah dihapus | 404 Not Found | ✅ Berhasil |
+| GET | `/items/stats` | - | `{ total_items, total_value, most_expensive, cheapest }` menampilkan statistik inventory | 200 OK | ✅ Berhasil |
+
 
 ## 📅 Roadmap
 
