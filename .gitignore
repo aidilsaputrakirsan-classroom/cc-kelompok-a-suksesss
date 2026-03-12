@@ -14,7 +14,3 @@ dist/
 # IDE
 .vscode/
 .idea/
-
-# Mengabaikan file environment
-.env
-backend/.env
