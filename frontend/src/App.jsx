@@ -3,6 +3,7 @@ import Header from "./components/Header"
 import SearchBar from "./components/SearchBar"
 import ItemForm from "./components/ItemForm"
 import ItemList from "./components/ItemList"
+import SortBar from "./components/SortBar"
 import { fetchItems, createItem, updateItem, deleteItem, checkHealth } from "./services/api"
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
   const [isConnected, setIsConnected] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("terbaru")
 
   // ==================== LOAD DATA ====================
   const loadItems = useCallback(async (search = "") => {
@@ -30,37 +32,36 @@ function App() {
 
   // ==================== ON MOUNT ====================
   useEffect(() => {
-    // Cek koneksi API
     checkHealth().then(setIsConnected)
-    // Load items
     loadItems()
   }, [loadItems])
 
-  // ==================== HANDLERS ====================
+  // ==================== SORTING ====================
+  const sortedItems = [...items].sort((a, b) => {
+    if (sortBy === "nama") return a.name.localeCompare(b.name)
+    if (sortBy === "harga") return a.price - b.price
+    return b.id - a.id // terbaru
+  })
 
+  // ==================== HANDLERS ====================
   const handleSubmit = async (itemData, editId) => {
     if (editId) {
-      // Mode edit
       await updateItem(editId, itemData)
       setEditingItem(null)
     } else {
-      // Mode create
       await createItem(itemData)
     }
-    // Reload daftar items
     loadItems(searchQuery)
   }
 
   const handleEdit = (item) => {
     setEditingItem(item)
-    // Scroll ke atas ke form
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const handleDelete = async (id) => {
     const item = items.find((i) => i.id === id)
     if (!window.confirm(`Yakin ingin menghapus "${item?.name}"?`)) return
-
     try {
       await deleteItem(id)
       loadItems(searchQuery)
@@ -74,9 +75,7 @@ function App() {
     loadItems(query)
   }
 
-  const handleCancelEdit = () => {
-    setEditingItem(null)
-  }
+  const handleCancelEdit = () => setEditingItem(null)
 
   // ==================== RENDER ====================
   return (
@@ -89,8 +88,9 @@ function App() {
           onCancelEdit={handleCancelEdit}
         />
         <SearchBar onSearch={handleSearch} />
+        <SortBar sortBy={sortBy} onSortChange={setSortBy} />
         <ItemList
-          items={items}
+          items={sortedItems}
           onEdit={handleEdit}
           onDelete={handleDelete}
           loading={loading}
