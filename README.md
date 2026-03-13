@@ -52,10 +52,31 @@ Berdasarkan struktur proyek di `backend/` dan `frontend/`:
 ## 🏗️ Architecture
 
 ```
-[React Frontend] <--HTTP--> [FastAPI Backend] <--SQL--> [PostgreSQL]
+    ┌──────────────────────┐
+    │     React Frontend   │
+    │  (User Interface)    │
+    └──────────┬───────────┘
+               │ HTTP Request (REST API)
+               ▼
+    ┌──────────────────────┐
+    │     FastAPI Backend  │
+    │  Business Logic & API│
+    └──────────┬───────────┘
+               │ SQLAlchemy ORM
+               ▼
+    ┌──────────────────────┐
+    │   PostgreSQL Database│
+    │     Persistent Data  │
+    └──────────────────────┘
 ```
 
-*(Diagram ini akan berkembang setiap minggu)*
+### Penjelasan Arsitektur
+- **React Frontend** → Menyediakan antarmuka pengguna untuk mengelola data konseling.
+- **FastAPI Backend** → Menyediakan REST API, memproses request, serta mengelola logika aplikasi.
+- **PostgreSQL** → Menyimpan data aplikasi secara permanen.
+- Komunikasi antar layer menggunakan protokol HTTP dan koneksi database berbasis SQL.
+
+*(Arsitektur akan terus berkembang seiring penambahan Docker, deployment cloud, dan CI/CD pipeline pada minggu berikutnya.)*
 
 ## 🚀 Getting Started
 
@@ -102,7 +123,7 @@ Swagger Documentation: http://localhost:8000/docs
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
 | 2 | REST API + Database | ✅ |
-| 3 | React Frontend | ⬜ |
+| 3 | React Frontend | ✅ |
 | 4 | Full-Stack Integration | ⬜ |
 | 5-7 | Docker & Compose | ⬜ |
 | 8 | UTS Demo | ⬜ |
@@ -114,28 +135,45 @@ Swagger Documentation: http://localhost:8000/docs
 
 ```
 cc-kelompok-a-suksesss/
-├── backend/                    # FastAPI Backend
-│   ├── main.py                 # Entry point, FastAPI app
-│   ├── database.py             # Koneksi database
-│   ├── models.py               # SQLAlchemy models (tabel database)
-│   ├── schemas.py              # Pydantic schemas (validasi request/response)
-│   ├── crud.py                 # Fungsi CRUD (business logic)
-│   ├── requirements.txt        # Dependencies
-│   └── .env                    # Environment variables
+├── backend/ # FastAPI Backend
+│ ├── main.py # Entry point, FastAPI app
+│ ├── database.py # Koneksi database
+│ ├── models.py # SQLAlchemy models (tabel database)
+│ ├── schemas.py # Pydantic schemas (validasi request/response)
+│ ├── crud.py # Fungsi CRUD (business logic)
+│ ├── requirements.txt # Dependencies
+│ └── .env # Environment variables (tidak di-commit)
 │
-├── frontend/                   # React Frontend (Vite)
-│   ├── public/                 # Aset statis publik
-│   ├── src/                    # Source code utama
-│   ├── index.html              # Template HTML utama
-│   ├── package.json            # Dependensi & scripts Node.js
-│   ├── vite.config.js          # Konfigurasi Vite
-│   └── eslint.config.js        # Konfigurasi ESLint
+├── frontend/ # React Frontend (Vite)
+│ ├── public/ # Aset statis publik
+│ ├── src/
+│ │ ├── App.jsx # Root component (updated)
+│ │ ├── App.css # Styling utama aplikasi
+│ │ ├── main.jsx # Entry point React
+│ │ │
+│ │ ├── components/ # Komponen UI reusable
+│ │ │ ├── Header.jsx # Header aplikasi
+│ │ │ ├── SearchBar.jsx # Fitur pencarian item
+│ │ │ ├── ItemForm.jsx # Form tambah & edit item
+│ │ │ ├── ItemList.jsx # Menampilkan daftar item
+│ │ │ └── ItemCard.jsx # Tampilan kartu item
+│ │ │
+│ │ └── services/
+│ │ └── api.js # Konfigurasi API request ke backend
+│ │
+│ ├── index.html # Template HTML utama
+│ ├── package.json # Dependencies & scripts Node.js
+│ ├── vite.config.js # Konfigurasi Vite
+│ └── eslint.config.js # Konfigurasi ESLint
 │
-├── docs/                       # Dokumentasi tim
-│   ├── member-Azizah.md
-│   ├── member-Rendy.md
-│   ├── member-Riska.md
-│   └── member-Rizki.md
+├── docs/ # Dokumentasi tim & hasil testing
+│ ├── member-Azizah.md
+│ ├── member-Rendy.md
+│ ├── member-Riska.md
+│ ├── member-Rizki.md
+│ ├── api-test-results.md # Dokumentasi pengujian API (Swagger)
+│ ├── ui-test-results.md # Dokumentasi pengujian UI (Frontend)
+│ └── images/ # Screenshot hasil testing
 │
 ├── .gitignore
 └── README.md
