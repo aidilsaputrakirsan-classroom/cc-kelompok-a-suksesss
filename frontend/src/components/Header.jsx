@@ -2,7 +2,7 @@ function Header({ totalItems, isConnected }) {
   return (
     <header style={styles.header}>
       <div>
-        <h1 style={styles.title}>☁️ Cloud App</h1>
+        <h1 style={styles.title}>☁️ Cloud App - SafeSpace</h1>
         <p style={styles.subtitle}>Komputasi Awan — SI ITK</p>
       </div>
       <div style={styles.stats}>
