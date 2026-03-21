@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+import re
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -46,3 +47,76 @@ class ItemListResponse(BaseModel):
     """Schema untuk response list items dengan total count."""
     total: int
     items: list[ItemResponse]
+
+
+# ============================================================
+# AUTH SCHEMAS
+# ============================================================
+
+class UserCreate(BaseModel):
+    """Schema untuk registrasi user baru."""
+    email: EmailStr = Field(..., examples=["user@student.itk.ac.id"])
+    name: str = Field(..., min_length=2, max_length=100, examples=["Rendy Rifandi"])
+    password: str = Field(..., min_length=8, examples=["Passw0rd!"])
+
+    @field_validator("email")
+    @classmethod
+    def email_normalize(cls, v: str) -> str:
+        """Normalisasi email ke lowercase."""
+        return v.strip().lower()
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        """
+        Validasi kekuatan password menggunakan regex:
+        - Minimal 8 karakter
+        - Harus mengandung minimal 1 huruf
+        - Harus mengandung minimal 1 angka
+        - Harus mengandung minimal 1 karakter spesial
+        """
+        if len(v) < 8:
+            raise ValueError("Password harus minimal 8 karakter")
+        if not re.search(r"[A-Za-z]", v):
+            raise ValueError("Password harus mengandung minimal 1 huruf")
+        if not re.search(r"\d", v):
+            raise ValueError("Password harus mengandung minimal 1 angka")
+        if not re.search(r"[@$!%*#?&]", v):
+            raise ValueError("Password harus mengandung minimal 1 karakter spesial (@$!%*#?&)")
+        return v
+
+    @field_validator("name")
+    @classmethod
+    def name_sanitize(cls, v: str) -> str:
+        """Trim spasi dan cegah karakter berbahaya di nama."""
+        v = v.strip()
+        if not v:
+            raise ValueError("Nama tidak boleh kosong")
+        if re.search(r"[<>\"\';]", v):
+            raise ValueError("Nama mengandung karakter yang tidak diizinkan")
+        return v
+
+
+class UserResponse(BaseModel):
+    """Schema untuk response user (tanpa password)."""
+    id: int
+    email: str
+    name: str
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LoginRequest(BaseModel):
+    """Schema untuk login request."""
+    email: EmailStr = Field(..., examples=["user@student.itk.ac.id"])
+    password: str = Field(..., min_length=1, examples=["Passw0rd!"])
+
+
+class TokenResponse(BaseModel):
+    """Schema untuk response setelah login berhasil."""
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
