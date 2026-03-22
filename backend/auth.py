@@ -52,9 +52,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_token(token: str) -> dict:
     """Decode dan verifikasi JWT token."""
     try:
+        print(f"DEBUG TOKEN: {token[:50]}...")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print(f"DEBUG PAYLOAD: {payload}")
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"DEBUG JWT ERROR: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token tidak valid atau sudah expired",
@@ -68,12 +71,8 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """
-    Dependency injection: ambil current user dari JWT token.
-    Gunakan di endpoint yang butuh autentikasi.
-    """
     payload = decode_token(token)
-    user_id: int = payload.get("sub")
+    user_id = payload.get("sub")
 
     if user_id is None:
         raise HTTPException(
@@ -81,7 +80,7 @@ def get_current_user(
             detail="Token tidak valid",
         )
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()
 
     if user is None:
         raise HTTPException(

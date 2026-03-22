@@ -43,19 +43,13 @@ app.add_middleware(
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Custom handler untuk error validasi Pydantic.
-    Mengubah format error jadi lebih informatif dan ramah pengguna.
-    """
     errors = []
     for error in exc.errors():
         field = " → ".join(str(loc) for loc in error["loc"] if loc != "body")
         message = error["msg"]
-        # Bersihkan prefix 'Value error, ' dari pesan validator
         message = message.replace("Value error, ", "")
         errors.append({"field": field, "message": message})
 
-    # Jika hanya 1 error, gunakan format detail tunggal agar mudah dibaca
     if len(errors) == 1:
         detail = f"{errors[0]['field']}: {errors[0]['message']}"
     else:
@@ -102,7 +96,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Email atau password salah")
 
-    token = create_access_token(data={"sub": user.id})
+    token = create_access_token(data={"sub": str(user.id)})
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -123,7 +117,7 @@ def login_oauth2(form_data: OAuth2PasswordRequestForm = Depends(), db: Session =
     if not user:
         raise HTTPException(status_code=401, detail="Email atau password salah")
 
-    token = create_access_token(data={"sub": user.id})
+    token = create_access_token(data={"sub": str(user.id)})
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -218,7 +212,6 @@ def team_info():
     return {
         "team": "cloud-team-suksesss",
         "members": [
-            # TODO: Isi dengan data tim Anda
             {"name": "Rendy Rifandy Kurnia", "nim": "10231081", "role": "Lead Backend"},
             {"name": "Riska Fadlun Khairiyah Purba", "nim": "10231083", "role": "Lead Frontend"},
             {"name": "Rizki Abdul Aziz", "nim": "10231085", "role": "Lead DevOps"},
