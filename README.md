@@ -72,10 +72,11 @@ Berdasarkan struktur proyek di `backend/` dan `frontend/`:
 ```
 
 ### Penjelasan Arsitektur
-- **React Frontend** → Menyediakan antarmuka pengguna untuk mengelola data konseling.
-- **FastAPI Backend** → Menyediakan REST API, memproses request, serta mengelola logika aplikasi.
+- **React Frontend** → Menyediakan antarmuka pengguna serta menyimpan access token setelah login.
+- **FastAPI Backend** → Menyediakan REST API, memproses request, menangani autentikasi JWT, serta mengelola logika aplikasi.
+- **JWT Authentication** → Digunakan untuk mengamankan endpoint sehingga hanya user yang login dapat mengakses data.
 - **PostgreSQL** → Menyimpan data aplikasi secara permanen.
-- Komunikasi antar layer menggunakan protokol HTTP dan koneksi database berbasis SQL.
+- Komunikasi antar layer menggunakan HTTP (REST API) dan koneksi database berbasis SQL.
 
 *(Arsitektur akan terus berkembang seiring penambahan Docker, deployment cloud, dan CI/CD pipeline pada minggu berikutnya.)*
 
@@ -100,6 +101,33 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## 🔐 Authentication
+
+SafeSpace menggunakan **JWT (JSON Web Token)** untuk autentikasi pengguna.
+
+### Fitur Authentication
+- User Register
+- User Login
+- Protected API menggunakan Bearer Token
+- Logout (client-side session removal)
+
+### Authentication Flow
+1. User melakukan **register** akun baru
+2. Sistem otomatis melakukan **login**
+3. Backend mengirimkan **access token (JWT)**
+4. Token disimpan di frontend
+5. Setiap request API mengirim header:
+6. User dapat logout untuk menghapus session
+
+### Endpoint Authentication
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/auth/register` | Membuat akun baru |
+| POST | `/auth/login` | Login user |
+| GET | `/auth/me` | Mendapatkan data user aktif |
+
 ## 📡 API Endpoints Week 2
 
 Base URL: http://localhost:8000  
@@ -117,6 +145,44 @@ Swagger Documentation: http://localhost:8000/docs
 | GET | `/items/1` | - | `{detail: "item tidak ditemukan"}` karena data sudah dihapus | 404 Not Found | ✅ Berhasil |
 | GET | `/items/stats` | - | `{ total_items, total_value, most_expensive, cheapest }` menampilkan statistik inventory | 200 OK | ✅ Berhasil |
 
+## 📡 API Endpoints Week 4
+
+Base URL: http://localhost:8000  
+Swagger: http://localhost:8000/docs
+
+### Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Register user baru |
+| POST | `/auth/login` | Login user |
+| GET | `/auth/me` | Mendapatkan user login |
+
+### Items
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/items` | Menambahkan item baru |
+| GET | `/items` | Mengambil seluruh item |
+| GET | `/items/{id}` | Detail item |
+| PUT | `/items/{id}` | Update item |
+| DELETE | `/items/{id}` | Hapus item |
+| GET | `/items/stats` | Statistik inventory |
+
+## 🧪 Testing Week 4
+
+Pengujian dilakukan pada Week 4 untuk memastikan integrasi Authentication dan CRUD berjalan dengan baik.
+
+### Hasil Testing
+- ✅ API Connected
+- ✅ Register & Login berhasil
+- ✅ Protected route berjalan
+- ✅ CRUD Items berfungsi
+- ✅ Search berjalan
+- ✅ Logout berhasil
+- ✅ Data tetap tersimpan setelah login ulang
+
+Detail hasil testing tersedia pada docs/ui-test-week4.md
 
 ## 📅 Roadmap
 
@@ -125,7 +191,7 @@ Swagger Documentation: http://localhost:8000/docs
 | 1 | Setup & Hello World | ✅ |
 | 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ✅ |
-| 4 | Full-Stack Integration | ⬜ |
+| 4 | Full-Stack Integration | ✅ |
 | 5-7 | Docker & Compose | ⬜ |
 | 8 | UTS Demo | ⬜ |
 | 9-11 | CI/CD Pipeline | ⬜ |
@@ -137,31 +203,35 @@ Swagger Documentation: http://localhost:8000/docs
 ```
 cc-kelompok-a-suksesss/
 ├── backend/ # FastAPI Backend
-│ ├── main.py # Entry point, FastAPI app
+│ ├── main.py # Entry point, API routes, auth endpoints & CORS config
+│ ├── auth.py # JWT authentication utilities (NEW)
 │ ├── database.py # Koneksi database
-│ ├── models.py # SQLAlchemy models (tabel database)
-│ ├── schemas.py # Pydantic schemas (validasi request/response)
-│ ├── crud.py # Fungsi CRUD (business logic)
-│ ├── requirements.txt # Dependencies
-│ └── .env # Environment variables (tidak di-commit)
+│ ├── models.py # SQLAlchemy models (+ User model)
+│ ├── schemas.py # Pydantic schemas (+ auth schemas)
+│ ├── crud.py # Business logic & user CRUD
+│ ├── requirements.txt # Dependencies (jose, passlib, bcrypt)
+│ ├── .env # Environment variables (tidak di-commit)
+│ └── .env.example # Contoh konfigurasi environment
 │
 ├── frontend/ # React Frontend (Vite)
-│ ├── public/ # Aset statis publik
 │ ├── src/
-│ │ ├── App.jsx # Root component (updated)
+│ │ ├── App.jsx # Root component + auth integration
 │ │ ├── App.css # Styling utama aplikasi
 │ │ ├── main.jsx # Entry point React
 │ │ │
-│ │ ├── components/ # Komponen UI reusable
-│ │ │ ├── Header.jsx # Header aplikasi
+│ │ ├── components/
+│ │ │ ├── Header.jsx # Header + user info & logout
+│ │ │ ├── LoginPage.jsx # Halaman login (NEW)
 │ │ │ ├── SearchBar.jsx # Fitur pencarian item
 │ │ │ ├── ItemForm.jsx # Form tambah & edit item
-│ │ │ ├── ItemList.jsx # Menampilkan daftar item
+│ │ │ ├── ItemList.jsx # Daftar item
 │ │ │ └── ItemCard.jsx # Tampilan kartu item
 │ │ │
 │ │ └── services/
-│ │ └── api.js # Konfigurasi API request ke backend
+│ │ └── api.js # API service + token management
 │ │
+│ ├── .env # Frontend environment variables
+│ ├── .env.example # Contoh konfigurasi environment
 │ ├── index.html # Template HTML utama
 │ ├── package.json # Dependencies & scripts Node.js
 │ ├── vite.config.js # Konfigurasi Vite
