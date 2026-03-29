@@ -1,0 +1,18 @@
+services:
+  app-backend:
+    # 1. Alamat image di Docker Hub (agar temanmu otomatis download)
+    image: rizkiiaaz/cloudapp-backend:v1
+    
+    # 2. Nama container saat berjalan (bebas, agar mudah dikenali)
+    container_name: cloudapp-container
+    
+    # 3. Hubungkan port (Lokal:Container)
+    ports:
+      - "8000:8000"
+    
+    # 4. Ambil konfigurasi database dari file .env milikmu
+    env_file:
+      - backend/.env
+      
+    # 5. Agar container otomatis nyala lagi kalau laptop restart
+    restart: always
