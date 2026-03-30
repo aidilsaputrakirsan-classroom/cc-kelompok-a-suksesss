@@ -184,6 +184,160 @@ Pengujian dilakukan pada Week 4 untuk memastikan integrasi Authentication dan CR
 
 Detail hasil testing tersedia pada docs/ui-test-week4.md
 
+## 🐳 Docker Setup
+
+Backend aplikasi dapat dijalankan menggunakan Docker tanpa perlu instalasi dependency secara manual.
+
+---
+
+### 📦 Prerequisites
+
+Pastikan sudah terinstall:
+
+- Docker Desktop
+- Docker Compose
+
+Cek instalasi:
+
+```bash
+docker --version
+docker compose version
+```
+
+---
+
+### 🚀 Menjalankan Aplikasi dengan Docker
+
+1. Clone repository:
+
+```bash
+git clone <REPOSITORY_URL>
+cd <PROJECT_FOLDER>
+```
+
+2. Jalankan container:
+
+```bash
+docker compose up -d
+```
+
+Perintah ini akan:
+
+- Pull image backend dari Docker Hub
+- Membuat container
+- Menjalankan API pada port **8000**
+
+---
+
+### 🌐 Akses API
+
+Setelah container berjalan, buka:
+
+```
+http://localhost:8000/docs
+```
+
+Swagger UI akan muncul dan API siap digunakan.
+
+---
+
+### 📋 Docker Commands (Useful for QA & Development)
+
+#### Melihat container yang berjalan
+```bash
+docker ps
+```
+
+#### Melihat log container
+```bash
+docker logs cloudapp-container
+```
+
+#### Follow log secara realtime
+```bash
+docker logs -f cloudapp-container
+```
+
+#### Stop container
+```bash
+docker compose down
+```
+
+#### Restart container
+```bash
+docker compose restart
+```
+
+---
+
+### 🧪 Testing Checklist (QA)
+
+- [x] Container berhasil dijalankan
+- [x] Swagger UI dapat diakses
+- [x] Endpoint `/health` berfungsi
+- [x] Register user berhasil
+- [x] Login user berhasil
+
+---
+
+### 🐙 Docker Hub Image
+
+Backend image tersedia di Docker Hub:
+
+```
+rizkiiaaz/cloudapp-backend:v1
+```
+
+Pull manual:
+
+```bash
+docker pull rizkiiaaz/cloudapp-backend:v1
+```
+
+Run manual:
+
+```bash
+docker run -p 8000:8000 --env-file .env rizkiiaaz/cloudapp-backend:v1
+```
+
+---
+
+### ⚙️ Environment Variables
+
+Pastikan file `.env` tersedia pada folder backend.
+
+Contoh konfigurasi database untuk Docker Desktop:
+
+```
+DATABASE_URL=postgresql://postgres:PASSWORD@host.docker.internal:5432/cloudapp
+```
+
+---
+
+### 🧹 Cleanup Docker
+
+Hentikan dan hapus container:
+
+```bash
+docker compose down
+```
+
+Hapus image yang tidak terpakai:
+
+```bash
+docker image prune
+```
+
+---
+
+### 📄 Documentation
+
+Perbandingan ukuran Docker image dapat dilihat pada:
+
+```
+docs/image-comparison.md
+```
+
 ## 📅 Roadmap
 
 | Minggu | Target | Status |
@@ -192,7 +346,7 @@ Detail hasil testing tersedia pada docs/ui-test-week4.md
 | 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ✅ |
 | 4 | Full-Stack Integration | ✅ |
-| 5-7 | Docker & Compose | ⬜ |
+| 5-7 | Docker & Compose | ✅ |
 | 8 | UTS Demo | ⬜ |
 | 9-11 | CI/CD Pipeline | ⬜ |
 | 12-14 | Microservices | ⬜ |
@@ -202,49 +356,53 @@ Detail hasil testing tersedia pada docs/ui-test-week4.md
 
 ```
 cc-kelompok-a-suksesss/
-├── backend/ # FastAPI Backend
-│ ├── main.py # Entry point, API routes, auth endpoints & CORS config
-│ ├── auth.py # JWT authentication utilities (NEW)
-│ ├── database.py # Koneksi database
-│ ├── models.py # SQLAlchemy models (+ User model)
-│ ├── schemas.py # Pydantic schemas (+ auth schemas)
-│ ├── crud.py # Business logic & user CRUD
-│ ├── requirements.txt # Dependencies (jose, passlib, bcrypt)
-│ ├── .env # Environment variables (tidak di-commit)
-│ └── .env.example # Contoh konfigurasi environment
+├── backend/                     # FastAPI Backend
+│   ├── Dockerfile               # Docker image configuration (NEW)
+│   ├── .dockerignore            # Docker ignore rules (NEW)
+│   ├── main.py                  # Entry point, API routes & CORS config
+│   ├── auth.py                  # JWT authentication utilities
+│   ├── database.py              # Database connection
+│   ├── models.py                # SQLAlchemy models (+ User model)
+│   ├── schemas.py               # Pydantic schemas (+ auth schemas)
+│   ├── crud.py                  # Business logic & CRUD operations
+│   ├── requirements.txt         # Python dependencies
+│   ├── .env                     # Environment variables (Updated for Docker)
+│   └── .env.example             # Example environment configuration
 │
-├── frontend/ # React Frontend (Vite)
-│ ├── src/
-│ │ ├── App.jsx # Root component + auth integration
-│ │ ├── App.css # Styling utama aplikasi
-│ │ ├── main.jsx # Entry point React
-│ │ │
-│ │ ├── components/
-│ │ │ ├── Header.jsx # Header + user info & logout
-│ │ │ ├── LoginPage.jsx # Halaman login (NEW)
-│ │ │ ├── SearchBar.jsx # Fitur pencarian item
-│ │ │ ├── ItemForm.jsx # Form tambah & edit item
-│ │ │ ├── ItemList.jsx # Daftar item
-│ │ │ └── ItemCard.jsx # Tampilan kartu item
-│ │ │
-│ │ └── services/
-│ │ └── api.js # API service + token management
-│ │
-│ ├── .env # Frontend environment variables
-│ ├── .env.example # Contoh konfigurasi environment
-│ ├── index.html # Template HTML utama
-│ ├── package.json # Dependencies & scripts Node.js
-│ ├── vite.config.js # Konfigurasi Vite
-│ └── eslint.config.js # Konfigurasi ESLint
+├── frontend/                    # React Frontend (Vite)
+│   ├── src/
+│   │   ├── App.jsx              # Root component + auth integration
+│   │   ├── App.css              # Main styling
+│   │   ├── main.jsx             # React entry point
+│   │   │
+│   │   ├── components/
+│   │   │   ├── Header.jsx       # Header + user info & logout
+│   │   │   ├── LoginPage.jsx    # Login page
+│   │   │   ├── SearchBar.jsx    # Item search feature
+│   │   │   ├── ItemForm.jsx     # Add & edit item form
+│   │   │   ├── ItemList.jsx     # Item list display
+│   │   │   └── ItemCard.jsx     # Item card component
+│   │   │
+│   │   └── services/
+│   │       └── api.js           # API service + token management
+│   │
+│   ├── .env                     # Frontend environment variables
+│   ├── .env.example             # Example environment configuration
+│   ├── index.html               # Main HTML template
+│   ├── package.json             # Node.js dependencies & scripts
+│   ├── vite.config.js           # Vite configuration
+│   └── eslint.config.js         # ESLint configuration
 │
-├── docs/ # Dokumentasi tim & hasil testing
-│ ├── member-Azizah.md
-│ ├── member-Rendy.md
-│ ├── member-Riska.md
-│ ├── member-Rizki.md
-│ ├── api-test-results.md # Dokumentasi pengujian API (Swagger)
-│ ├── ui-test-results.md # Dokumentasi pengujian UI (Frontend)
-│ └── images/ # Screenshot hasil testing
+├── docs/                        # Team documentation & testing results
+│   ├── member-Azizah.md
+│   ├── member-Rendy.md
+│   ├── member-Riska.md
+│   ├── member-Rizki.md
+│   ├── api-test-results.md      # API testing documentation (Swagger)
+│   ├── ui-test-results.md       # UI testing documentation
+│   ├── image-comparison.md      # Docker image comparison (NEW)
+│   ├── docker-cheatsheet.md     # Docker command reference (NEW)
+│   └── images/                  # Testing screenshots
 │
 ├── .gitignore
 └── README.md
