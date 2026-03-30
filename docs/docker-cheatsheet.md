@@ -53,3 +53,11 @@
 | `docker push rizkiiaaz/safespace-frontend:v1` | Push image frontend ke Docker Hub |
 | `docker pull rizkiiaaz/safespace-backend:v1` | Pull image backend dari Docker Hub |
 | `docker pull rizkiiaaz/safespace-frontend:v1` | Pull image frontend dari Docker Hub |
+
+## DOCKER COMPOSE (SHORTCUT)
+| Command | Fungsi |
+|---------|--------|
+| `docker compose up -d` | Jalankan aplikasi secara otomatis di background (tanpa ribet) |
+| `docker compose down` | Hentikan aplikasi dan bersihkan port secara rapi |
+| `docker compose logs -f` | Lihat log aplikasi secara real-time |
+| `docker compose stop` | Pause container sementara tanpa menghapusnya |

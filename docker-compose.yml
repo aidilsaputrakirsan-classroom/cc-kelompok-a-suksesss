@@ -1,10 +1,10 @@
 services:
   app-backend:
     # 1. Alamat image di Docker Hub (agar temanmu otomatis download)
-    image: rizkiiaaz/cloudapp-backend:v1
+    image: rizkiiaaz/safespace-backend:v1
     
     # 2. Nama container saat berjalan (bebas, agar mudah dikenali)
-    container_name: cloudapp-container
+    container_name: safespace-backend
     
     # 3. Hubungkan port (Lokal:Container)
     ports:
