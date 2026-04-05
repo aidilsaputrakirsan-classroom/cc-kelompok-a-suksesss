@@ -7,8 +7,11 @@ WORKDIR /app
 # 3. Copy file requirements terlebih dahulu (untuk efisiensi cache)
 COPY requirements.txt .
 
-# 4. Install dependencies backend
-RUN pip install --no-cache-dir -r requirements.txt
+# 4. Install curl dan dependencies backend
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends curl \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& pip install --no-cache-dir -r requirements.txt
 
 # 5. Copy seluruh sisa kode aplikasi ke dalam container
 COPY . .
@@ -21,5 +24,8 @@ USER appuser
 # 7. Buka port 8000 untuk FastAPI
 EXPOSE 8000
 
-# 8. Command untuk menjalankan server saat container menyala
+# 8. Health check container
+HEALTHCHECK CMD curl -f http://localhost:8000/health || exit 1
+
+# 9. Command untuk menjalankan server saat container menyala
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
