@@ -1,13 +1,38 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+
+# Environment files
 .env
 .env.local
+.env.development
 .env.production
+.env.staging
+
+# Version control
 .git/
 .gitignore
+
+# Editor / IDE
 .vscode/
 .idea/
-Dockerfile
-.dockerignore
+
+# Docs
+*.md
+
+# Testing
+coverage/
+__tests__/
+*.test.*
+*.spec.*
+
+# Logs
 *.log
-.DS_Store
+npm-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.bak
