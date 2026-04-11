@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import User
+from models import User, UserRole
 
 load_dotenv()
 
@@ -24,7 +24,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 scheme — FastAPI akan mencari header "Authorization: Bearer <token>"
 # Gunakan endpoint form agar kompatibel dengan tombol Authorize di Swagger UI.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/counselor/token")
 
 
 # ==================== PASSWORD ====================
@@ -52,12 +52,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_token(token: str) -> dict:
     """Decode dan verifikasi JWT token."""
     try:
-        print(f"DEBUG TOKEN: {token[:50]}...")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(f"DEBUG PAYLOAD: {payload}")
         return payload
-    except JWTError as e:
-        print(f"DEBUG JWT ERROR: {e}")
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token tidak valid atau sudah expired",
@@ -95,3 +92,12 @@ def get_current_user(
         )
 
     return user
+
+
+def get_current_counselor(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.COUNSELOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Akses hanya untuk konselor",
+        )
+    return current_user

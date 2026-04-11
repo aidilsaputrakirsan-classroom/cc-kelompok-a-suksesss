@@ -70,9 +70,27 @@ Buka terminal pertama, lalu jalankan:
 
 ```bash
 cd backend
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 ✅ **Berhasil jika bisa membuka:** `http://127.0.0.1:8000/docs`
+
+Catatan:
+- Rekomendasi utama adalah `python -m uvicorn` karena tidak bergantung PATH global.
+- Jika ingin menjalankan `uvicorn ...` langsung, aktifkan virtual environment dulu agar executable terdeteksi.
+
+### Seed Data Awal (SafeSpace)
+Setelah backend terkoneksi ke database, jalankan seed berikut dari folder `backend`:
+
+```bash
+python scripts/seed_master_data.py
+python scripts/seed_counselors.py
+```
+
+Data yang di-seed:
+- SchoolClass: X-A, X-B, XI IPA 1, XI IPS 1, XII IPA 1, XII IPS 1
+- Topic: Belajar, Karir, Keluarga, Sosial, Pribadi
+- TimeSlot: Istirahat ke-1, Istirahat ke-2, Pulang Sekolah
+- Place: Ruang BK 1, Ruang BK 2, Online
 
 ### Terminal 2: Menyalakan Frontend (React/Vite)
 Buka tab terminal baru (Split Terminal), lalu jalankan:

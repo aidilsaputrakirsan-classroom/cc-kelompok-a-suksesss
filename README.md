@@ -91,9 +91,31 @@ Berdasarkan struktur proyek di `backend/` dan `frontend/`:
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8000
 ```
 API: http://localhost:8000 — Docs: http://localhost:8000/docs
+
+Catatan eksekusi backend:
+- Disarankan menggunakan `python -m uvicorn ...` agar interpreter aktif (venv) selalu dipakai tanpa bergantung PATH.
+- Alternatif jika ingin tetap pakai perintah `uvicorn`: aktifkan virtual environment terlebih dahulu.
+- Windows PowerShell: `python -m venv .venv` lalu `.\.venv\Scripts\Activate.ps1`
+- Linux/macOS: `python -m venv .venv` lalu `source .venv/bin/activate`
+
+Seeding data awal SafeSpace:
+```bash
+cd backend
+python scripts/seed_master_data.py
+python scripts/seed_counselors.py
+```
+
+Endpoint seed (opsional, untuk development):
+- `POST /api/dev/seed/master-data`
+- `POST /api/dev/seed/counselors`
+
+Endpoint konsultasi konselor (protected JWT):
+- `GET /api/bk/consultations`
+- `PATCH /api/bk/consultations/{consultation_id}/accept`
+- `PATCH /api/bk/consultations/{consultation_id}/reject`
 
 ### Frontend
 ```bash

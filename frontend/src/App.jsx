@@ -1,184 +1,128 @@
-import { useState, useEffect, useCallback } from "react"
-import Header from "./components/Header"
-import SearchBar from "./components/SearchBar"
-import ItemForm from "./components/ItemForm"
-import ItemList from "./components/ItemList"
-import LoginPage from "./components/LoginPage"
-import Toast from "./components/Toast"
-import Spinner from "./components/Spinner"
-import {
-  fetchItems, createItem, updateItem, deleteItem,
-  checkHealth, login, register, setToken, clearToken,
-} from "./services/api"
+const principles = [
+  {
+    title: "Privat",
+    description: "Hanya guru BK yang dipilih yang dapat melihat data konsultasi siswa.",
+  },
+  {
+    title: "Mudah Diakses",
+    description: "Siswa dapat mengirim pengajuan tanpa login dan tetap mendapat kode pelacakan.",
+  },
+  {
+    title: "Fleksibel",
+    description: "Pilihan kelas, topik, waktu, dan tempat dikelola dinamis dari dashboard guru BK.",
+  },
+]
+
+const milestones = [
+  "Menyiapkan konfigurasi project dan environment lokal",
+  "Membangun halaman publik pertama untuk SafeSpace",
+  "Menyiapkan pondasi autentikasi, data master, dan tracking konsultasi",
+]
+
+const stats = [
+  { value: "3", label: "Akses utama", note: "Guest, Guru BK, Admin" },
+  { value: "100%", label: "Data terisolasi", note: "Berdasarkan counselorId" },
+  { value: "1", label: "Kode tracking", note: "Untuk cek status konsultasi" },
+]
 
 function App() {
-  // ==================== AUTH STATE ====================
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  // ==================== APP STATE ====================
-  const [items, setItems] = useState([])
-  const [totalItems, setTotalItems] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [isConnected, setIsConnected] = useState(false)
-  const [editingItem, setEditingItem] = useState(null)
-  const [searchQuery, setSearchQuery] = useState("")
-
-  // ==================== TOAST STATE ====================
-  const [toasts, setToasts] = useState([])
-
-  const showToast = (message, type = "success") => {
-    const id = Date.now()
-    setToasts((prev) => [...prev, { id, message, type }])
-  }
-
-  const removeToast = (id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }
-
-  // ==================== LOAD DATA ====================
-  const loadItems = useCallback(async (search = "") => {
-    setLoading(true)
-    try {
-      const data = await fetchItems(search)
-      setItems(data.items)
-      setTotalItems(data.total)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") {
-        handleLogout()
-      }
-      console.error("Error loading items:", err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    checkHealth().then(setIsConnected)
-  }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadItems()
-    }
-  }, [isAuthenticated, loadItems])
-
-  // ==================== AUTH HANDLERS ====================
-
-  const handleLogin = async (email, password) => {
-    const data = await login(email, password)
-    setUser(data.user)
-    setIsAuthenticated(true)
-  }
-
-  const handleRegister = async (userData) => {
-    // Register lalu otomatis login
-    await register(userData)
-    await handleLogin(userData.email, userData.password)
-  }
-
-  const handleLogout = () => {
-    clearToken()
-    setUser(null)
-    setIsAuthenticated(false)
-    setItems([])
-    setTotalItems(0)
-    setEditingItem(null)
-    setSearchQuery("")
-  }
-
-  // ==================== ITEM HANDLERS ====================
-
-  const handleSubmit = async (itemData, editId) => {
-    try {
-      if (editId) {
-        await updateItem(editId, itemData)
-        setEditingItem(null)
-        showToast("Item berhasil diperbarui")
-      } else {
-        await createItem(itemData)
-        showToast("Item berhasil ditambahkan")
-      }
-      loadItems(searchQuery)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else {
-        showToast(err.message || "Gagal menyimpan item", "error")
-        throw err
-      }
-    }
-  }
-
-  const handleEdit = (item) => {
-    setEditingItem(item)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  const handleDelete = async (id) => {
-    const item = items.find((i) => i.id === id)
-    if (!window.confirm(`Yakin ingin menghapus "${item?.name}"?`)) return
-    try {
-      await deleteItem(id)
-      showToast("Item berhasil dihapus")
-      loadItems(searchQuery)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else showToast("Gagal menghapus: " + err.message, "error")
-    }
-  }
-
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-    loadItems(query)
-  }
-
-  // ==================== RENDER ====================
-
-  // Jika belum login, tampilkan login page
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} />
-  }
-
-  // Jika sudah login, tampilkan main app
   return (
-    <div style={styles.app}>
-      <Toast toasts={toasts} onRemove={removeToast} />
-      <div style={styles.container}>
-        <Header
-          totalItems={totalItems}
-          isConnected={isConnected}
-          user={user}
-          onLogout={handleLogout}
-        />
-        <ItemForm
-          onSubmit={handleSubmit}
-          editingItem={editingItem}
-          onCancelEdit={() => setEditingItem(null)}
-        />
-        <SearchBar onSearch={handleSearch} />
-        {loading ? (
-          <Spinner />
-        ) : (
-          <ItemList
-            items={items}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            loading={loading}
-          />
-        )}
-      </div>
+    <div className="app-shell">
+      <main className="page">
+        <section className="hero">
+          <div className="hero-copy">
+            <div className="eyebrow">SafeSpace • Cloud Counseling System</div>
+            <h1>Ruang konseling sekolah yang privat, aman, dan siap berkembang.</h1>
+            <p>
+              SafeSpace memulai alur kerja bimbingan konseling dengan akses tanpa login
+              untuk siswa, isolasi data per guru BK, dan fondasi cloud-native untuk
+              monitoring serta dokumentasi.
+            </p>
+
+            <div className="hero-actions">
+              <a className="button button-primary" href="#setup">Lanjut ke setup</a>
+              <a className="button button-secondary" href="#principles">Lihat prinsip</a>
+            </div>
+
+            <div className="mini-notes">
+              <span>Guest form ready</span>
+              <span>JWT auth ready</span>
+              <span>PostgreSQL ready</span>
+            </div>
+          </div>
+
+          <aside className="hero-panel">
+            <div className="panel-card panel-accent">
+              <span>Step 1</span>
+              <strong>Project setup</strong>
+              <p>Menyiapkan environment, branding, dan landing page awal SafeSpace.</p>
+            </div>
+
+            <div className="panel-grid">
+              {stats.map((stat) => (
+                <article className="stat-card" key={stat.label}>
+                  <strong>{stat.value}</strong>
+                  <span>{stat.label}</span>
+                  <small>{stat.note}</small>
+                </article>
+              ))}
+            </div>
+          </aside>
+        </section>
+
+        <section className="section" id="principles">
+          <div className="section-heading">
+            <span>Core principles</span>
+            <h2>Landasan awal yang dipakai untuk seluruh fitur berikutnya.</h2>
+          </div>
+
+          <div className="principle-grid">
+            {principles.map((principle) => (
+              <article className="principle-card" key={principle.title}>
+                <h3>{principle.title}</h3>
+                <p>{principle.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section two-column" id="setup">
+          <div className="section-heading compact">
+            <span>Project setup</span>
+            <h2>Apa yang disiapkan pada tahap pertama.</h2>
+            <p>
+              Tahap ini mengubah kerangka awal menjadi dasar SafeSpace yang konsisten,
+              sehingga fitur counseling, tracking, dan dashboard bisa dibangun di atasnya.
+            </p>
+          </div>
+
+          <div className="timeline-card">
+            {milestones.map((item, index) => (
+              <div className="timeline-item" key={item}>
+                <div className="timeline-index">0{index + 1}</div>
+                <p>{item}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="section access-strip">
+          <article>
+            <span>Public flow</span>
+            <strong>Mulai dari landing page, pilih guru BK, lalu kirim form tanpa login.</strong>
+          </article>
+          <article>
+            <span>Private flow</span>
+            <strong>Guru BK hanya melihat data miliknya sendiri, admin tetap punya akses global.</strong>
+          </article>
+          <article>
+            <span>Foundation</span>
+            <strong>Backend FastAPI, PostgreSQL, dan frontend React Vite disiapkan sejak awal.</strong>
+          </article>
+        </section>
+      </main>
     </div>
   )
-}
-
-const styles = {
-  app: {
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "2rem",
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-  },
-  container: { maxWidth: "900px", margin: "0 auto" },
 }
 
 export default App

@@ -1,35 +1,43 @@
 import os
+
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from database import engine, get_db
-from models import Base, User
-from schemas import (
-    ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
-    UserCreate, UserResponse, LoginRequest, TokenResponse,
-)
-from auth import create_access_token, get_current_user
 import crud
+from auth import create_access_token, get_current_counselor, get_current_user
+from database import engine, get_db
+from models import Base, ConsultationStatus, User
+from schemas import (
+    ConsultationCounselorListItem,
+    ConsultationGuestCreate,
+    ConsultationGuestResponse,
+    ConsultationStatusUpdateResponse,
+    CounselorLoginRequest,
+    CounselorRegisterRequest,
+    SeedCounselorsRequest,
+    SeedCounselorsResponse,
+    SeedMasterDataResponse,
+    TokenResponse,
+    UserBase,
+)
 
 load_dotenv()
 
-# Buat semua tabel
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Cloud App API",
-    description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.4.0",
+    title="SafeSpace API",
+    description="REST API untuk SafeSpace, sistem manajemen bimbingan konseling berbasis cloud",
+    version="0.2.0",
 )
 
-# ==================== CORS (FIXED) ====================
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
-origins_list = [origin.strip() for origin in allowed_origins.split(",")]
+origins_list = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,176 +47,133 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ==================== CUSTOM EXCEPTION HANDLER ====================
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = []
     for error in exc.errors():
-        field = " → ".join(str(loc) for loc in error["loc"] if loc != "body")
-        message = error["msg"]
-        message = message.replace("Value error, ", "")
+        field = " -> ".join(str(loc) for loc in error["loc"] if loc != "body")
+        message = error["msg"].replace("Value error, ", "")
         errors.append({"field": field, "message": message})
 
-    if len(errors) == 1:
-        detail = f"{errors[0]['field']}: {errors[0]['message']}"
-    else:
-        detail = errors
+    detail = f"{errors[0]['field']}: {errors[0]['message']}" if len(errors) == 1 else errors
+    return JSONResponse(status_code=422, content={"detail": detail})
 
-    return JSONResponse(
-        status_code=422,
-        content={"detail": detail},
-    )
-
-# ==================== HEALTH CHECK ====================
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "version": "0.4.0"}
+    return {"status": "healthy", "service": "SafeSpace API", "version": "0.2.0"}
 
 
-# ==================== AUTH ENDPOINTS (PUBLIC) ====================
-
-@app.post("/auth/register", response_model=UserResponse, status_code=201)
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """
-    Registrasi user baru.
-    
-    - **email**: Email unik (akan digunakan untuk login)
-    - **name**: Nama lengkap
-    - **password**: Minimal 8 karakter
-    """
-    user = crud.create_user(db=db, user_data=user_data)
-    if not user:
+@app.post("/auth/counselors/register", response_model=UserBase, status_code=201)
+def register_counselor(payload: CounselorRegisterRequest, db: Session = Depends(get_db)):
+    counselor = crud.create_counselor(db=db, user_data=payload)
+    if not counselor:
         raise HTTPException(status_code=400, detail="Email sudah terdaftar")
-    return user
+    return counselor
 
 
-@app.post("/auth/login", response_model=TokenResponse)
-def login(login_data: LoginRequest, db: Session = Depends(get_db)):
-    """
-    Login dan dapatkan JWT token.
-    
-    Token berlaku selama 60 menit (default).
-    Gunakan token di header: `Authorization: Bearer <token>`
-    """
-    user = crud.authenticate_user(db=db, email=login_data.email, password=login_data.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Email atau password salah")
+@app.post("/auth/counselor/login", response_model=TokenResponse)
+def counselor_login(payload: CounselorLoginRequest, db: Session = Depends(get_db)):
+    counselor = crud.authenticate_counselor(db=db, email=payload.email, password=payload.password)
+    if not counselor:
+        raise HTTPException(status_code=401, detail="Email atau password konselor salah")
 
-    token = create_access_token(data={"sub": str(user.id)})
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": user,
-    }
+    token = create_access_token(data={"sub": str(counselor.id), "role": counselor.role.value})
+    return {"access_token": token, "token_type": "bearer", "user": counselor}
 
 
-@app.post("/auth/token", response_model=TokenResponse)
-def login_oauth2(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """
-    Endpoint OAuth2 password flow untuk Swagger Authorize.
+@app.post("/auth/counselor/token", response_model=TokenResponse)
+def counselor_login_oauth2(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    counselor = crud.authenticate_counselor(db=db, email=form_data.username, password=form_data.password)
+    if not counselor:
+        raise HTTPException(status_code=401, detail="Email atau password konselor salah")
 
-    Catatan:
-    - Field `username` pada form OAuth2 digunakan sebagai email.
-    - Tetap mengembalikan format token yang sama dengan endpoint login JSON.
-    """
-    user = crud.authenticate_user(db=db, email=form_data.username, password=form_data.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Email atau password salah")
-
-    token = create_access_token(data={"sub": str(user.id)})
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": user,
-    }
+    token = create_access_token(data={"sub": str(counselor.id), "role": counselor.role.value})
+    return {"access_token": token, "token_type": "bearer", "user": counselor}
 
 
-@app.get("/auth/me", response_model=UserResponse)
+@app.get("/auth/me", response_model=UserBase)
 def get_me(current_user: User = Depends(get_current_user)):
-    """Ambil profil user yang sedang login."""
     return current_user
 
 
-# ==================== ITEM ENDPOINTS (PROTECTED) ====================
+@app.get("/auth/counselor/me", response_model=UserBase)
+def get_counselor_me(current_user: User = Depends(get_current_counselor)):
+    return current_user
 
-@app.post("/items", response_model=ItemResponse, status_code=201)
-def create_item(
-    item: ItemCreate,
+
+@app.post("/api/consultations", response_model=ConsultationGuestResponse, status_code=201)
+def create_guest_consultation(payload: ConsultationGuestCreate, db: Session = Depends(get_db)):
+    try:
+        consultation = crud.create_guest_consultation(db=db, payload=payload)
+        return consultation
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/dev/seed/master-data", response_model=SeedMasterDataResponse)
+def seed_master_data(db: Session = Depends(get_db)):
+    return crud.seed_master_data(db=db)
+
+
+@app.post("/api/dev/seed/counselors", response_model=SeedCounselorsResponse)
+def seed_initial_counselors(payload: SeedCounselorsRequest, db: Session = Depends(get_db)):
+    return crud.seed_counselors(db=db, counselors=payload.counselors)
+
+
+@app.get("/api/bk/consultations", response_model=list[ConsultationCounselorListItem])
+def list_consultations_for_counselor(
+    status: ConsultationStatus | None = Query(default=None),
+    current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
-    """Buat item baru. **Membutuhkan autentikasi.**"""
-    return crud.create_item(db=db, item_data=item)
+    return crud.get_consultations_for_counselor(
+        db=db,
+        counselor_id=current_user.id,
+        status=status,
+    )
 
 
-@app.get("/items", response_model=ItemListResponse)
-def list_items(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
-    search: str = Query(None),
+@app.patch("/api/bk/consultations/{consultation_id}/accept", response_model=ConsultationStatusUpdateResponse)
+def accept_consultation(
+    consultation_id: int,
+    current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
-    """Ambil daftar items. **Membutuhkan autentikasi.**"""
-    return crud.get_items(db=db, skip=skip, limit=limit, search=search)
+    consultation = crud.update_consultation_status(
+        db=db,
+        consultation_id=consultation_id,
+        counselor_id=current_user.id,
+        status=ConsultationStatus.ACCEPTED,
+    )
+    if consultation is None:
+        raise HTTPException(status_code=404, detail="Data konsultasi tidak ditemukan")
+    return consultation
 
 
-@app.get("/items/stats")
-def get_items_stats(
+@app.patch("/api/bk/consultations/{consultation_id}/reject", response_model=ConsultationStatusUpdateResponse)
+def reject_consultation(
+    consultation_id: int,
+    current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
-    """Ambil statistik inventory. **Membutuhkan autentikasi.**"""
-    return crud.get_items_stats(db=db)
+    consultation = crud.update_consultation_status(
+        db=db,
+        consultation_id=consultation_id,
+        counselor_id=current_user.id,
+        status=ConsultationStatus.REJECTED,
+    )
+    if consultation is None:
+        raise HTTPException(status_code=404, detail="Data konsultasi tidak ditemukan")
+    return consultation
 
-
-@app.get("/items/{item_id}", response_model=ItemResponse)
-def get_item(
-    item_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Ambil satu item. **Membutuhkan autentikasi.**"""
-    item = crud.get_item(db=db, item_id=item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
-    return item
-
-
-@app.put("/items/{item_id}", response_model=ItemResponse)
-def update_item(
-    item_id: int,
-    item: ItemUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Update item. **Membutuhkan autentikasi.**"""
-    updated = crud.update_item(db=db, item_id=item_id, item_data=item)
-    if not updated:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
-    return updated
-
-
-@app.delete("/items/{item_id}", status_code=204)
-def delete_item(
-    item_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Hapus item. **Membutuhkan autentikasi.**"""
-    success = crud.delete_item(db=db, item_id=item_id)
-    if not success:
-        raise HTTPException(status_code=404, detail=f"Item {item_id} tidak ditemukan")
-    return None
-
-
-# ==================== TEAM INFO ====================
 
 @app.get("/team")
 def team_info():
-    """Informasi tim."""
     return {
         "team": "cloud-team-suksesss",
         "members": [
