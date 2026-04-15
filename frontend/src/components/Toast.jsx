@@ -1,66 +1,108 @@
-import { useEffect } from "react"
+import { useEffect } from 'react'
 
 function Toast({ toasts, onRemove }) {
   return (
-    <div style={styles.container}>
-      {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
-      ))}
-    </div>
+    <>
+      <style>{toastStyles}</style>
+      <div className="toast-stack">
+        {toasts.map((t) => (
+          <ToastItem key={t.id} toast={t} onRemove={onRemove} />
+        ))}
+      </div>
+    </>
   )
 }
 
 function ToastItem({ toast, onRemove }) {
   useEffect(() => {
-    const timer = setTimeout(() => onRemove(toast.id), 3000)
+    const timer = setTimeout(() => onRemove(toast.id), 3200)
     return () => clearTimeout(timer)
   }, [toast.id, onRemove])
 
-  const isSuccess = toast.type === "success"
+  const isSuccess = toast.type === 'success'
 
   return (
-    <div style={{
-      ...styles.toast,
-      backgroundColor: isSuccess ? "#E2EFDA" : "#FBE5D6",
-      borderLeft: `4px solid ${isSuccess ? "#548235" : "#C00000"}`,
-      color: isSuccess ? "#548235" : "#C00000",
-    }}>
-      <span>{toast.message}</span>
-      <button onClick={() => onRemove(toast.id)} style={styles.close}>x</button>
+    <div className={`toast-item ${isSuccess ? 'toast-success' : 'toast-error'}`}>
+      <span className="toast-icon">{isSuccess ? '✓' : '⚠'}</span>
+      <span className="toast-msg">{toast.message}</span>
+      <button className="toast-close" onClick={() => onRemove(toast.id)}>×</button>
     </div>
   )
 }
 
-const styles = {
-  container: {
-    position: "fixed",
-    top: "1.5rem",
-    right: "1.5rem",
-    zIndex: 9999,
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.5rem",
-    maxWidth: "320px",
-  },
-  toast: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0.75rem 1rem",
-    borderRadius: "8px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-    fontSize: "0.9rem",
-    fontWeight: "bold",
-  },
-  close: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "0.85rem",
-    color: "inherit",
-    marginLeft: "0.5rem",
-    opacity: 0.7,
-  },
-}
+const toastStyles = `
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .toast-stack {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 340px;
+  }
+
+  .toast-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(3,5,15,0.4);
+    font-size: 0.875rem;
+    font-weight: 500;
+    animation: toast-in 0.25s ease forwards;
+    border: 1px solid;
+  }
+
+  .toast-success {
+    background: rgba(13,148,136,0.15);
+    border-color: rgba(45,212,191,0.25);
+    color: #2dd4bf;
+  }
+
+  .toast-error {
+    background: rgba(239,68,68,0.12);
+    border-color: rgba(239,68,68,0.25);
+    color: #fca5a5;
+  }
+
+  .toast-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: currentColor;
+    color: #06080f;
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .toast-msg {
+    flex: 1;
+    color: #f0eeff;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: rgba(180,175,220,0.5);
+    padding: 0 2px;
+    transition: color 0.2s;
+  }
+  .toast-close:hover { color: #f0eeff; }
+`
 
 export default Toast

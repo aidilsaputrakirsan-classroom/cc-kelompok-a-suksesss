@@ -1,15 +1,9 @@
 import { useState, useEffect } from "react"
 
 function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    quantity: "0",
-  })
+  const [formData, setFormData] = useState({ name: "", description: "", price: "", quantity: "0" })
   const [error, setError] = useState("")
 
-  // Jika editingItem berubah, isi form dengan datanya
   useEffect(() => {
     if (editingItem) {
       setFormData({
@@ -33,15 +27,8 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
     e.preventDefault()
     setError("")
 
-    // Validasi
-    if (!formData.name.trim()) {
-      setError("Nama item wajib diisi")
-      return
-    }
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      setError("Harga harus lebih dari 0")
-      return
-    }
+    if (!formData.name.trim()) { setError("Nama item wajib diisi"); return; }
+    if (!formData.price || parseFloat(formData.price) <= 0) { setError("Harga harus lebih dari 0"); return; }
 
     const itemData = {
       name: formData.name.trim(),
@@ -52,7 +39,6 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
 
     try {
       await onSubmit(itemData, editingItem?.id)
-      // Reset form setelah berhasil
       setFormData({ name: "", description: "", price: "", quantity: "0" })
     } catch (err) {
       setError(err.message)
@@ -60,153 +46,45 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
   }
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>
+    <div style={{ background: 'rgba(10,14,26,0.65)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '24px', backdropFilter: 'blur(16px)', marginBottom: '24px' }}>
+      <h2 className="trio-title" style={{ fontSize: '1.2rem', marginBottom: '16px' }}>
         {editingItem ? "✏️ Edit Item" : "➕ Tambah Item Baru"}
       </h2>
 
-      {error && <div style={styles.error}>{error}</div>}
+      {error && <div style={{ color: '#fca5a5', fontSize: '0.85rem', marginBottom: '12px' }}>⚠ {error}</div>}
 
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Nama Item *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Contoh: Laptop"
-              style={styles.input}
-            />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div className="cform-row">
+          <div className="cform-field">
+            <label style={{ color: 'rgba(220,215,255,0.7)', fontSize: '0.8rem' }}>Nama Item *</label>
+            <input type="text" name="name" value={formData.name} onChange={handleChange} className="cform-input" placeholder="Contoh: Laptop" />
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>Harga (Rp) *</label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="Contoh: 15000000"
-              min="0"
-              step="any"
-              style={styles.input}
-            />
+          <div className="cform-field">
+            <label style={{ color: 'rgba(220,215,255,0.7)', fontSize: '0.8rem' }}>Harga (Rp) *</label>
+            <input type="number" name="price" value={formData.price} onChange={handleChange} className="cform-input" placeholder="Contoh: 15000000" />
           </div>
         </div>
 
-        <div style={styles.row}>
-          <div style={styles.field}>
-            <label style={styles.label}>Deskripsi</label>
-            <input
-              type="text"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Opsional"
-              style={styles.input}
-            />
+        <div className="cform-row">
+          <div className="cform-field" style={{ flex: 2 }}>
+            <label style={{ color: 'rgba(220,215,255,0.7)', fontSize: '0.8rem' }}>Deskripsi</label>
+            <input type="text" name="description" value={formData.description} onChange={handleChange} className="cform-input" placeholder="Opsional" />
           </div>
-          <div style={{ ...styles.field, maxWidth: "150px" }}>
-            <label style={styles.label}>Jumlah Stok</label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              min="0"
-              style={styles.input}
-            />
+          <div className="cform-field" style={{ flex: 1 }}>
+            <label style={{ color: 'rgba(220,215,255,0.7)', fontSize: '0.8rem' }}>Jumlah Stok</label>
+            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="cform-input" />
           </div>
         </div>
 
-        <div style={styles.actions}>
-          <button type="submit" style={styles.btnSubmit}>
-            {editingItem ? "💾 Update Item" : "➕ Tambah Item"}
-          </button>
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
           {editingItem && (
-            <button type="button" onClick={onCancelEdit} style={styles.btnCancel}>
-              ✕ Batal Edit
-            </button>
+            <button type="button" onClick={onCancelEdit} className="btn-sec" style={{ padding: '10px 20px' }}>✕ Batal</button>
           )}
+          <button type="submit" className="nav-cta">{editingItem ? "💾 Update Item" : "➕ Tambah Item"}</button>
         </div>
       </form>
     </div>
   )
 }
 
-const styles = {
-  container: {
-    backgroundColor: "#f8f9fa",
-    padding: "1.5rem",
-    borderRadius: "12px",
-    border: "2px solid #e0e0e0",
-    marginBottom: "1.5rem",
-  },
-  title: {
-    margin: "0 0 1rem 0",
-    color: "#1F4E79",
-    fontSize: "1.2rem",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.75rem",
-  },
-  row: {
-    display: "flex",
-    gap: "1rem",
-  },
-  field: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "0.25rem",
-  },
-  label: {
-    fontSize: "0.85rem",
-    fontWeight: "bold",
-    color: "#555",
-  },
-  input: {
-    padding: "0.6rem 0.8rem",
-    border: "2px solid #ddd",
-    borderRadius: "6px",
-    fontSize: "0.95rem",
-    outline: "none",
-  },
-  actions: {
-    display: "flex",
-    gap: "0.75rem",
-    marginTop: "0.5rem",
-  },
-  btnSubmit: {
-    padding: "0.7rem 1.5rem",
-    backgroundColor: "#548235",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-    fontWeight: "bold",
-  },
-  btnCancel: {
-    padding: "0.7rem 1.5rem",
-    backgroundColor: "#e0e0e0",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "0.95rem",
-  },
-  error: {
-    backgroundColor: "#FBE5D6",
-    color: "#C00000",
-    padding: "0.6rem 1rem",
-    borderRadius: "6px",
-    marginBottom: "0.75rem",
-    fontSize: "0.9rem",
-  },
-}
-
-export default ItemForm
+export default ItemForm;
