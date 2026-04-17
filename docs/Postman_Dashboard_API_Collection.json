@@ -1,0 +1,285 @@
+{
+  "info": {
+    "name": "SafeSpace Dashboard API - UTS Tests",
+    "description": "Complete API test suite for Dashboard Guru BK (Counselor Dashboard)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        },
+        "description": "Check API health status"
+      }
+    },
+    {
+      "name": "2. Seed Master Data",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/dev/seed/master-data",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "dev", "seed", "master-data"]
+        },
+        "description": "Seed initial master data: classes, topics, time slots, places"
+      }
+    },
+    {
+      "name": "3. Seed Counselors",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"counselors\": [\n    {\n      \"name\": \"Bu Anita\",\n      \"email\": \"anita.bk@safespace.sch.id\",\n      \"password\": \"Counselor123\",\n      \"phone\": \"+6281234567801\",\n      \"specialization\": \"Konseling Akademik\"\n    },\n    {\n      \"name\": \"Pak Budi\",\n      \"email\": \"budi.bk@safespace.sch.id\",\n      \"password\": \"Counselor123\",\n      \"phone\": \"+6281234567802\",\n      \"specialization\": \"Konseling Karir\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/dev/seed/counselors",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "dev", "seed", "counselors"]
+        },
+        "description": "Seed initial counselor accounts for testing"
+      }
+    },
+    {
+      "name": "4. Counselor Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"anita.bk@safespace.sch.id\",\n  \"password\": \"Counselor123\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/auth/counselor/login",
+          "host": ["{{BASE_URL}}"],
+          "path": ["auth", "counselor", "login"]
+        },
+        "description": "Login as counselor to get JWT token. Save the token to Postman environment variable {{TOKEN}}"
+      }
+    },
+    {
+      "name": "5. Create Guest Consultation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"student_name\": \"Budi Santoso\",\n  \"class_id\": 1,\n  \"gender\": \"MALE\",\n  \"student_phone\": \"+6281234567890\",\n  \"counselor_id\": 1,\n  \"method\": \"INDIVIDUAL\",\n  \"topic_id\": 1,\n  \"date\": \"2026-04-20\",\n  \"time_slot_id\": 1,\n  \"place_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/consultations",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "consultations"]
+        },
+        "description": "Create a guest consultation request (public endpoint, no auth required). Save the returned ID to {{CONSULTATION_ID}}"
+      }
+    },
+    {
+      "name": "6. Dashboard Stats (Protected)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/dashboard/stats",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "dashboard", "stats"]
+        },
+        "description": "Get dashboard statistics for current counselor (Protected by JWT)\nResponse format:\n{\n  \"total\": 50,\n  \"pending\": 10,\n  \"accepted\": 35,\n  \"rejected\": 5\n}\n✅ Data Isolation: Returns stats ONLY for current counselor"
+      }
+    },
+    {
+      "name": "6b. Dashboard Stats (Without Token - 401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/dashboard/stats",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "dashboard", "stats"]
+        },
+        "description": "Try to access protected endpoint WITHOUT token. Should return 401 Unauthorized"
+      }
+    },
+    {
+      "name": "7. Consultations List - Page 1",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/consultations?limit=10&offset=0",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "consultations"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "Items per page"
+            },
+            {
+              "key": "offset",
+              "value": "0",
+              "description": "Offset for pagination"
+            }
+          ]
+        },
+        "description": "Get consultations list with pagination (Page 1: limit=10, offset=0)\nResponse format:\n{\n  \"data\": [...],\n  \"total\": 50,\n  \"page\": 1,\n  \"limit\": 10\n}\n✅ Data Isolation: Returns ONLY consultations for current counselor\n✅ Sorted by created_at DESC (newest first)"
+      }
+    },
+    {
+      "name": "7b. Consultations List - Page 2",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/consultations?limit=10&offset=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "consultations"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Get consultations list Page 2 (limit=10, offset=10). For next page: offset = current_offset + limit"
+      }
+    },
+    {
+      "name": "7c. Consultations List - Custom Limit",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/consultations?limit=5&offset=0",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "consultations"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "5",
+              "description": "Smaller limit for testing"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "Test with custom limit (5 items per page)"
+      }
+    },
+    {
+      "name": "8. Accept Consultation",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/consultations/{{CONSULTATION_ID}}/accept",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "consultations", "{{CONSULTATION_ID}}", "accept"]
+        },
+        "description": "Accept a consultation request as counselor. Set accepted_at timestamp.\n✅ Data Isolation: Only works if consultation belongs to current counselor"
+      }
+    },
+    {
+      "name": "9. Reject Consultation",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{BASE_URL}}/api/bk/consultations/{{CONSULTATION_ID}}/reject",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "bk", "consultations", "{{CONSULTATION_ID}}", "reject"]
+        },
+        "description": "Reject a consultation request as counselor. Set rejected_at timestamp.\n✅ Data Isolation: Only works if consultation belongs to current counselor"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "JWT Token - Set this after running 'Counselor Login'"
+    },
+    {
+      "key": "CONSULTATION_ID",
+      "value": "",
+      "type": "string",
+      "description": "Consultation ID - Set this after running 'Create Guest Consultation'"
+    }
+  ]
+}

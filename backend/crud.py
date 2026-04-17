@@ -183,6 +183,70 @@ def seed_counselors(db: Session, counselors: list[SeedCounselorItem]) -> dict:
     return {"created": created, "skipped_existing": skipped_existing}
 
 
+def get_public_master_data(db: Session) -> dict:
+    school_classes = (
+        db.query(SchoolClass)
+        .filter(SchoolClass.active.is_(True))
+        .order_by(SchoolClass.name.asc())
+        .all()
+    )
+    topics = (
+        db.query(Topic)
+        .filter(Topic.active.is_(True))
+        .order_by(Topic.name.asc())
+        .all()
+    )
+    time_slots = (
+        db.query(TimeSlot)
+        .filter(TimeSlot.active.is_(True))
+        .order_by(TimeSlot.id.asc())
+        .all()
+    )
+    places = (
+        db.query(Place)
+        .filter(Place.active.is_(True))
+        .order_by(Place.name.asc())
+        .all()
+    )
+
+    return {
+        "school_classes": [{"id": item.id, "name": item.name} for item in school_classes],
+        "topics": [{"id": item.id, "name": item.name} for item in topics],
+        "time_slots": [
+            {
+                "id": item.id,
+                "name": item.name,
+                "start_time": item.start_time,
+                "end_time": item.end_time,
+            }
+            for item in time_slots
+        ],
+        "places": [{"id": item.id, "name": item.name} for item in places],
+    }
+
+
+def get_active_counselors_public(db: Session) -> list[dict]:
+    counselors = (
+        db.query(User)
+        .filter(
+            User.role == UserRole.COUNSELOR,
+            User.is_active.is_(True),
+        )
+        .order_by(User.name.asc())
+        .all()
+    )
+
+    return [
+        {
+            "id": counselor.id,
+            "name": counselor.name,
+            "specialization": counselor.specialization,
+            "photo": counselor.photo,
+        }
+        for counselor in counselors
+    ]
+
+
 def get_consultations_for_counselor(db: Session, counselor_id: int, status: ConsultationStatus | None = None):
     query = (
         db.query(Consultation)
@@ -246,3 +310,109 @@ def update_consultation_status(
     db.commit()
     db.refresh(consultation)
     return consultation
+
+
+# ==================== DASHBOARD BK ====================
+
+def get_dashboard_stats(db: Session, counselor_id: int) -> dict:
+    """
+    📊 Hitung statistik dashboard untuk guru BK.
+    
+    Returns:
+    {
+      "total": int,
+      "pending": int,
+      "accepted": int,
+      "rejected": int
+    }
+    
+    ✅ Data isolation: Filter by counselor_id = param
+    """
+    # TODO[BE]: Jika ingin menambah stats (thisMonth, thisWeek), tambah parameter date filter
+    
+    base_query = db.query(Consultation).filter(Consultation.counselor_id == counselor_id)
+    
+    total = base_query.count()
+    pending = base_query.filter(Consultation.status == ConsultationStatus.PENDING).count()
+    accepted = base_query.filter(Consultation.status == ConsultationStatus.ACCEPTED).count()
+    rejected = base_query.filter(Consultation.status == ConsultationStatus.REJECTED).count()
+    
+    return {
+        "total": total,
+        "pending": pending,
+        "accepted": accepted,
+        "rejected": rejected,
+    }
+
+
+def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offset: int) -> dict:
+    """
+    📋 Get paginated consultation list untuk guru BK.
+    
+    Args:
+    - counselor_id: ID konselor (from JWT token)
+    - limit: Jumlah data per halaman (1-100)
+    - offset: Offset pagination (0, 10, 20, ...)
+    
+    Returns:
+    {
+      "data": [
+        {
+          "id": 1,
+          "tracking_code": "SS-ABC123",
+          "student_name": "Budi",
+          "class": "X-A",
+          "topic": "Belajar",
+          "status": "PENDING",
+          "date": "2026-04-20",
+          "time_slot": "Istirahat ke-1 (10:00-10:30)",
+          "created_at": "2026-04-17T10:30:45+00:00"
+        },
+        ...
+      ],
+      "total": 50,
+      "page": 1,
+      "limit": 10
+    }
+    
+    ✅ Data isolation: Filter by counselor_id = param
+    ✅ Sorted: Order by created_at DESC (terbaru di atas)
+    ✅ Pagination: LIMIT = limit, OFFSET = offset
+    """
+    # Data isolation: Query hanya untuk consultation milik counselor ini
+    base_query = (
+        db.query(Consultation)
+        .filter(Consultation.counselor_id == counselor_id)
+        .order_by(Consultation.created_at.desc())
+    )
+    
+    # Count total sebelum pagination
+    total = base_query.count()
+    
+    # Apply pagination
+    consultations = base_query.limit(limit).offset(offset).all()
+    
+    # Transform ke response format
+    data = []
+    for consultation in consultations:
+        data.append({
+            "id": consultation.id,
+            "tracking_code": consultation.tracking_code,
+            "student_name": consultation.student.name,
+            "class": consultation.school_class.name,
+            "topic": consultation.topic.name,
+            "status": consultation.status,
+            "date": consultation.date,
+            "time_slot": f"{consultation.time_slot.name} ({consultation.time_slot.start_time}-{consultation.time_slot.end_time})",
+            "created_at": consultation.created_at,
+        })
+    
+    # Calculate page number (1-indexed)
+    page = (offset // limit) + 1 if limit > 0 else 1
+    
+    return {
+        "data": data,
+        "total": total,
+        "page": page,
+        "limit": limit,
+    }

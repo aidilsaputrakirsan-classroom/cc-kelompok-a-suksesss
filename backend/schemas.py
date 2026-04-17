@@ -103,6 +103,32 @@ class SeedMasterDataResponse(BaseModel):
     places: int
 
 
+class MasterDataOption(BaseModel):
+    id: int
+    name: str
+
+
+class TimeSlotOption(BaseModel):
+    id: int
+    name: str
+    start_time: str | None = None
+    end_time: str | None = None
+
+
+class PublicMasterDataResponse(BaseModel):
+    school_classes: list[MasterDataOption]
+    topics: list[MasterDataOption]
+    time_slots: list[TimeSlotOption]
+    places: list[MasterDataOption]
+
+
+class CounselorPublicItem(BaseModel):
+    id: int
+    name: str
+    specialization: str | None = None
+    photo: str | None = None
+
+
 class SeedCounselorItem(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
@@ -144,3 +170,77 @@ class ConsultationStatusUpdateResponse(BaseModel):
     id: int
     tracking_code: str
     status: ConsultationStatus
+
+
+# ==================== DASHBOARD BK ====================
+
+class DashboardStatsResponse(BaseModel):
+    """
+    Statistik dashboard untuk guru BK.
+    
+    Example:
+    {
+      "total": 50,
+      "pending": 10,
+      "accepted": 35,
+      "rejected": 5
+    }
+    """
+    total: int = Field(..., ge=0, description="Total jumlah konsultasi milik counselor")
+    pending: int = Field(..., ge=0, description="Jumlah konsultasi dengan status PENDING")
+    accepted: int = Field(..., ge=0, description="Jumlah konsultasi dengan status ACCEPTED")
+    rejected: int = Field(..., ge=0, description="Jumlah konsultasi dengan status REJECTED")
+
+
+class ConsultationListItemResponse(BaseModel):
+    """
+    Item dalam daftar konsultasi di dashboard.
+    Optimized untuk pagination list view.
+    
+    Example:
+    {
+      "id": 1,
+      "tracking_code": "SS-ABC1234567",
+      "student_name": "Budi Santoso",
+      "class": "X-A",
+      "topic": "Belajar",
+      "status": "PENDING",
+      "date": "2026-04-20",
+      "time_slot": "Istirahat ke-1 (10:00-10:30)",
+      "created_at": "2026-04-17T10:30:45.123456+00:00"
+    }
+    """
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    tracking_code: str
+    student_name: str
+    class_name: str = Field(..., alias="class")
+    topic_name: str = Field(..., alias="topic")
+    status: ConsultationStatus
+    date: date
+    time_slot_name: str = Field(..., alias="time_slot")
+    created_at: datetime
+
+
+class PaginatedConsultationListResponse(BaseModel):
+    """
+    Response untuk endpoint list konsultasi dengan pagination.
+    
+    Example:
+    {
+      "data": [...],
+      "total": 50,
+      "page": 1,
+      "limit": 10
+    }
+    
+    Notes:
+    - page = (offset // limit) + 1
+    - Untuk next page: next_offset = offset + limit
+    - Untuk prev page: prev_offset = max(0, offset - limit)
+    """
+    data: list[ConsultationListItemResponse]
+    total: int = Field(..., ge=0, description="Total jumlah data (tanpa pagination)")
+    page: int = Field(..., ge=1, description="Nomor halaman (calculated: offset // limit + 1)")
+    limit: int = Field(..., ge=1, le=100, description="Jumlah data per halaman")

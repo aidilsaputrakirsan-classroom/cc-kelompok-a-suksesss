@@ -12,13 +12,16 @@ import crud
 from auth import create_access_token, get_current_counselor, get_current_user
 from database import engine, get_db
 from models import Base, ConsultationStatus, User
+from routers import bk_dashboard
 from schemas import (
+    CounselorPublicItem,
     ConsultationCounselorListItem,
     ConsultationGuestCreate,
     ConsultationGuestResponse,
     ConsultationStatusUpdateResponse,
     CounselorLoginRequest,
     CounselorRegisterRequest,
+    PublicMasterDataResponse,
     SeedCounselorsRequest,
     SeedCounselorsResponse,
     SeedMasterDataResponse,
@@ -36,16 +39,22 @@ app = FastAPI(
     version="0.2.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
 origins_list = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
+allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins_list,
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ==================== ROUTER REGISTRATION ====================
+# Include dashboard router (BK Dashboard endpoints)
+app.include_router(bk_dashboard.router)
 
 
 @app.exception_handler(RequestValidationError)
@@ -113,6 +122,16 @@ def create_guest_consultation(payload: ConsultationGuestCreate, db: Session = De
         return consultation
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/public/master-data", response_model=PublicMasterDataResponse)
+def get_public_master_data(db: Session = Depends(get_db)):
+    return crud.get_public_master_data(db=db)
+
+
+@app.get("/api/public/counselors", response_model=list[CounselorPublicItem])
+def get_public_counselors(db: Session = Depends(get_db)):
+    return crud.get_active_counselors_public(db=db)
 
 
 @app.post("/api/dev/seed/master-data", response_model=SeedMasterDataResponse)
