@@ -17,6 +17,18 @@ export default function App() {
   const [view, setView] = useState('home') // 'home', 'alur', 'ajukan'
   const [heroRef, heroVis] = useReveal()
 
+  // ── FITUR CEK KONEKSI (Mengecek ke endpoint /health backendmu) ──
+  useEffect(() => {
+    fetch("http://localhost:8000/health")
+      .then(res => res.json())
+      .then(data => {
+        console.log("SUKSES TERHUBUNG KE BACKEND:", data);
+      })
+      .catch(err => {
+        console.error("GAGAL TERHUBUNG KE BACKEND. Pastikan uvicorn sudah menyala di port 8000!", err);
+      });
+  }, []);
+
   return (
     <div className="shell">
       <div className="orb orb-1" />
@@ -138,31 +150,127 @@ function StepBox({ num, title, desc }) {
 }
 
 function ConsultForm() {
+  // ── Penampung Data Input ──
+  const [nama, setNama] = useState('')
+  const [kelas, setKelas] = useState('')
   const [gender, setGender] = useState('')
+  const [cerita, setCerita] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // ── Fungsi Kirim Data ke Backend (FastAPI) ──
+  const handleSubmit = async () => {
+    // Validasi sederhana
+    if (!nama || !kelas || !gender || !cerita) {
+      alert("Harap isi semua kolom formulir!");
+      return;
+    }
+
+    setLoading(true);
+
+    // !! CATATAN PENTING !!
+    // Pastikan nama field di bawah ini (full_name, grade, gender, description) 
+    // SAMA PERSIS dengan apa yang diminta oleh schemas.ConsultationGuestCreate di file backend kamu.
+    const payload = {
+      full_name: nama,
+      grade: kelas,
+      gender: gender, 
+      description: cerita
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/consultations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Jika Backend mengembalikan kode pelacak, kita tampilkan
+        const trackCode = data.tracking_code || data.id || "Sukses";
+        alert(`Pengajuan berhasil dikirim!\nSimpan kode pelacak Anda: ${trackCode}`);
+        
+        // Reset form setelah sukses
+        setNama('');
+        setKelas('');
+        setGender('');
+        setCerita('');
+      } else {
+        // Jika backend merespon tapi ada error (status 400, 422, dsb)
+        console.error("Error dari backend:", data);
+        alert("Gagal mengirim: " + (data.detail || "Terjadi kesalahan pada data"));
+      }
+    } catch (error) {
+      // Jika server mati atau masalah jaringan
+      console.error("Error jaringan:", error);
+      alert("Gagal menyambung ke server. Pastikan backend sudah menyala!");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
       <div className="input-group">
         <label>Nama Lengkap</label>
-        <input className="f-input" placeholder="Siapa namamu?" />
+        <input 
+          className="f-input" 
+          placeholder="Siapa namamu?" 
+          value={nama}
+          onChange={(e) => setNama(e.target.value)}
+        />
       </div>
       <div className="form-row">
         <div className="input-group">
           <label>Kelas</label>
-          <input className="f-input" placeholder="Cth: XII IPA 1" />
+          <input 
+            className="f-input" 
+            placeholder="Cth: XII IPA 1" 
+            value={kelas}
+            onChange={(e) => setKelas(e.target.value)}
+          />
         </div>
         <div className="input-group">
           <label>Jenis Kelamin</label>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button className={`nav-link ${gender === 'L' ? 'nav-cta' : ''}`} style={{ flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '14px' }} onClick={() => setGender('L')}>Laki-laki</button>
-            <button className={`nav-link ${gender === 'P' ? 'nav-cta' : ''}`} style={{ flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '14px' }} onClick={() => setGender('P')}>Perempuan</button>
+            <button 
+              className={`nav-link ${gender === 'L' ? 'nav-cta' : ''}`} 
+              style={{ flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '14px' }} 
+              onClick={() => setGender('L')}
+            >
+              Laki-laki
+            </button>
+            <button 
+              className={`nav-link ${gender === 'P' ? 'nav-cta' : ''}`} 
+              style={{ flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '12px', borderRadius: '14px' }} 
+              onClick={() => setGender('P')}
+            >
+              Perempuan
+            </button>
           </div>
         </div>
       </div>
       <div className="input-group">
         <label>Apa yang ingin kamu ceritakan?</label>
-        <textarea className="f-input" rows="4" placeholder="Tulis sedikit di sini..."></textarea>
+        <textarea 
+          className="f-input" 
+          rows="4" 
+          placeholder="Tulis sedikit di sini..."
+          value={cerita}
+          onChange={(e) => setCerita(e.target.value)}
+        ></textarea>
       </div>
-      <button className="nav-cta" style={{ width: '100%', padding: '16px', fontSize: '1rem' }}>Kirim Pengajuan 📤</button>
+      <button 
+        className="nav-cta" 
+        style={{ width: '100%', padding: '16px', fontSize: '1rem', opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
+        onClick={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? "Sedang Mengirim... ⏳" : "Kirim Pengajuan 📤"}
+      </button>
     </div>
   )
 }
