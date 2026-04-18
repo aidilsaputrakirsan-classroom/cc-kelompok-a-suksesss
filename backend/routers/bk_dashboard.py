@@ -11,7 +11,7 @@ import crud
 from auth import get_current_counselor
 from database import get_db
 from models import User
-from schemas import DashboardStatsResponse, PaginatedConsultationListResponse, ConsultationListItemResponse
+from schemas import ConsultationDetailResponse, DashboardStatsResponse, PaginatedConsultationListResponse, ConsultationListItemResponse
 
 
 router = APIRouter(
@@ -93,6 +93,29 @@ def list_consultations_paginated(
         offset=offset,
     )
     return result
+
+
+@router.get(
+    "/consultations/{consultation_id}",
+    response_model=ConsultationDetailResponse,
+    summary="Detail Konsultasi",
+    description="Menampilkan detail konsultasi milik counselor yang sedang login, termasuk nomor WhatsApp siswa.",
+    status_code=200,
+)
+def get_consultation_detail(
+    consultation_id: int,
+    current_user: User = Depends(get_current_counselor),
+    db: Session = Depends(get_db),
+):
+    # TODO[FE]: Gunakan endpoint detail ini saat halaman detail konsultasi dibuka.
+    consultation = crud.get_consultation_detail_for_counselor(
+        db=db,
+        consultation_id=consultation_id,
+        counselor_id=current_user.id,
+    )
+    if consultation is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data konsultasi tidak ditemukan")
+    return consultation
 
 
 @router.delete(

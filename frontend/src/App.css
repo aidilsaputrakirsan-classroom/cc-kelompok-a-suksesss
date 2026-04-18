@@ -592,6 +592,26 @@ textarea.f-input {
 }
 .btn-reject:hover { background:rgba(239,68,68,.18); transform:translateY(-1px); }
 
+.btn-whatsapp {
+  padding: 8px 18px; border-radius: var(--r-sm);
+  background: linear-gradient(135deg, rgba(5,150,105,.35), rgba(16,185,129,.2));
+  border: 1px solid rgba(16,185,129,.3);
+  color: #6ee7b7; font-size:.82rem; font-weight:600;
+  cursor:pointer; transition:var(--t-fast);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-whatsapp:hover { background:linear-gradient(135deg,rgba(5,150,105,.5),rgba(16,185,129,.35)); transform:translateY(-1px); }
+
+.btn-wa-info {
+  padding: 8px 18px; border-radius: var(--r-sm);
+  background: rgba(148,163,184,.12);
+  border: 1px solid rgba(148,163,184,.3);
+  color: #cbd5e1; font-size:.82rem; font-weight:600;
+  cursor:pointer; transition:var(--t-fast);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-wa-info:hover { background:rgba(148,163,184,.2); transform:translateY(-1px); }
+
 .btn-delete {
   padding: 8px 18px; border-radius: var(--r-sm);
   background: rgba(251,113,133,.10);
@@ -603,7 +623,9 @@ textarea.f-input {
 .btn-delete:hover { background:rgba(251,113,133,.18); transform:translateY(-1px); }
 .btn-delete:disabled,
 .btn-accept:disabled,
-.btn-reject:disabled {
+.btn-reject:disabled,
+.btn-whatsapp:disabled,
+.btn-wa-info:disabled {
   opacity:.6;
   cursor:not-allowed;
   transform:none;

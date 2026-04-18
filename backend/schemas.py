@@ -215,11 +215,15 @@ class ConsultationListItemResponse(BaseModel):
     id: int
     tracking_code: str
     student_name: str
+    student_phone: str
+    counselor_name: str
     class_name: str = Field(..., alias="class")
     topic_name: str = Field(..., alias="topic")
     status: ConsultationStatus
     date: date
     time_slot_name: str = Field(..., alias="time_slot")
+    rejection_reason: str | None = None
+    whatsapp_link: str | None = None
     created_at: datetime
 
 
@@ -244,3 +248,20 @@ class PaginatedConsultationListResponse(BaseModel):
     total: int = Field(..., ge=0, description="Total jumlah data (tanpa pagination)")
     page: int = Field(..., ge=1, description="Nomor halaman (calculated: offset // limit + 1)")
     limit: int = Field(..., ge=1, le=100, description="Jumlah data per halaman")
+
+
+class ConsultationDetailResponse(BaseModel):
+    id: int
+    tracking_code: str
+    student_name: str
+    student_phone: str
+    counselor_name: str
+    class_name: str = Field(..., alias="class")
+    topic_name: str = Field(..., alias="topic")
+    status: ConsultationStatus
+    date: date
+    time_slot_name: str = Field(..., alias="time_slot")
+    place_name: str = Field(..., alias="place")
+    rejection_reason: str | None = None
+    whatsapp_link: str | None = None
+    created_at: datetime

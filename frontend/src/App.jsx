@@ -544,6 +544,44 @@ function BKDashboard() {
     } catch (e) { setAE(e.message) }
   }
 
+  const normalizeWaNumber = (phone) => {
+    if (!phone) return null
+    const value = String(phone).trim()
+    const digits = value.replace(/\D/g, '')
+    if (value.startsWith('+62') && digits.startsWith('62')) return digits
+    if (digits.startsWith('62')) return digits
+    if (digits.startsWith('0')) return `62${digits.slice(1)}`
+    return null
+  }
+
+  const buildWhatsAppLink = (item) => {
+    if (item.whatsapp_link) return item.whatsapp_link
+
+    const waNumber = normalizeWaNumber(item.student_phone)
+    if (!waNumber) return null
+
+    const counselorName = item.counselor_name || 'Guru BK'
+    if (item.status === 'ACCEPTED') {
+      const msg = `Halo ${item.student_name}, saya ${counselorName} dari BK. Pengajuan konsultasi Anda diterima. Mari kita atur jadwal.`
+      return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
+    }
+    if (item.status === 'REJECTED') {
+      const reason = item.rejection_reason || 'Belum dicantumkan'
+      const msg = `Halo ${item.student_name}, mohon maaf pengajuan konsultasi Anda tidak dapat diproses. Alasan: ${reason}`
+      return `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
+    }
+    return null
+  }
+
+  const openWhatsApp = (item) => {
+    const link = buildWhatsAppLink(item)
+    if (!link) {
+      setAE('Nomor WhatsApp siswa tidak valid. Pastikan format +62xxxxxxxx')
+      return
+    }
+    window.open(link, '_blank', 'noopener,noreferrer')
+  }
+
   const deleteConsultation = async (id) => {
     const ok = window.confirm('Hapus konsultasi ini? Tindakan ini tidak bisa dibatalkan.')
     if (!ok) return
@@ -673,6 +711,20 @@ function BKDashboard() {
                         <div className="consult-item-actions">
                           <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
                           <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')} disabled={deletingId === item.id}>✕ Tolak</button>
+                        </div>
+                      )}
+                      {item.status === 'ACCEPTED' && (
+                        <div className="consult-item-actions">
+                          <button className="btn-whatsapp" onClick={() => openWhatsApp(item)}>
+                            📱 Chat WhatsApp
+                          </button>
+                        </div>
+                      )}
+                      {item.status === 'REJECTED' && (
+                        <div className="consult-item-actions">
+                          <button className="btn-wa-info" onClick={() => openWhatsApp(item)}>
+                            📱 Info Penolakan
+                          </button>
                         </div>
                       )}
                       <div className="consult-item-actions">

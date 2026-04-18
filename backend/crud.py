@@ -1,6 +1,7 @@
 import secrets
 import string
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 from sqlalchemy.orm import Session
 
@@ -12,6 +13,51 @@ from schemas import ConsultationGuestCreate, CounselorRegisterRequest, SeedCouns
 def _generate_tracking_code(length: int = 10) -> str:
     alphabet = string.ascii_uppercase + string.digits
     return "SS-" + "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def _normalize_whatsapp_number(phone: str | None) -> str | None:
+    if not phone:
+        return None
+
+    value = phone.strip()
+    if value.startswith("+62"):
+        digits = "".join(ch for ch in value if ch.isdigit())
+        return digits if digits.startswith("62") else None
+
+    digits = "".join(ch for ch in value if ch.isdigit())
+    if digits.startswith("62"):
+        return digits
+    if digits.startswith("0"):
+        return "62" + digits[1:]
+    return None
+
+
+def _build_whatsapp_link(
+    phone: str | None,
+    student_name: str,
+    counselor_name: str,
+    status: ConsultationStatus,
+    rejection_reason: str | None = None,
+) -> str | None:
+    wa_number = _normalize_whatsapp_number(phone)
+    if wa_number is None:
+        return None
+
+    if status == ConsultationStatus.ACCEPTED:
+        message = (
+            f"Halo {student_name}, saya {counselor_name} dari BK. "
+            "Pengajuan konsultasi Anda diterima. Mari kita atur jadwal."
+        )
+    elif status == ConsultationStatus.REJECTED:
+        reason = rejection_reason or "Belum dicantumkan"
+        message = (
+            f"Halo {student_name}, mohon maaf pengajuan konsultasi Anda tidak dapat diproses. "
+            f"Alasan: {reason}"
+        )
+    else:
+        return None
+
+    return f"https://wa.me/{wa_number}?text={quote(message)}"
 
 
 def create_counselor(db: Session, user_data: CounselorRegisterRequest) -> User | None:
@@ -395,15 +441,26 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
     # Transform ke response format
     data = []
     for consultation in consultations:
+        rejection_reason = consultation.notes if consultation.status == ConsultationStatus.REJECTED else None
         data.append({
             "id": consultation.id,
             "tracking_code": consultation.tracking_code,
             "student_name": consultation.student.name,
+            "student_phone": consultation.student.phone,
+            "counselor_name": consultation.counselor.name,
             "class": consultation.school_class.name,
             "topic": consultation.topic.name,
             "status": consultation.status,
             "date": consultation.date,
             "time_slot": f"{consultation.time_slot.name} ({consultation.time_slot.start_time}-{consultation.time_slot.end_time})",
+            "rejection_reason": rejection_reason,
+            "whatsapp_link": _build_whatsapp_link(
+                phone=consultation.student.phone,
+                student_name=consultation.student.name,
+                counselor_name=consultation.counselor.name,
+                status=consultation.status,
+                rejection_reason=rejection_reason,
+            ),
             "created_at": consultation.created_at,
         })
     
@@ -415,6 +472,43 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
         "total": total,
         "page": page,
         "limit": limit,
+    }
+
+
+def get_consultation_detail_for_counselor(db: Session, consultation_id: int, counselor_id: int) -> dict | None:
+    consultation = (
+        db.query(Consultation)
+        .filter(
+            Consultation.id == consultation_id,
+            Consultation.counselor_id == counselor_id,
+        )
+        .first()
+    )
+    if consultation is None:
+        return None
+
+    rejection_reason = consultation.notes if consultation.status == ConsultationStatus.REJECTED else None
+    return {
+        "id": consultation.id,
+        "tracking_code": consultation.tracking_code,
+        "student_name": consultation.student.name,
+        "student_phone": consultation.student.phone,
+        "counselor_name": consultation.counselor.name,
+        "class": consultation.school_class.name,
+        "topic": consultation.topic.name,
+        "status": consultation.status,
+        "date": consultation.date,
+        "time_slot": f"{consultation.time_slot.name} ({consultation.time_slot.start_time}-{consultation.time_slot.end_time})",
+        "place": consultation.place.name,
+        "rejection_reason": rejection_reason,
+        "whatsapp_link": _build_whatsapp_link(
+            phone=consultation.student.phone,
+            student_name=consultation.student.name,
+            counselor_name=consultation.counselor.name,
+            status=consultation.status,
+            rejection_reason=rejection_reason,
+        ),
+        "created_at": consultation.created_at,
     }
 
 
