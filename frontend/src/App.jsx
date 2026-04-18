@@ -490,6 +490,7 @@ function BKDashboard() {
   const [stats, setStats]       = useState(null)
   const [consultations, setC]   = useState([])
   const [actionErr, setAE]      = useState('')
+  const [deletingId, setDeletingId] = useState(null)
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
@@ -541,6 +542,31 @@ function BKDashboard() {
       if (!res.ok) throw new Error(data.detail || `Gagal ${action}`)
       await fetchDashboard()
     } catch (e) { setAE(e.message) }
+  }
+
+  const deleteConsultation = async (id) => {
+    const ok = window.confirm('Hapus konsultasi ini? Tindakan ini tidak bisa dibatalkan.')
+    if (!ok) return
+
+    setAE('')
+    setDeletingId(id)
+    try {
+      const res = await fetch(`${API_URL}/api/bk/consultations/${id}`, {
+        method: 'DELETE',
+        headers,
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.detail || 'Gagal menghapus konsultasi')
+      }
+
+      await fetchDashboard()
+    } catch (e) {
+      setAE(e.message)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -645,10 +671,19 @@ function BKDashboard() {
                       </div>
                       {item.status === 'PENDING' && (
                         <div className="consult-item-actions">
-                          <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')}>✓ Terima</button>
-                          <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')}>✕ Tolak</button>
+                          <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
+                          <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')} disabled={deletingId === item.id}>✕ Tolak</button>
                         </div>
                       )}
+                      <div className="consult-item-actions">
+                        <button
+                          className="btn-delete"
+                          onClick={() => deleteConsultation(item.id)}
+                          disabled={deletingId === item.id}
+                        >
+                          {deletingId === item.id ? 'Menghapus...' : '🗑 Hapus'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

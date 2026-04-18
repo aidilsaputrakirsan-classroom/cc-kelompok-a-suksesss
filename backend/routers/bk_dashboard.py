@@ -4,7 +4,7 @@ Endpoints: GET /api/bk/dashboard/stats, GET /api/bk/consultations (dengan pagina
 Requirement UTS: Auth JWT, Protected Endpoints, Data Isolation, Swagger UI
 """
 
-from fastapi import APIRouter, Query, Depends, HTTPException, status
+from fastapi import APIRouter, Query, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 import crud
@@ -93,3 +93,30 @@ def list_consultations_paginated(
         offset=offset,
     )
     return result
+
+
+@router.delete(
+    "/consultations/{consultation_id}",
+    status_code=204,
+    summary="Hapus Konsultasi",
+    description="Menghapus consultation milik guru BK yang sedang login. Wajib JWT counselor dan data isolation.",
+)
+def delete_consultation(
+    consultation_id: int,
+    current_user: User = Depends(get_current_counselor),
+    db: Session = Depends(get_db),
+):
+    # TODO[FE]: Tambahkan tombol Delete di daftar konsultasi dengan konfirmasi sebelum hapus.
+    delete_result = crud.delete_consultation_for_counselor(
+        db=db,
+        consultation_id=consultation_id,
+        counselor_id=current_user.id,
+    )
+
+    if delete_result == "not_found":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data konsultasi tidak ditemukan")
+
+    if delete_result == "forbidden":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akses ditolak untuk data ini")
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

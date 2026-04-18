@@ -416,3 +416,27 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
         "page": page,
         "limit": limit,
     }
+
+
+def delete_consultation_for_counselor(db: Session, consultation_id: int, counselor_id: int) -> str:
+    """
+    Delete konsultasi milik counselor yang sedang login.
+
+    Return value:
+    - "deleted": data berhasil dihapus
+    - "not_found": consultation_id tidak ditemukan
+    - "forbidden": data ada tapi bukan milik counselor ini
+
+    NOTE:
+    Hard delete dipilih agar tidak mengubah schema enum/status yang sudah ada.
+    """
+    consultation = db.query(Consultation).filter(Consultation.id == consultation_id).first()
+    if consultation is None:
+        return "not_found"
+
+    if consultation.counselor_id != counselor_id:
+        return "forbidden"
+
+    db.delete(consultation)
+    db.commit()
+    return "deleted"
