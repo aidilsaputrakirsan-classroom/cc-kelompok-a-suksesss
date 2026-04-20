@@ -453,6 +453,7 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
             "status": consultation.status,
             "date": consultation.date,
             "time_slot": f"{consultation.time_slot.name} ({consultation.time_slot.start_time}-{consultation.time_slot.end_time})",
+            "place": consultation.place.name,
             "rejection_reason": rejection_reason,
             "whatsapp_link": _build_whatsapp_link(
                 phone=consultation.student.phone,

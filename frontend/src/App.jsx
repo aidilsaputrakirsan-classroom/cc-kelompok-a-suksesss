@@ -44,9 +44,9 @@ export default function App() {
           <span>SafeSpace</span>
         </div>
         <div className="nav-links">
-          <button className={`nav-link ${view==='home'  ? 'active':''}`} onClick={() => setView('home')}>Beranda</button>
-          <button className={`nav-link ${view==='alur'  ? 'active':''}`} onClick={() => setView('alur')}>Alur Kerja</button>
-          <button className={`nav-link ${view==='bk'    ? 'active':''}`} onClick={() => setView('bk')}>Dashboard BK</button>
+          <button className={`nav-link ${view === 'home'  ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
+          <button className={`nav-link ${view === 'alur'  ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
+          <button className={`nav-link ${view === 'bk'    ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
           <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
         </div>
       </nav>
@@ -58,50 +58,40 @@ export default function App() {
           <div ref={heroRef} className={`reveal ${heroVis ? 'is-visible' : ''}`}>
             <section className="hero-grid">
               <div>
-                <div style={{ color:'#2dd4bf', fontWeight:700, fontSize:'.75rem', letterSpacing:'2.5px', marginBottom:'14px' }}>
+                <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
                   SAFE & PRIVATE COUNSELING
                 </div>
                 <h1 className="hero-h1">
                   Tempat Aman untuk<br />
                   <span className="gradient-text">Cerita Kamu.</span>
                 </h1>
-                <p style={{ color:'rgba(220,215,255,.7)', lineHeight:1.8, fontSize:'1.05rem', marginBottom:'32px', maxWidth:'500px' }}>
+                <p style={{ color: 'rgba(220,215,255,.7)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
                   Privasi adalah prioritas kami. Konsultasikan masalahmu secara anonim dan aman
                   dengan guru BK profesional — tanpa perlu membuat akun.
                 </p>
-                <div style={{ display:'flex', gap:'14px', flexWrap:'wrap' }}>
-                  <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding:'12px 28px', fontSize:'.95rem' }}>
+                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                  <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '12px 28px', fontSize: '.95rem' }}>
                     Ajukan Sekarang
                   </button>
-                  <button
-                    className="btn-ghost"
-                    onClick={() => setView('alur')}
-                  >
+                  <button className="btn-ghost" onClick={() => setView('alur')}>
                     Lihat Cara Kerja ↓
                   </button>
                 </div>
               </div>
-              <div style={{ display:'grid', placeItems:'center' }}>
-                <div style={{ width:'100%', height:'320px', background:'rgba(124,58,237,.08)', borderRadius:'28px', border:'1px solid rgba(124,58,237,.18)', display:'grid', placeItems:'center' }}>
-                  <span style={{ fontSize:'5rem' }}>🍃</span>
+              <div style={{ display: 'grid', placeItems: 'center' }}>
+                <div style={{ width: '100%', height: '320px', background: 'rgba(124,58,237,.08)', borderRadius: '28px', border: '1px solid rgba(124,58,237,.18)', display: 'grid', placeItems: 'center' }}>
+                  <span style={{ fontSize: '5rem' }}>🍃</span>
                 </div>
               </div>
             </section>
 
-            <section style={{ marginTop:'90px' }}>
-              <div style={{ textAlign:'center', marginBottom:'8px', color:'#2dd4bf', fontWeight:700, fontSize:'.75rem', letterSpacing:'2px' }}>
-                CORE PRINCIPLES
-              </div>
-              <h2 className="p-title" style={{ textAlign:'center', fontSize:'2rem', marginBottom:0 }}>
-                Tiga Fondasi Utama
-              </h2>
+            <section style={{ marginTop: '90px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '8px', color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
+              <h2 className="p-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: 0 }}>Tiga Fondasi Utama</h2>
               <div className="card-grid">
-                <PrincipleCard icon="🔐" title="Privat"
-                  desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
-                <PrincipleCard icon="🌱" title="Mudah"
-                  desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
-                <PrincipleCard icon="☁️" title="Fleksibel"
-                  desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
+                <PrincipleCard icon="🔐" title="Privat" desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
+                <PrincipleCard icon="🌱" title="Mudah"  desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
+                <PrincipleCard icon="☁️" title="Fleksibel" desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
               </div>
             </section>
           </div>
@@ -110,24 +100,18 @@ export default function App() {
         {/* ══ VIEW: ALUR KERJA ════════════════════════════════ */}
         {view === 'alur' && (
           <div>
-            <div style={{ textAlign:'center', marginBottom:'48px' }}>
-              <span style={{ color:'#7c3aed', fontWeight:700, fontSize:'.75rem', letterSpacing:'2px' }}>STEP BY STEP</span>
-              <h1 className="hero-h1" style={{ fontSize:'clamp(2rem,4vw,3.4rem)', marginTop:'10px' }}>
-                Bagaimana ini bekerja?
-              </h1>
+            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+              <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
+              <h1 className="hero-h1" style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', marginTop: '10px' }}>Bagaimana ini bekerja?</h1>
             </div>
             <div className="step-container">
-              <StepBox num="01" title="Isi Formulir"
-                desc="Pilih guru BK, waktu, dan ceritakan sedikit tentang apa yang kamu hadapi." />
-              <StepBox num="02" title="Terima Kode Pelacak"
-                desc="Setelah mengirim, simpan kode unik yang muncul untuk cek status di kemudian hari." />
-              <StepBox num="03" title="Konfirmasi Guru BK"
-                desc="Gurumu akan melihat pengajuanmu dan memberikan jadwal pasti melalui sistem." />
-              <StepBox num="04" title="Mulai Konseling"
-                desc="Bertemu di tempat yang disepakati dan mulailah perjalanan kesehatan mentalmu." />
+              <StepBox num="01" title="Isi Formulir"       desc="Pilih guru BK, waktu, dan ceritakan sedikit tentang apa yang kamu hadapi." />
+              <StepBox num="02" title="Terima Kode Pelacak" desc="Setelah mengirim, simpan kode unik yang muncul untuk cek status di kemudian hari." />
+              <StepBox num="03" title="Konfirmasi Guru BK" desc="Gurumu akan melihat pengajuanmu dan memberikan jadwal pasti melalui sistem." />
+              <StepBox num="04" title="Mulai Konseling"    desc="Bertemu di tempat yang disepakati dan mulailah perjalanan kesehatan mentalmu." />
             </div>
-            <div style={{ textAlign:'center', marginTop:'48px' }}>
-              <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding:'13px 32px', fontSize:'.95rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '48px' }}>
+              <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '13px 32px', fontSize: '.95rem' }}>
                 Siap Untuk Memulai? →
               </button>
             </div>
@@ -138,16 +122,13 @@ export default function App() {
         {view === 'ajukan' && (
           <div className="form-page">
             <div className="form-sidebar">
-              <span style={{ color:'#7c3aed', fontWeight:800, fontSize:'.72rem', letterSpacing:'2px' }}>FORM KONSELING</span>
-              <h2 className="p-title" style={{ marginTop:'14px' }}>Suaramu berhak didengar.</h2>
-              <p className="p-desc">
-                Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal.
-                Data kamu aman bersama kami.
-              </p>
-              <div style={{ marginTop:'36px', display:'flex', flexDirection:'column', gap:'14px' }}>
-                {[['✓','Tanpa Akun'],['✓','Enkripsi Privat'],['✓','Dapat Kode Pelacak']].map(([icon, text]) => (
-                  <div key={text} style={{ display:'flex', gap:'10px', alignItems:'center', color:'#2dd4bf', fontSize:'.88rem', fontWeight:500 }}>
-                    <span style={{ background:'rgba(45,212,191,.12)', border:'1px solid rgba(45,212,191,.25)', borderRadius:'50%', width:'22px', height:'22px', display:'grid', placeItems:'center', fontSize:'.7rem', flexShrink:0 }}>{icon}</span>
+              <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
+              <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
+              <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
+              <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
+                  <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
+                    <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
                     {text}
                   </div>
                 ))}
@@ -164,7 +145,7 @@ export default function App() {
 
       </main>
 
-      <footer style={{ textAlign:'center', padding:'36px', color:'rgba(220,215,255,.35)', fontSize:'.78rem', borderTop:'1px solid rgba(255,255,255,.05)' }}>
+      <footer style={{ textAlign: 'center', padding: '36px', color: 'rgba(220,215,255,.35)', fontSize: '.78rem', borderTop: '1px solid rgba(255,255,255,.05)' }}>
         SafeSpace — Cloud Counseling System ITK © 2026
       </footer>
     </div>
@@ -189,7 +170,7 @@ function StepBox({ num, title, desc }) {
     <div className="step-box">
       <div className="step-num">{num}</div>
       <div>
-        <h3 className="p-title" style={{ fontSize:'1.2rem', marginBottom:'6px' }}>{title}</h3>
+        <h3 className="p-title" style={{ fontSize: '1.2rem', marginBottom: '6px' }}>{title}</h3>
         <p className="p-desc">{desc}</p>
       </div>
     </div>
@@ -203,30 +184,23 @@ function StepBox({ num, title, desc }) {
    GET  /api/public/counselors
    ════════════════════════════════════════════════════════════ */
 function ConsultForm() {
-  /* ── Fallback data jika API belum siap ── */
   const FALLBACK = {
-    school_classes: [{id:1,name:'X-A'},{id:2,name:'X-B'},{id:3,name:'XI IPA 1'},{id:4,name:'XI IPS 1'},{id:5,name:'XII IPA 1'}],
-    topics:    [{id:1,name:'Belajar'},{id:2,name:'Karir'},{id:3,name:'Keluarga'},{id:4,name:'Sosial'},{id:5,name:'Pribadi'}],
-    time_slots:[{id:1,name:'Istirahat ke-1',start_time:'10:00',end_time:'10:30'},{id:2,name:'Istirahat ke-2',start_time:'12:00',end_time:'12:30'},{id:3,name:'Pulang Sekolah',start_time:'14:00',end_time:'15:30'}],
-    places:    [{id:1,name:'Ruang BK 1'},{id:2,name:'Ruang BK 2'},{id:3,name:'Online'}],
-    counselors:[{id:1,name:'Bu Anita'},{id:2,name:'Pak Budi'},{id:3,name:'Bu Citra'}],
+    school_classes: [{ id: 1, name: 'X-A' }, { id: 2, name: 'X-B' }, { id: 3, name: 'XI IPA 1' }, { id: 4, name: 'XI IPS 1' }, { id: 5, name: 'XII IPA 1' }],
+    topics:         [{ id: 1, name: 'Belajar' }, { id: 2, name: 'Karir' }, { id: 3, name: 'Keluarga' }, { id: 4, name: 'Sosial' }, { id: 5, name: 'Pribadi' }],
+    time_slots:     [{ id: 1, name: 'Istirahat ke-1', start_time: '10:00', end_time: '10:30' }, { id: 2, name: 'Istirahat ke-2', start_time: '12:00', end_time: '12:30' }, { id: 3, name: 'Pulang Sekolah', start_time: '14:00', end_time: '15:30' }],
+    places:         [{ id: 1, name: 'Ruang BK 1' }, { id: 2, name: 'Ruang BK 2' }, { id: 3, name: 'Online' }],
+    counselors:     [{ id: 1, name: 'Bu Anita' }, { id: 2, name: 'Pak Budi' }, { id: 3, name: 'Bu Citra' }],
   }
 
-  const [opts, setOpts]         = useState({ ...FALLBACK })
-  const [optsLoading, setOL]    = useState(true)
-  const [optsError, setOE]      = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [done, setDone]         = useState(null)   // { tracking_code }
+  const [opts, setOpts]       = useState({ ...FALLBACK })
+  const [optsLoading, setOL]  = useState(true)
+  const [optsError, setOE]    = useState('')
+  const [loading, setLoading] = useState(false)
+  const [done, setDone]       = useState(null)
 
-  const [f, setF] = useState({
-    nama:'', phone:'', classId:'', gender:'',
-    counselorId:'', method:'INDIVIDUAL',
-    topicId:'', date:'', timeSlotId:'', placeId:'',
-  })
-
+  const [f, setF] = useState({ nama: '', phone: '', classId: '', gender: '', counselorId: '', method: 'INDIVIDUAL', topicId: '', date: '', timeSlotId: '', placeId: '' })
   const set = (k, v) => setF(p => ({ ...p, [k]: v }))
 
-  /* Load opsi dari API */
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -239,34 +213,27 @@ function ConsultForm() {
         if (!mRes.ok || !cRes.ok) throw new Error('Gagal memuat opsi')
         const [master, counselors] = await Promise.all([mRes.json(), cRes.json()])
         if (cancelled) return
-
-        const timeSlots = (master.time_slots || []).map(s => ({
-          ...s, label: s.start_time ? `${s.name} (${s.start_time}–${s.end_time})` : s.name
-        }))
-
+        const timeSlots = (master.time_slots || []).map(s => ({ ...s, label: s.start_time ? `${s.name} (${s.start_time}–${s.end_time})` : s.name }))
         const o = {
           school_classes: master.school_classes || FALLBACK.school_classes,
           topics:         master.topics         || FALLBACK.topics,
           time_slots:     timeSlots.length ? timeSlots : FALLBACK.time_slots,
           places:         master.places         || FALLBACK.places,
-          counselors:     counselors.length  ? counselors : FALLBACK.counselors,
+          counselors:     counselors.length ? counselors : FALLBACK.counselors,
         }
         setOpts(o)
         setF(p => ({
           ...p,
-          classId:    String(o.school_classes[0]?.id ?? ''),
-          topicId:    String(o.topics[0]?.id ?? ''),
-          timeSlotId: String(o.time_slots[0]?.id ?? ''),
-          placeId:    String(o.places[0]?.id ?? ''),
-          counselorId:String(o.counselors[0]?.id ?? ''),
+          classId:     String(o.school_classes[0]?.id ?? ''),
+          topicId:     String(o.topics[0]?.id ?? ''),
+          timeSlotId:  String(o.time_slots[0]?.id ?? ''),
+          placeId:     String(o.places[0]?.id ?? ''),
+          counselorId: String(o.counselors[0]?.id ?? ''),
         }))
       } catch {
         if (!cancelled) {
           setOE('Data dinamis gagal dimuat, menggunakan data bawaan.')
-          setF(p => ({
-            ...p,
-            classId:'1', topicId:'1', timeSlotId:'1', placeId:'1', counselorId:'1',
-          }))
+          setF(p => ({ ...p, classId: '1', topicId: '1', timeSlotId: '1', placeId: '1', counselorId: '1' }))
         }
       } finally {
         if (!cancelled) setOL(false)
@@ -287,9 +254,9 @@ function ConsultForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_name: f.nama.trim(),
-          class_id:     parseInt(f.classId),
-          gender:       f.gender,
+          student_name:  f.nama.trim(),
+          class_id:      parseInt(f.classId),
+          gender:        f.gender,
           student_phone: f.phone.trim(),
           counselor_id:  parseInt(f.counselorId),
           method:        f.method,
@@ -315,7 +282,6 @@ function ConsultForm() {
     }
   }
 
-  /* ── Done state ── */
   if (done) return (
     <div className="register-success">
       <div className="success-ring">🎉</div>
@@ -325,58 +291,33 @@ function ConsultForm() {
         <span className="success-code-label">Kode Pelacak</span>
         <span className="success-code-value">{done.tracking_code}</span>
       </div>
-      <button
-        className="btn-ghost"
-        onClick={() => { setDone(null); setF(p => ({ ...p, nama:'', phone:'', gender:'', date:'' })) }}
-        style={{ marginTop:'8px' }}
-      >
+      <button className="btn-ghost" onClick={() => { setDone(null); setF(p => ({ ...p, nama: '', phone: '', gender: '', date: '' })) }} style={{ marginTop: '8px' }}>
         Ajukan Lagi
       </button>
     </div>
   )
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {optsError && <div className="alert alert-warn"><span className="alert-icon">⚠️</span>{optsError}</div>}
 
-      {/* Peringatan fallback */}
-      {optsError && (
-        <div className="alert alert-warn">
-          <span className="alert-icon">⚠️</span>
-          {optsError}
-        </div>
-      )}
-
-      {/* Nama */}
       <div className="input-group">
         <label>Nama Lengkap <Required /></label>
         <input className="f-input" placeholder="Siapa namamu?" value={f.nama} onChange={e => set('nama', e.target.value)} />
       </div>
 
       <div className="form-row">
-        {/* No WA */}
         <div className="input-group">
           <label>Nomor WhatsApp <Required /></label>
           <input className="f-input" type="tel" placeholder="+6281234567890" value={f.phone} onChange={e => set('phone', e.target.value)} />
           <span className="field-hint">Format +62 wajib digunakan</span>
         </div>
-
-        {/* Jenis Kelamin */}
         <div className="input-group">
           <label>Jenis Kelamin <Required /></label>
-          <div style={{ display:'flex', gap:'8px' }}>
-            {[['MALE','♂ Laki-laki'],['FEMALE','♀ Perempuan']].map(([val, label]) => (
-              <button
-                key={val} type="button"
-                onClick={() => set('gender', val)}
-                style={{
-                  flex:1, padding:'12px 8px', borderRadius:'11px',
-                  fontFamily:'Plus Jakarta Sans, sans-serif', fontSize:'.85rem', fontWeight:600,
-                  cursor:'pointer', transition:'all .2s',
-                  background: f.gender === val ? 'rgba(124,58,237,.22)' : 'rgba(255,255,255,.05)',
-                  border: `1px solid ${f.gender === val ? 'rgba(124,58,237,.45)' : 'rgba(255,255,255,.1)'}`,
-                  color: f.gender === val ? '#c4b5fd' : 'rgba(220,215,255,.65)',
-                }}
-              >
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[['MALE', '♂ Laki-laki'], ['FEMALE', '♀ Perempuan']].map(([val, label]) => (
+              <button key={val} type="button" onClick={() => set('gender', val)}
+                style={{ flex: 1, padding: '12px 8px', borderRadius: '11px', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all .2s', background: f.gender === val ? 'rgba(124,58,237,.22)' : 'rgba(255,255,255,.05)', border: `1px solid ${f.gender === val ? 'rgba(124,58,237,.45)' : 'rgba(255,255,255,.1)'}`, color: f.gender === val ? '#c4b5fd' : 'rgba(220,215,255,.65)' }}>
                 {label}
               </button>
             ))}
@@ -385,7 +326,6 @@ function ConsultForm() {
       </div>
 
       <div className="form-row">
-        {/* Kelas */}
         <div className="input-group">
           <label>Kelas <Required /></label>
           <div className="f-select-wrap">
@@ -394,8 +334,6 @@ function ConsultForm() {
             </select>
           </div>
         </div>
-
-        {/* Guru BK */}
         <div className="input-group">
           <label>Guru BK <Required /></label>
           <div className="f-select-wrap">
@@ -407,7 +345,6 @@ function ConsultForm() {
       </div>
 
       <div className="form-row">
-        {/* Metode */}
         <div className="input-group">
           <label>Metode Konseling <Required /></label>
           <div className="f-select-wrap">
@@ -417,8 +354,6 @@ function ConsultForm() {
             </select>
           </div>
         </div>
-
-        {/* Topik */}
         <div className="input-group">
           <label>Topik Masalah <Required /></label>
           <div className="f-select-wrap">
@@ -429,20 +364,12 @@ function ConsultForm() {
         </div>
       </div>
 
-      {/* Tanggal */}
       <div className="input-group">
         <label>Tanggal Konseling <Required /></label>
-        {/* ↓ color-scheme:dark sudah ada di CSS, tapi tambahkan min agar tidak bisa pilih masa lalu */}
-        <input
-          type="date" className="f-input"
-          value={f.date}
-          min={new Date().toISOString().split('T')[0]}
-          onChange={e => set('date', e.target.value)}
-        />
+        <input type="date" className="f-input" value={f.date} min={new Date().toISOString().split('T')[0]} onChange={e => set('date', e.target.value)} />
       </div>
 
       <div className="form-row">
-        {/* Waktu */}
         <div className="input-group">
           <label>Waktu <Required /></label>
           <div className="f-select-wrap">
@@ -451,8 +378,6 @@ function ConsultForm() {
             </select>
           </div>
         </div>
-
-        {/* Tempat */}
         <div className="input-group">
           <label>Tempat <Required /></label>
           <div className="f-select-wrap">
@@ -463,15 +388,85 @@ function ConsultForm() {
         </div>
       </div>
 
-      {/* Submit */}
-      <button
-        className="btn-form-submit"
-        onClick={handleSubmit}
-        disabled={loading || optsLoading}
-      >
+      <button className="btn-form-submit" onClick={handleSubmit} disabled={loading || optsLoading}>
         {(loading || optsLoading) && <span className="btn-spinner" />}
         {optsLoading ? 'Memuat data form...' : loading ? 'Mengirim...' : '📤 Kirim Pengajuan'}
       </button>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════════════════════
+   PIE CHART SVG — komponen visualisasi statistik
+   ════════════════════════════════════════════════════════════ */
+function DonutChart({ stats }) {
+  const total    = stats?.total    || 0
+  const pending  = stats?.pending  || 0
+  const accepted = stats?.accepted || 0
+  const rejected = stats?.rejected || 0
+
+  if (total === 0) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'rgba(220,215,255,.4)', fontSize: '.85rem' }}>
+      Belum ada data
+    </div>
+  )
+
+  // SVG donut chart
+  const cx = 80, cy = 80, r = 56, stroke = 20
+  const circumference = 2 * Math.PI * r
+
+  const segments = [
+    { value: accepted, color: '#10b981', label: 'Diterima' },
+    { value: pending,  color: '#f59e0b', label: 'Menunggu' },
+    { value: rejected, color: '#ef4444', label: 'Ditolak'  },
+  ]
+
+  let offset = 0
+  const arcs = segments.map(seg => {
+    const pct   = total > 0 ? seg.value / total : 0
+    const dash  = pct * circumference
+    const gap   = circumference - dash
+    const startOffset = circumference - offset * circumference / total
+    offset += seg.value
+    return { ...seg, dash, gap, strokeDashoffset: startOffset }
+  })
+
+  return (
+    <div className="donut-wrap">
+      <div className="donut-chart-area">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          {/* Background ring */}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={stroke} />
+          {/* Segments */}
+          {arcs.map((arc, i) => (
+            <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+              stroke={arc.color} strokeWidth={stroke}
+              strokeDasharray={`${arc.dash} ${arc.gap}`}
+              strokeDashoffset={arc.strokeDashoffset}
+              strokeLinecap="butt"
+              style={{ transition: 'stroke-dasharray .8s ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
+            />
+          ))}
+          {/* Center text */}
+          <text x={cx} y={cy - 6} textAnchor="middle" fill="#f0eeff" fontSize="22" fontWeight="700" fontFamily="Playfair Display, serif">{total}</text>
+          <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(220,215,255,.5)" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">Total</text>
+        </svg>
+      </div>
+
+      {/* Legend */}
+      <div className="donut-legend">
+        {[
+          { label: 'Diterima', value: accepted, color: '#10b981' },
+          { label: 'Menunggu', value: pending,  color: '#f59e0b' },
+          { label: 'Ditolak',  value: rejected, color: '#ef4444' },
+        ].map(item => (
+          <div key={item.label} className="donut-legend-item">
+            <span className="donut-legend-dot" style={{ background: item.color }} />
+            <span className="donut-legend-label">{item.label}</span>
+            <span className="donut-legend-value" style={{ color: item.color }}>{item.value}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -494,18 +489,52 @@ function BKDashboard() {
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
+  /* ── Normalizer: buat item kompatibel antara paginated & legacy response ── */
+  const normalizeItem = (item) => ({
+    id:               item.id,
+    tracking_code:    item.tracking_code,
+    method:           item.method,
+    status:           item.status,
+    date:             item.date,
+    created_at:       item.created_at,
+    /* Nama siswa — paginated pakai student_name, legacy pakai student.name */
+    student_name:     item.student_name || item.student?.name || '',
+    /* Nomor WA — paginated tidak ada, legacy dari student.phone */
+    student_phone:    item.student_phone || item.student?.phone || '',
+    /* Kelas — paginated: item.class, legacy: student.school_class */
+    class:            item.class || item.student?.school_class || '',
+    /* Topik — paginated: item.topic, legacy: item.topic_name */
+    topic:            item.topic || item.topic_name || '',
+    /* Time slot — paginated: item.time_slot (formatted), legacy: item.time_slot_name */
+    time_slot:        item.time_slot || item.time_slot_name || '',
+    /* Tempat — paginated: tidak ada, legacy: item.place_name */
+    place_name:       item.place_name || '',
+    /* WhatsApp link dari backend (jika ada) */
+    whatsapp_link:    item.whatsapp_link || null,
+    rejection_reason: item.rejection_reason || null,
+  })
+
   const fetchDashboard = async (bt = token) => {
     const h = bt ? { Authorization: `Bearer ${bt}` } : {}
     setLD(true); setAE('')
     try {
+      /* Fetch stats + daftar konsultasi secara paralel
+         Gunakan endpoint legacy /api/bk/consultations (tanpa pagination params)
+         agar mendapatkan place_name, time_slot_name, student.phone, dll. */
       const [sRes, cRes] = await Promise.all([
         fetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
-        fetch(`${API_URL}/api/bk/consultations?limit=50&offset=0`, { headers: h }),
+        fetch(`${API_URL}/api/bk/consultations`, { headers: h }),
       ])
-      if (!sRes.ok) { const e = await sRes.json().catch(()=>({})); throw new Error(e.detail || 'Gagal memuat stats') }
-      if (!cRes.ok) { const e = await cRes.json().catch(()=>({})); throw new Error(e.detail || 'Gagal memuat konsultasi') }
-      const sd = await sRes.json(); const cd = await cRes.json()
-      setStats(sd); setC(cd.data || [])
+      if (!sRes.ok) { const e = await sRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat stats') }
+      if (!cRes.ok) { const e = await cRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat konsultasi') }
+
+      const sd = await sRes.json()
+      const cd = await cRes.json()
+
+      setStats(sd)
+      /* Handle both: flat array (legacy) dan {data:[...]} (paginated) */
+      const rawItems = Array.isArray(cd) ? cd : (cd.data || [])
+      setC(rawItems.map(normalizeItem))
     } catch (e) { setAE(e.message) } finally { setLD(false) }
   }
 
@@ -515,7 +544,7 @@ function BKDashboard() {
     e.preventDefault(); setLoginErr(''); setLL(true)
     try {
       const res  = await fetch(`${API_URL}/auth/counselor/login`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
       const data = await res.json()
@@ -535,18 +564,17 @@ function BKDashboard() {
   const updateStatus = async (id, action) => {
     setAE('')
     try {
-      const res  = await fetch(`${API_URL}/api/bk/consultations/${id}/${action}`, {
-        method:'PATCH', headers,
-      })
-      const data = await res.json().catch(()=>({}))
+      const res  = await fetch(`${API_URL}/api/bk/consultations/${id}/${action}`, { method: 'PATCH', headers })
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail || `Gagal ${action}`)
       await fetchDashboard()
     } catch (e) { setAE(e.message) }
   }
 
+  /* ── WhatsApp helpers (tidak berubah dari versi asli) ── */
   const normalizeWaNumber = (phone) => {
     if (!phone) return null
-    const value = String(phone).trim()
+    const value  = String(phone).trim()
     const digits = value.replace(/\D/g, '')
     if (value.startsWith('+62') && digits.startsWith('62')) return digits
     if (digits.startsWith('62')) return digits
@@ -556,10 +584,8 @@ function BKDashboard() {
 
   const buildWhatsAppLink = (item) => {
     if (item.whatsapp_link) return item.whatsapp_link
-
     const waNumber = normalizeWaNumber(item.student_phone)
     if (!waNumber) return null
-
     const counselorName = item.counselor_name || 'Guru BK'
     if (item.status === 'ACCEPTED') {
       const msg = `Halo ${item.student_name}, saya ${counselorName} dari BK. Pengajuan konsultasi Anda diterima. Mari kita atur jadwal.`
@@ -575,53 +601,40 @@ function BKDashboard() {
 
   const openWhatsApp = (item) => {
     const link = buildWhatsAppLink(item)
-    if (!link) {
-      setAE('Nomor WhatsApp siswa tidak valid. Pastikan format +62xxxxxxxx')
-      return
-    }
+    if (!link) { setAE('Nomor WhatsApp siswa tidak valid. Pastikan format +62xxxxxxxx'); return }
     window.open(link, '_blank', 'noopener,noreferrer')
   }
 
   const deleteConsultation = async (id) => {
     const ok = window.confirm('Hapus konsultasi ini? Tindakan ini tidak bisa dibatalkan.')
     if (!ok) return
-
-    setAE('')
-    setDeletingId(id)
+    setAE(''); setDeletingId(id)
     try {
-      const res = await fetch(`${API_URL}/api/bk/consultations/${id}`, {
-        method: 'DELETE',
-        headers,
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.detail || 'Gagal menghapus konsultasi')
-      }
-
+      const res  = await fetch(`${API_URL}/api/bk/consultations/${id}`, { method: 'DELETE', headers })
+      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.detail || 'Gagal menghapus konsultasi') }
       await fetchDashboard()
-    } catch (e) {
-      setAE(e.message)
-    } finally {
-      setDeletingId(null)
-    }
+    } catch (e) { setAE(e.message) } finally { setDeletingId(null) }
+  }
+
+  /* ── Format tanggal ── */
+  const fmtDate = (d) => {
+    if (!d) return '—'
+    try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }
+    catch { return d }
   }
 
   return (
-    <div className="form-page" style={{ alignItems:'stretch' }}>
+    <div className="form-page" style={{ alignItems: 'stretch' }}>
 
       {/* Sidebar */}
       <div className="form-sidebar">
-        <span style={{ color:'#7c3aed', fontWeight:800, fontSize:'.72rem', letterSpacing:'2px' }}>DASHBOARD BK</span>
-        <h2 className="p-title" style={{ marginTop:'14px' }}>Kelola konsultasi dengan aman.</h2>
-        <p className="p-desc">
-          Login atau daftar sebagai guru BK untuk mengakses dan mengelola
-          pengajuan konseling siswa secara real-time.
-        </p>
-        <div style={{ marginTop:'28px', display:'flex', flexDirection:'column', gap:'13px' }}>
-          {[['✓','Protected JWT endpoint'],['✓','Data isolated per counselor'],['✓','Accept / Reject live action']].map(([i, t]) => (
-            <div key={t} style={{ display:'flex', gap:'10px', alignItems:'center', color:'#2dd4bf', fontSize:'.87rem', fontWeight:500 }}>
-              <span style={{ background:'rgba(45,212,191,.1)', border:'1px solid rgba(45,212,191,.22)', borderRadius:'50%', width:'20px', height:'20px', display:'grid', placeItems:'center', fontSize:'.68rem', flexShrink:0 }}>{i}</span>
+        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
+        <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
+        <p className="p-desc">Login atau daftar sebagai guru BK untuk mengakses dan mengelola pengajuan konseling siswa secara real-time.</p>
+        <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
+          {[['✓', 'Protected JWT endpoint'], ['✓', 'Data isolated per counselor'], ['✓', 'Accept / Reject live action']].map(([i, t]) => (
+            <div key={t} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.87rem', fontWeight: 500 }}>
+              <span style={{ background: 'rgba(45,212,191,.1)', border: '1px solid rgba(45,212,191,.22)', borderRadius: '50%', width: '20px', height: '20px', display: 'grid', placeItems: 'center', fontSize: '.68rem', flexShrink: 0 }}>{i}</span>
               {t}
             </div>
           ))}
@@ -629,117 +642,137 @@ function BKDashboard() {
       </div>
 
       {/* Konten utama */}
-      <div className="form-main" style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+      <div className="form-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {!token ? (
           /* ── Belum login ── */
-          <div style={{ background:'rgba(10,14,26,.65)', border:'1px solid rgba(255,255,255,.07)', borderRadius:'18px', padding:'28px' }}>
-
-            {/* Tab bar */}
+          <div style={{ background: 'rgba(10,14,26,.65)', border: '1px solid rgba(255,255,255,.07)', borderRadius: '18px', padding: '28px' }}>
             <div className="auth-tab-bar">
-              <button className={`auth-tab ${authTab==='login'    ? 'active' : ''}`} onClick={() => { setAuthTab('login');    setLoginErr('') }}>
-                🔐 Login
-              </button>
-              <button className={`auth-tab ${authTab==='register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>
-                ✍️ Daftar Akun
-              </button>
+              <button className={`auth-tab ${authTab === 'login'    ? 'active' : ''}`} onClick={() => { setAuthTab('login');    setLoginErr('') }}>🔐 Login</button>
+              <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
             </div>
-
-            {authTab === 'login' && (
-              <BKLoginForm
-                email={email} setEmail={setEmail}
-                password={password} setPassword={setPassword}
-                error={loginErr} loading={loadingLogin}
-                onSubmit={handleLogin}
-                onSwitchToRegister={() => setAuthTab('register')}
-              />
-            )}
-            {authTab === 'register' && (
-              <BKRegisterForm
-                onSuccess={() => setAuthTab('login')}
-                onSwitchToLogin={() => setAuthTab('login')}
-              />
-            )}
+            {authTab === 'login'    && <BKLoginForm email={email} setEmail={setEmail} password={password} setPassword={setPassword} error={loginErr} loading={loadingLogin} onSubmit={handleLogin} onSwitchToRegister={() => setAuthTab('register')} />}
+            {authTab === 'register' && <BKRegisterForm onSuccess={() => setAuthTab('login')} onSwitchToLogin={() => setAuthTab('login')} />}
           </div>
+
         ) : (
           /* ── Sudah login ── */
           <>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:'12px', flexWrap:'wrap' }}>
+            {/* Header dashboard */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <div>
                 <div className="form-section-title">Dashboard Aktif</div>
-                <div className="form-section-sub" style={{ margin:0 }}>Token aktif tersimpan di session browser.</div>
+                <div className="form-section-sub" style={{ margin: 0 }}>Token aktif tersimpan di session browser.</div>
               </div>
               <button className="btn-ghost" onClick={handleLogout}>Logout</button>
             </div>
 
             {actionErr && <div className="alert alert-error"><span className="alert-icon">⚠️</span>{actionErr}</div>}
 
-            {/* Stats */}
+            {/* ── STAT CARDS (4 kartu angka) ── */}
             <div className="stat-card-grid">
-              <StatCard label="Total"    value={stats?.total    ?? 0} />
-              <StatCard label="Pending"  value={stats?.pending  ?? 0} valueColor="#f59e0b" />
-              <StatCard label="Accepted" value={stats?.accepted ?? 0} valueColor="#10b981" />
-              <StatCard label="Rejected" value={stats?.rejected ?? 0} valueColor="#ef4444" />
+              <StatCard label="Total Konsultasi"     value={stats?.total    ?? 0} />
+              <StatCard label="Menunggu Persetujuan" value={stats?.pending  ?? 0} valueColor="#f59e0b" />
+              <StatCard label="Disetujui"            value={stats?.accepted ?? 0} valueColor="#10b981" />
+              <StatCard label="Ditolak"              value={stats?.rejected ?? 0} valueColor="#ef4444" />
             </div>
 
-            {/* Daftar konsultasi */}
-            <div style={{ background:'rgba(10,14,26,.55)', border:'1px solid rgba(255,255,255,.07)', borderRadius:'18px', padding:'24px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px', gap:'12px' }}>
-                <div className="form-section-title" style={{ margin:0 }}>Daftar Konsultasi</div>
-                <button className="nav-cta" style={{ padding:'8px 18px', fontSize:'.82rem' }} onClick={() => fetchDashboard()} disabled={loadingData}>
-                  {loadingData ? '⏳ Memuat...' : '↻ Refresh'}
-                </button>
+            {/* ── CHART + DAFTAR KONSULTASI (2 kolom, mirip referensi) ── */}
+            <div className="bk-main-grid">
+
+              {/* Kolom kiri: Donut chart */}
+              <div className="bk-chart-panel">
+                <div className="bk-panel-title">Statistik Konsultasi</div>
+                <DonutChart stats={stats} />
               </div>
 
-              {loadingData ? (
-                <p style={{ color:'rgba(220,215,255,.5)', textAlign:'center', padding:'28px' }}>Memuat data...</p>
-              ) : consultations.length === 0 ? (
-                <p style={{ color:'rgba(220,215,255,.4)', textAlign:'center', padding:'28px' }}>Belum ada konsultasi untuk akun ini.</p>
-              ) : (
-                <div style={{ display:'grid', gap:'10px' }}>
-                  {consultations.map(item => (
-                    <div key={item.id} className="consult-item">
-                      <div className="consult-item-header">
-                        <div>
-                          <div className="consult-item-name">{item.student_name}</div>
-                          <div className="consult-item-meta">{item.class} · {item.topic} · {item.method}</div>
-                          <div className="consult-item-code">{item.tracking_code} · {item.date}</div>
-                        </div>
-                        <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
-                      </div>
-                      {item.status === 'PENDING' && (
-                        <div className="consult-item-actions">
-                          <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
-                          <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')} disabled={deletingId === item.id}>✕ Tolak</button>
-                        </div>
-                      )}
-                      {item.status === 'ACCEPTED' && (
-                        <div className="consult-item-actions">
-                          <button className="btn-whatsapp" onClick={() => openWhatsApp(item)}>
-                            📱 Chat WhatsApp
-                          </button>
-                        </div>
-                      )}
-                      {item.status === 'REJECTED' && (
-                        <div className="consult-item-actions">
-                          <button className="btn-wa-info" onClick={() => openWhatsApp(item)}>
-                            📱 Info Penolakan
-                          </button>
-                        </div>
-                      )}
-                      <div className="consult-item-actions">
-                        <button
-                          className="btn-delete"
-                          onClick={() => deleteConsultation(item.id)}
-                          disabled={deletingId === item.id}
-                        >
-                          {deletingId === item.id ? 'Menghapus...' : '🗑 Hapus'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+              {/* Kolom kanan: Daftar konsultasi */}
+              <div className="bk-list-panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
+                  <div className="bk-panel-title" style={{ margin: 0 }}>Konsultasi Terbaru</div>
+                  <button className="nav-cta" style={{ padding: '8px 16px', fontSize: '.8rem' }} onClick={() => fetchDashboard()} disabled={loadingData}>
+                    {loadingData ? '⏳' : '↻'} Refresh
+                  </button>
                 </div>
-              )}
+
+                {loadingData ? (
+                  <p className="bk-empty-text">Memuat data...</p>
+                ) : consultations.length === 0 ? (
+                  <p className="bk-empty-text">Belum ada konsultasi untuk akun ini.</p>
+                ) : (
+                  <div style={{ display: 'grid', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {consultations.map(item => (
+                      <div key={item.id} className="consult-item">
+
+                        {/* Baris atas: nama + badge status */}
+                        <div className="consult-item-header">
+                          <div>
+                            <div className="consult-item-name">{item.student_name}</div>
+                            {/* ── BARIS 2: kelas + metode ── */}
+                            <div className="consult-item-meta">
+                              {item.class} · {item.topic} · {item.method}
+                            </div>
+                          </div>
+                          <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
+                        </div>
+
+                        {/* ── BARIS 3 (BARU): detail tanggal, waktu, tempat, topik ── */}
+                        <div className="consult-item-details">
+                          <span className="consult-detail-tag">
+                            <span className="detail-icon">📅</span>
+                            {fmtDate(item.date)}
+                          </span>
+                          {item.time_slot && (
+                            <span className="consult-detail-tag">
+                              <span className="detail-icon">⏰</span>
+                              {item.time_slot}
+                            </span>
+                          )}
+                          {item.place_name && (
+                            <span className="consult-detail-tag">
+                              <span className="detail-icon">📍</span>
+                              {item.place_name}
+                            </span>
+                          )}
+                          {item.topic && (
+                            <span className="consult-detail-tag">
+                              <span className="detail-icon">📝</span>
+                              {item.topic}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* ── Kode tracking ── */}
+                        <div className="consult-item-code">{item.tracking_code}</div>
+
+                        {/* ── Action buttons ── */}
+                        {item.status === 'PENDING' && (
+                          <div className="consult-item-actions">
+                            <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
+                            <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')} disabled={deletingId === item.id}>✕ Tolak</button>
+                          </div>
+                        )}
+                        {item.status === 'ACCEPTED' && (
+                          <div className="consult-item-actions">
+                            <button className="btn-whatsapp" onClick={() => openWhatsApp(item)}>📱 Chat WhatsApp</button>
+                          </div>
+                        )}
+                        {item.status === 'REJECTED' && (
+                          <div className="consult-item-actions">
+                            <button className="btn-wa-info" onClick={() => openWhatsApp(item)}>📱 Info Penolakan</button>
+                          </div>
+                        )}
+                        <div className="consult-item-actions">
+                          <button className="btn-delete" onClick={() => deleteConsultation(item.id)} disabled={deletingId === item.id}>
+                            {deletingId === item.id ? 'Menghapus...' : '🗑 Hapus'}
+                          </button>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -759,19 +792,15 @@ function BKLoginForm({ email, setEmail, password, setPassword, error, loading, o
         Belum punya akun?{' '}
         <button className="link-btn" onClick={onSwitchToRegister}>Daftar di sini →</button>
       </p>
-
-      {error && <div className="alert alert-error" style={{ marginBottom:'16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
-
-      <form onSubmit={onSubmit} style={{ display:'grid', gap:'15px' }}>
+      {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
+      <form onSubmit={onSubmit} style={{ display: 'grid', gap: '15px' }}>
         <div className="input-group">
           <label>Email</label>
-          <input className="f-input" type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="email@sekolah.sch.id" required />
+          <input className="f-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@sekolah.sch.id" required />
         </div>
         <div className="input-group">
           <label>Password</label>
-          <input className="f-input" type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="Password Anda" required />
+          <input className="f-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password Anda" required />
         </div>
         <button className="btn-form-submit" type="submit" disabled={loading}>
           {loading && <span className="btn-spinner" />}
@@ -786,16 +815,15 @@ function BKLoginForm({ email, setEmail, password, setPassword, error, loading, o
    BKREGISTERFORM — POST /auth/counselors/register
    ════════════════════════════════════════════════════════════ */
 function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
-  const [f, setF]                   = useState({ name:'', email:'', password:'', phone:'', specialization:'' })
-  const [showPw, setShowPw]         = useState(false)
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState('')
-  const [fieldErrors, setFE]        = useState({})
-  const [successData, setSuccess]   = useState(null)
+  const [f, setF]                 = useState({ name: '', email: '', password: '', phone: '', specialization: '' })
+  const [showPw, setShowPw]       = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
+  const [fieldErrors, setFE]      = useState({})
+  const [successData, setSuccess] = useState(null)
 
   const set = (k, v) => { setF(p => ({ ...p, [k]: v })); setFE(p => ({ ...p, [k]: '' })); setError('') }
 
-  /* Client-side validation (echo validasi Pydantic) */
   const validate = () => {
     const e = {}
     if (!f.name.trim() || f.name.trim().length < 2) e.name = 'Nama minimal 2 karakter'
@@ -816,24 +844,15 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
     setLoading(true)
     try {
       const payload = {
-        name:  f.name.trim(),
-        email: f.email.trim(),
-        password: f.password,
+        name:  f.name.trim(), email: f.email.trim(), password: f.password,
         ...(f.phone.trim()          ? { phone: f.phone.trim() }          : {}),
         ...(f.specialization.trim() ? { specialization: f.specialization.trim() } : {}),
       }
-      const res  = await fetch(`${API_URL}/auth/counselors/register`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload),
-      })
+      const res  = await fetch(`${API_URL}/auth/counselors/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
       if (!res.ok) {
         if (typeof data.detail === 'string') { setError(data.detail); return }
-        if (Array.isArray(data.detail)) {
-          const m = {}
-          data.detail.forEach(e => { const k = e.loc?.[e.loc.length-1]; if(k) m[k] = e.msg.replace('Value error, ','') })
-          setFE(m); return
-        }
+        if (Array.isArray(data.detail)) { const m = {}; data.detail.forEach(e => { const k = e.loc?.[e.loc.length - 1]; if (k) m[k] = e.msg.replace('Value error, ', '') }); setFE(m); return }
         setError('Registrasi gagal. Coba lagi.'); return
       }
       setSuccess(data)
@@ -841,25 +860,21 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
     } catch { setError('Tidak dapat terhubung ke server.') } finally { setLoading(false) }
   }
 
-  /* Kekuatan password */
   const pwStr = (() => {
     const p = f.password
     if (!p) return null
-    if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p))
-      return { w:'100%', color:'#10b981', label:'Kuat ✓' }
-    if (p.length >= 5)
-      return { w:'55%',  color:'#f59e0b', label:'Cukup' }
-    return { w:'22%', color:'#ef4444', label:'Lemah' }
+    if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p)) return { w: '100%', color: '#10b981', label: 'Kuat ✓' }
+    if (p.length >= 5) return { w: '55%', color: '#f59e0b', label: 'Cukup' }
+    return { w: '22%', color: '#ef4444', label: 'Lemah' }
   })()
 
-  /* ── Success state ── */
   if (successData) return (
     <div className="register-success">
       <div className="success-ring">🎉</div>
       <div className="success-title">Akun Berhasil Dibuat!</div>
       <p className="success-sub">Selamat datang, <strong>{successData.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
-      <div style={{ width:'100%', height:'3px', background:'rgba(255,255,255,.07)', borderRadius:'2px', overflow:'hidden', maxWidth:'200px' }}>
-        <div style={{ height:'100%', background:'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation:'fill-bar 2.4s linear forwards' }} />
+      <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,.07)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
+        <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
       </div>
       <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
     </div>
@@ -872,81 +887,51 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
         Sudah punya akun?{' '}
         <button className="link-btn" onClick={onSwitchToLogin}>Login di sini →</button>
       </p>
+      {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
 
-      {error && <div className="alert alert-error" style={{ marginBottom:'16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
-
-      <form onSubmit={handleSubmit} style={{ display:'grid', gap:'16px' }}>
-
-        {/* Nama */}
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
         <div className="input-group">
           <label>Nama Lengkap <Required /></label>
-          <input className={`f-input ${fieldErrors.name ? 'is-error' : ''}`}
-            type="text" placeholder="Nama lengkap Anda"
-            value={f.name} onChange={e => set('name', e.target.value)} />
+          <input className={`f-input ${fieldErrors.name ? 'is-error' : ''}`} type="text" placeholder="Nama lengkap Anda" value={f.name} onChange={e => set('name', e.target.value)} />
           {fieldErrors.name && <span className="field-error">⚠ {fieldErrors.name}</span>}
         </div>
 
-        {/* Email */}
         <div className="input-group">
           <label>Email <Required /></label>
-          <input className={`f-input ${fieldErrors.email ? 'is-error' : ''}`}
-            type="email" placeholder="email@sekolah.sch.id"
-            value={f.email} onChange={e => set('email', e.target.value)} />
+          <input className={`f-input ${fieldErrors.email ? 'is-error' : ''}`} type="email" placeholder="email@sekolah.sch.id" value={f.email} onChange={e => set('email', e.target.value)} />
           {fieldErrors.email && <span className="field-error">⚠ {fieldErrors.email}</span>}
         </div>
 
-        {/* Password */}
         <div className="input-group">
           <label>Password <Required /></label>
-          <div style={{ position:'relative' }}>
-            <input
-              className={`f-input ${fieldErrors.password ? 'is-error' : ''}`}
-              type={showPw ? 'text' : 'password'}
-              placeholder="Min. 8 karakter, ada huruf + angka"
-              value={f.password} onChange={e => set('password', e.target.value)}
-              style={{ paddingRight:'44px' }}
-            />
-            <button type="button" onClick={() => setShowPw(p => !p)}
-              style={{ position:'absolute', right:'13px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'rgba(180,175,220,.5)', display:'flex', alignItems:'center', padding:'4px', transition:'color .2s' }}>
+          <div style={{ position: 'relative' }}>
+            <input className={`f-input ${fieldErrors.password ? 'is-error' : ''}`} type={showPw ? 'text' : 'password'} placeholder="Min. 8 karakter, ada huruf + angka" value={f.password} onChange={e => set('password', e.target.value)} style={{ paddingRight: '44px' }} />
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(180,175,220,.5)', display: 'flex', alignItems: 'center', padding: '4px' }}>
               {showPw
-                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
               }
             </button>
           </div>
-          {/* Strength bar */}
           {f.password && (
             <div className="pw-strength-wrap">
-              <div className="pw-strength-track">
-                <div className="pw-strength-fill" style={{ width: pwStr?.w, background: pwStr?.color }} />
-              </div>
+              <div className="pw-strength-track"><div className="pw-strength-fill" style={{ width: pwStr?.w, background: pwStr?.color }} /></div>
               <span className="pw-strength-label" style={{ color: pwStr?.color }}>{pwStr?.label}</span>
             </div>
           )}
           {fieldErrors.password && <span className="field-error">⚠ {fieldErrors.password}</span>}
         </div>
 
-        {/* Phone */}
         <div className="input-group">
           <label>Nomor WhatsApp <Opt /></label>
-          <input className={`f-input ${fieldErrors.phone ? 'is-error' : ''}`}
-            type="tel" placeholder="+628xxxxxxxxxx"
-            value={f.phone} onChange={e => set('phone', e.target.value)} />
-          {fieldErrors.phone
-            ? <span className="field-error">⚠ {fieldErrors.phone}</span>
-            : <span className="field-hint">Contoh: +6281234567890 (format +62 wajib)</span>}
+          <input className={`f-input ${fieldErrors.phone ? 'is-error' : ''}`} type="tel" placeholder="+628xxxxxxxxxx" value={f.phone} onChange={e => set('phone', e.target.value)} />
+          {fieldErrors.phone ? <span className="field-error">⚠ {fieldErrors.phone}</span> : <span className="field-hint">Contoh: +6281234567890 (format +62 wajib)</span>}
         </div>
 
-        {/* Spesialisasi */}
         <div className="input-group">
           <label>Bidang Spesialisasi <Opt /></label>
-          <input className="f-input"
-            type="text" placeholder="Contoh: Konseling Remaja, Karir, Keluarga"
-            value={f.specialization} onChange={e => set('specialization', e.target.value)}
-            maxLength={120} />
-          <span className={`char-counter ${f.specialization.length > 100 ? 'near-limit' : ''}`}>
-            {f.specialization.length}/120
-          </span>
+          <input className="f-input" type="text" placeholder="Contoh: Konseling Remaja, Karir, Keluarga" value={f.specialization} onChange={e => set('specialization', e.target.value)} maxLength={120} />
+          <span className={`char-counter ${f.specialization.length > 100 ? 'near-limit' : ''}`}>{f.specialization.length}/120</span>
         </div>
 
         <button className="btn-form-submit" type="submit" disabled={loading}>
@@ -965,7 +950,7 @@ function StatCard({ label, value, valueColor }) {
   return (
     <div className="stat-card">
       <div className="stat-card-label">{label}</div>
-      <div className="stat-card-value" style={valueColor ? { color:valueColor } : {}}>
+      <div className="stat-card-value" style={valueColor ? { color: valueColor } : {}}>
         {value}
       </div>
     </div>
@@ -974,8 +959,8 @@ function StatCard({ label, value, valueColor }) {
 
 /* ── Helper kecil ────────────────────────────────────────────── */
 function Required() {
-  return <span style={{ color:'#a78bfa', marginLeft:'2px' }}>*</span>
+  return <span style={{ color: '#a78bfa', marginLeft: '2px' }}>*</span>
 }
 function Opt() {
-  return <span style={{ color:'rgba(180,175,220,.4)', fontWeight:400, marginLeft:'4px' }}>(opsional)</span>
+  return <span style={{ color: 'rgba(180,175,220,.4)', fontWeight: 400, marginLeft: '4px' }}>(opsional)</span>
 }
