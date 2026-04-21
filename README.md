@@ -1,380 +1,214 @@
-# ☁️ Cloud App - SafeSpace
+# 🛡️ SafeSpace — Platform Konseling Aman & Privat
 
+> **SafeSpace** adalah aplikasi manajemen bimbingan konseling berbasis cloud yang dirancang untuk memberikan ruang aman bagi siswa untuk berbagi cerita dan mendapatkan bantuan dari guru BK secara privat, fleksibel, dan terstruktur.
+---
 
-## 📌 Deskripsi Proyek
-SafeSpace adalah aplikasi manajemen bimbingan konseling berbasis cloud yang dirancang untuk memfasilitasi siswa dalam mengajukan layanan konseling secara aman, privat, dan fleksibel. 
+## 📋 Daftar Isi
 
-Melalui aplikasi ini, siswa dapat mengisi formulir pengajuan konseling, memilih guru BK yang diinginkan, serta berkomunikasi langsung melalui fitur chat. Sistem memastikan bahwa hanya guru BK yang dipilih yang dapat mengakses data dan riwayat konseling siswa, sehingga menjaga kerahasiaan informasi. 
+1. [Tentang SafeSpace](#-tentang-safespace)
+2. [Fitur Sistem](#-fitur-sistem)
+3. [Fitur Per Role](#-fitur-per-role)
+4. [Arsitektur Sistem](#️-arsitektur-sistem)
+5. [Tech Stack](#-tech-stack)
+6. [Dokumentasi API](#-dokumentasi-api)
+7. [Panduan Menjalankan Sistem](#-panduan-menjalankan-sistem)
+8. [Testing](#-testing)
+9. [Struktur Proyek](#-struktur-proyek)
+10. [Tim Pengembang](#-tim-pengembang)
 
-Di sisi guru BK, tersedia dashboard untuk melihat daftar pengajuan, menerima atau menolak permintaan konseling, mengakses kontak siswa jika diperlukan, serta mencatat perkembangan hasil bimbingan. Urgensi pengembangan SafeSpace didasarkan pada kebutuhan akan layanan konseling yang lebih mudah diakses, menjaga privasi siswa, serta mendukung proses pendampingan yang terdokumentasi dan terkelola secara digital melalui teknologi cloud computing.
+---
 
-## 🎯 Tujuan Pengembangan
-* Menyediakan platform konseling digital yang aman dan mudah diakses.
-* Menjaga kerahasiaan data siswa melalui sistem otorisasi berbasis peran.
-* Mendukung proses monitoring dan dokumentasi bimbingan secara terpusat.
-* Mengimplementasikan konsep cloud computing pada aplikasi nyata.
+## 🧩 Tentang SafeSpace
 
-## 👥 Tim
+### Latar Belakang
 
-| Nama | NIM | Peran |
-|------|-----|-------|
-| Rendy Rifandi Kurnia | 10231081 | Lead Backend |
-| Riska Fadlun Khairiyah Purba | 10231083 | Lead Frontend |
-| Rizki Abdul Aziz | 10231085 | Lead DevOps |
-| Siti Nur Azizah Putri Awni | 10231087 | Lead QA & Docs |
+Banyak siswa merasa kesulitan untuk menyampaikan masalah pribadi secara langsung karena:
+
+- Rasa tidak nyaman atau takut tidak privasi  
+- Akses terbatas ke guru BK  
+- Tidak adanya sistem terstruktur untuk pengajuan konseling  
+
+### Solusi
+
+SafeSpace hadir sebagai platform digital yang memungkinkan:
+
+- Pengajuan konseling tanpa harus login  
+- Privasi data siswa terjaga  
+- Sistem terstruktur untuk guru BK dalam mengelola pengajuan  
+---
+
+## ✨ Fitur Sistem
+
+### 🔹 1. Pengajuan Konseling (Tanpa Login)
+- Siswa dapat langsung mengisi form tanpa akun  
+- Data yang diinput:
+  - Nama lengkap  
+  - Nomor WhatsApp
+  - Jenis kelamin  
+  - Kelas  
+  - Guru BK pilihan  
+  - Metode konseling  
+  - Topik masalah  
+  - Tanggal & waktu  
+  - Tempat  
+---
+
+### 🔹 2. Dashboard Guru BK
+- Login & register akun  
+- Melihat daftar pengajuan konseling  
+- Status:
+  - Pending  
+  - Accepted  
+  - Rejected  
+- Aksi:
+  - Terima  
+  - Tolak  
+  - Hapus  
+---
+
+### 🔹 3. Integrasi WhatsApp
+- Saat diterima:
+  - Otomatis kirim pesan ke siswa  
+- Saat ditolak:
+  - Kirim alasan penolakan  
+---
+
+### 🔹 4. Security & Privacy
+- JWT Authentication untuk guru BK  
+- Data terpisah antar guru BK  
+- Endpoint terproteksi  
+
+---
+
+## 👥 Fitur Per Role
+
+### 👤 Siswa (Tanpa Login)
+
+| Fitur | Deskripsi |
+|------|----------|
+| Isi Form Konseling | Mengajukan permintaan konseling |
+| Pilih Guru BK | Menentukan tujuan konseling |
+| Pilih Jadwal | Tanggal & waktu fleksibel |
+| Privasi Terjaga | Data hanya dilihat guru terkait |
+
+---
+
+### 👩‍🏫 Guru BK
+
+| Fitur | Deskripsi |
+|------|----------|
+| Register & Login | Akses dashboard |
+| Lihat Pengajuan | Semua data siswa |
+| Accept / Reject | Kelola permintaan |
+| WhatsApp Integration | Hubungi siswa langsung |
+| Data Isolated | Tidak bisa lihat data guru lain |
+
+---
+
+## 🏗️ Arsitektur Sistem
+
+```mermaid
+graph LR
+    User((User)) --> Frontend["Frontend (React)"]
+    Frontend --> Backend["Backend (FastAPI)"]
+    Backend --> DB[("PostgreSQL")]
+```
+
+### 🔹 Detail Container
+
+| Service | Port | Fungsi |
+|--------|------|--------|
+| Frontend | 3000 | UI React |
+| Backend | 8000 | API FastAPI |
+| Database | 5433 | PostgreSQL |
+
+---
 
 ## 🛠️ Tech Stack
 
-Berdasarkan struktur proyek di `backend/` dan `frontend/`:
+| Kategori | Teknologi |
+|---------|----------|
+| Frontend | React + Vite |
+| Backend | FastAPI (Python) |
+| Database | PostgreSQL |
+| Auth | JWT |
+| Container | Docker |
+| API Docs | Swagger UI |
 
-### Backend (`backend/`)
-| Teknologi | Fungsi |
-|-----------|--------|
-| FastAPI | REST API & web framework |
-| Uvicorn | ASGI server |
-| Azure AI Document Intelligence | OCR & ekstraksi dokumen |
-| LangChain & OpenAI | AI review & orkestrasi LLM |
-| PyMuPDF, pdf2image, Pillow | Pemrosesan PDF & gambar |
-| Pydantic | Validasi data & schema |
-| SQLAlchemy | ORM & akses database |
-| python-dotenv | Konfigurasi environment |
-| Pytest | Testing |
+---
 
-### Frontend (`frontend/`)
+## 📡 Dokumentasi API
 
-### Infrastruktur & DevOps
-| Teknologi | Fungsi |
-|-----------|--------|
-| Docker | Containerization |
-| GitHub Actions | CI/CD |
-| Railway/Render | Cloud deployment |
-
-
-## 🏗️ Architecture
-
-```
-    ┌──────────────────────┐
-    │     React Frontend   │
-    │  (User Interface)    │
-    └──────────┬───────────┘
-               │ HTTP Request (REST API)
-               ▼
-    ┌──────────────────────┐
-    │     FastAPI Backend  │
-    │  Business Logic & API│
-    └──────────┬───────────┘
-               │ SQLAlchemy ORM
-               ▼
-    ┌──────────────────────┐
-    │   PostgreSQL Database│
-    │     Persistent Data  │
-    └──────────────────────┘
-```
-
-### Penjelasan Arsitektur
-- **React Frontend** → Menyediakan antarmuka pengguna serta menyimpan access token setelah login.
-- **FastAPI Backend** → Menyediakan REST API, memproses request, menangani autentikasi JWT, serta mengelola logika aplikasi.
-- **JWT Authentication** → Digunakan untuk mengamankan endpoint sehingga hanya user yang login dapat mengakses data.
-- **PostgreSQL** → Menyimpan data aplikasi secara permanen.
-- Komunikasi antar layer menggunakan HTTP (REST API) dan koneksi database berbasis SQL.
-
-*(Arsitektur akan terus berkembang seiring penambahan Docker, deployment cloud, dan CI/CD pipeline pada minggu berikutnya.)*
-
-## 🚀 Getting Started
-
-### Prasyarat
-- Python 3.10+
-- Node.js 18+
-- Git
-
-### Backend
-```bash
-cd backend
-pip install -r requirements.txt
-python -m uvicorn main:app --reload --port 8000
-```
-API: http://localhost:8000 — Docs: http://localhost:8000/docs
-
-Catatan eksekusi backend:
-- Disarankan menggunakan `python -m uvicorn ...` agar interpreter aktif (venv) selalu dipakai tanpa bergantung PATH.
-- Alternatif jika ingin tetap pakai perintah `uvicorn`: aktifkan virtual environment terlebih dahulu.
-- Windows PowerShell: `python -m venv .venv` lalu `.\.venv\Scripts\Activate.ps1`
-- Linux/macOS: `python -m venv .venv` lalu `source .venv/bin/activate`
-
-Seeding data awal SafeSpace:
-```bash
-cd backend
-python scripts/seed_master_data.py
-python scripts/seed_counselors.py
-```
-
-Endpoint seed (opsional, untuk development):
-- `POST /api/dev/seed/master-data`
-- `POST /api/dev/seed/counselors`
-
-Endpoint konsultasi konselor (protected JWT):
-- `GET /api/bk/consultations`
-- `PATCH /api/bk/consultations/{consultation_id}/accept`
-- `PATCH /api/bk/consultations/{consultation_id}/reject`
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## 🔐 Authentication
-
-SafeSpace menggunakan **JWT (JSON Web Token)** untuk autentikasi pengguna.
-
-### Fitur Authentication
-- User Register
-- User Login
-- Protected API menggunakan Bearer Token
-- Logout (client-side session removal)
-
-### Authentication Flow
-1. User melakukan **register** akun baru
-2. Sistem otomatis melakukan **login**
-3. Backend mengirimkan **access token (JWT)**
-4. Token disimpan di frontend
-5. Setiap request API mengirim header:
-6. User dapat logout untuk menghapus session
-
-### Endpoint Authentication
+Beberapa endpoint utama:
 
 | Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| POST | `/auth/register` | Membuat akun baru |
-| POST | `/auth/login` | Login user |
-| GET | `/auth/me` | Mendapatkan data user aktif |
+|-------|----------|----------|
+| GET | /health | Cek status API |
+| POST | /auth/register | Register guru BK |
+| POST | /auth/login | Login |
+| GET | /auth/me | Data user login |
+| POST | /items | Tambah pengajuan |
+| GET | /items | Ambil data |
+| GET | /items/{id} | Detail data |
+| PUT | /items/{id} | Update |
+| DELETE | /items/{id} | Hapus |
+| GET | /items/stats | Statistik |
+| GET | /team | Info tim |
 
-## 📡 API Endpoints Week 2
-
-Base URL: http://localhost:8000  
-Swagger Documentation: http://localhost:8000/docs
-
-| Method | URL | Request Body | Response Example | Status Code | Status Pengujian |
-|--------|-----|--------------|------------------|-------------|------------------|
-| POST | `/items` | `{name, price, description, quantity}` | Mengembalikan data item yang berhasil dibuat beserta `id` | 201 Created | ✅ Berhasil |
-| GET | `/items` | - | `{ total: 3, items: [...] }` menampilkan seluruh daftar item | 200 OK | ✅ Berhasil |
-| GET | `/items/1` | - | Mengembalikan detail item dengan `id = 1` | 200 OK | ✅ Berhasil |
-| PUT | `/items/1` | `{price: 14000000}` | Data item berhasil diperbarui dengan nilai terbaru | 200 OK | ✅ Berhasil |
-| GET | `/items/1` | - | Menampilkan kembali data item setelah dilakukan update | 200 OK | ✅ Berhasil |
-| GET | `/items?search=laptop` | - | `{ total: 1, items: [...] }` menampilkan hasil pencarian item | 200 OK | ✅ Berhasil |
-| DELETE | `/items/1` | - | Item berhasil dihapus dari database | 204 No Content | ✅ Berhasil |
-| GET | `/items/1` | - | `{detail: "item tidak ditemukan"}` karena data sudah dihapus | 404 Not Found | ✅ Berhasil |
-| GET | `/items/stats` | - | `{ total_items, total_value, most_expensive, cheapest }` menampilkan statistik inventory | 200 OK | ✅ Berhasil |
-
-## 📡 API Endpoints Week 4
-
-Base URL: http://localhost:8000  
-Swagger: http://localhost:8000/docs
-
-### Authentication
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/register` | Register user baru |
-| POST | `/auth/login` | Login user |
-| GET | `/auth/me` | Mendapatkan user login |
-
-### Items
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/items` | Menambahkan item baru |
-| GET | `/items` | Mengambil seluruh item |
-| GET | `/items/{id}` | Detail item |
-| PUT | `/items/{id}` | Update item |
-| DELETE | `/items/{id}` | Hapus item |
-| GET | `/items/stats` | Statistik inventory |
-
-## 🧪 Testing Week 4
-
-Pengujian dilakukan pada Week 4 untuk memastikan integrasi Authentication dan CRUD berjalan dengan baik.
-
-### Hasil Testing
-- ✅ API Connected
-- ✅ Register & Login berhasil
-- ✅ Protected route berjalan
-- ✅ CRUD Items berfungsi
-- ✅ Search berjalan
-- ✅ Logout berhasil
-- ✅ Data tetap tersimpan setelah login ulang
-
-Detail hasil testing tersedia pada docs/ui-test-week4.md
-
-## 🐳 Docker Setup
-
-Backend aplikasi dapat dijalankan menggunakan Docker tanpa perlu instalasi dependency secara manual.
+📄 Swagger UI:  
+http://localhost:8000/docs
 
 ---
 
-### 📦 Prerequisites
+## 🚀 Panduan Menjalankan Sistem
 
-Pastikan sudah terinstall:
-
-- Docker Desktop
-- Docker Compose
-
-Cek instalasi:
-
-```bash
-docker --version
-docker compose version
-```
-
----
-
-### 🚀 Menjalankan Aplikasi dengan Docker
-
-1. Clone repository:
-
-```bash
-git clone <REPOSITORY_URL>
-cd <PROJECT_FOLDER>
-```
-
-2. Jalankan container:
+### 🔹 Menggunakan Docker
 
 ```bash
 docker compose up -d
 ```
 
-Perintah ini akan:
+Cek status:
 
-- Pull image backend dari Docker Hub
-- Membuat container
-- Menjalankan API pada port **8000**
-
----
-
-### 🌐 Akses API
-
-Setelah container berjalan, buka:
-
-```
-http://localhost:8000/docs
-```
-
-Swagger UI akan muncul dan API siap digunakan.
-
----
-
-### 📋 Docker Commands (Useful for QA & Development)
-
-#### Melihat container yang berjalan
 ```bash
-docker ps
-```
-
-#### Melihat log container
-```bash
-docker logs cloudapp-container
-```
-
-#### Follow log secara realtime
-```bash
-docker logs -f cloudapp-container
-```
-
-#### Stop container
-```bash
-docker compose down
-```
-
-#### Restart container
-```bash
-docker compose restart
+docker compose ps
 ```
 
 ---
 
-### 🧪 Testing Checklist (QA)
+### 🔹 Akses Aplikasi
 
-- [x] Container berhasil dijalankan
-- [x] Swagger UI dapat diakses
-- [x] Endpoint `/health` berfungsi
-- [x] Register user berhasil
-- [x] Login user berhasil
-
----
-
-### 🐙 Docker Hub Image
-
-Backend image tersedia di Docker Hub:
-
-```
-rizkiiaaz/cloudapp-backend:v1
-```
-
-Pull manual:
-
-```bash
-docker pull rizkiiaaz/cloudapp-backend:v1
-```
-
-Run manual:
-
-```bash
-docker run -p 8000:8000 --env-file .env rizkiiaaz/cloudapp-backend:v1
-```
+| Layanan | URL |
+|--------|-----|
+| Frontend | http://localhost:3000 |
+| Backend | http://localhost:8000 |
+| Swagger | http://localhost:8000/docs |
 
 ---
 
-### ⚙️ Environment Variables
+## 🧪 Testing
 
-Pastikan file `.env` tersedia pada folder backend.
+### 🔹 1. Swagger Testing
 
-Contoh konfigurasi database untuk Docker Desktop:
-
-```
-DATABASE_URL=postgresql://postgres:PASSWORD@host.docker.internal:5432/cloudapp
-```
-
----
-
-### 🧹 Cleanup Docker
-
-Hentikan dan hapus container:
-
-```bash
-docker compose down
-```
-
-Hapus image yang tidak terpakai:
-
-```bash
-docker image prune
-```
+Yang diuji:
+- Endpoint berjalan  
+- Response sesuai  
+- Auth bekerja  
+- CRUD berhasil  
 
 ---
 
-### 📄 Documentation
+### 🔹 2. Black Box Testing
 
-Perbandingan ukuran Docker image dapat dilihat pada:
+Yang dicek:
+- Form input validasi  
+- Login berhasil / gagal  
+- Accept / Reject berfungsi  
+- Data tampil sesuai  
 
-```
-docs/image-comparison.md
-```
+---
 
-## 📅 Roadmap
-
-| Minggu | Target | Status |
-|--------|--------|--------|
-| 1 | Setup & Hello World | ✅ |
-| 2 | REST API + Database | ✅ |
-| 3 | React Frontend | ✅ |
-| 4 | Full-Stack Integration | ✅ |
-| 5-7 | Docker & Compose | ✅ |
-| 8 | UTS Demo | ⬜ |
-| 9-11 | CI/CD Pipeline | ⬜ |
-| 12-14 | Microservices | ⬜ |
-| 15-16 | Final & UAS | ⬜ |
-
-## 📁 Project Structure
+## 📂 Struktur Proyek
 
 ```
 cc-kelompok-a-suksesss/
@@ -429,9 +263,20 @@ cc-kelompok-a-suksesss/
 ├── .gitignore
 └── README.md
 ```
+
 ---
 
-### Hasil
-<img src="SS3.png" width="700"/>
-<img src="SS4.png" width="700"/>
-<img src="SS5.png" width="700"/>
+## 👥 Tim Pengembang
+
+| Nama | Role | GitHub |
+|------|------|--------|
+| Rendy Rifandi Kurnia | Backend | NorEndGate |
+| Riska Fadlun Khairiyah Purba | Frontend | risch24 |
+| Rizki Abdul Aziz | DevOps | rizkiiaaz |
+| Siti Nur Azizah Putri Awni | QA & Docs | Azizah66 |
+
+---
+
+<div align="center">
+  <sub>Built by SafeSpace Team</sub>
+</div>
