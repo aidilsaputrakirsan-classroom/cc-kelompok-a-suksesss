@@ -17,17 +17,16 @@
 ## 📋 Daftar Isi
 
 1. [Tentang SafeSpace](#-tentang-safespace)
-2. [User Flow](#-user-flow)
-3. [Fitur Sistem](#-fitur-sistem)
-4. [Fitur Per Role](#-fitur-per-role)
-5. [Arsitektur Sistem](#️-arsitektur-sistem)
-6. [Tech Stack](#-tech-stack)
-7. [Dokumentasi API](#-dokumentasi-api)
-8. [Testing](#-testing)
-9. [Panduan Menjalankan](#-panduan-menjalankan)
-10. [Struktur Proyek](#-struktur-proyek)
-11. [Tim Pengembang](#-tim-pengembang)
-12. [Kesimpulan](#-kesimpulan)
+2. [Fitur Sistem](#-fitur-sistem)
+3. [Fitur Per Role](#-fitur-per-role)
+4. [Arsitektur Sistem](#️-arsitektur-sistem)
+5. [Tech Stack](#-tech-stack)
+6. [Dokumentasi API](#-dokumentasi-api)
+7. [Testing](#-testing)
+8. [Panduan Menjalankan](#-panduan-menjalankan)
+9. [Struktur Proyek](#-struktur-proyek)
+10. [Tim Pengembang](#-tim-pengembang)
+11. [Kesimpulan](#-kesimpulan)
 
 ---
 

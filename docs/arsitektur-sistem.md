@@ -8,25 +8,25 @@ Arsitektur SafeSpace menggunakan pendekatan **3-tier architecture** yang dipisah
 
 ```mermaid
 graph LR
-    User((👤 User))
-    
+    User((User))
+
     subgraph Frontend
-        FE["🌐 React App (Nginx)<br/>localhost:3000"]
+        FE[React App - Nginx - Port 3000]
     end
-    
+
     subgraph Backend
-        BE["⚡ FastAPI Server<br/>localhost:8000"]
+        BE[FastAPI Server - Port 8000]
     end
-    
+
     subgraph Database
-        DB[("🐘 PostgreSQL<br/>Port 5432")]
+        DB[(PostgreSQL - Port 5432)]
     end
 
     User --> FE
-    FE -->|HTTP Request| BE
-    BE -->|SQL Query| DB
-    DB -->|Data Response| BE
-    BE -->|JSON Response| FE
+    FE --> BE
+    BE --> DB
+    DB --> BE
+    BE --> FE
 ```
 
 📌 **Penjelasan:**
@@ -41,16 +41,16 @@ graph LR
 
 ```mermaid
 graph TD
-    subgraph Docker Network: cloudnet
-        FE["Frontend Container<br/>React + Nginx<br/>Port 3000"]
-        BE["Backend Container<br/>FastAPI<br/>Port 8000"]
-        DB["Database Container<br/>PostgreSQL<br/>Port 5432"]
+    subgraph cloudnet
+        FE[Frontend Container - Port 3000]
+        BE[Backend Container - Port 8000]
+        DB[Database Container - PostgreSQL]
     end
 
-    FE -->|API Call| BE
-    BE -->|Query| DB
-    DB -->|Result| BE
-    BE -->|Response| FE
+    FE --> BE
+    BE --> DB
+    DB --> BE
+    BE --> FE
 ```
 
 📌 **Penjelasan:**
@@ -65,21 +65,21 @@ graph TD
 
 ```mermaid
 graph TD
-    Client["Client Request"] --> Router["📡 API Router"]
-    
-    Router --> Auth["🔐 Authentication (JWT)"]
-    Router --> Validation["📋 Validation (Pydantic)"]
-    Router --> Logic["🧠 Business Logic (CRUD Konsultasi)"]
-    
-    Logic --> DB[("🐘 PostgreSQL Database")]
+    Client --> Router
+
+    Router --> Auth
+    Router --> Validation
+    Router --> Logic
+
+    Logic --> DB[(PostgreSQL)]
 ```
 
 📌 **Penjelasan:**
-- **API Router** → menangani endpoint (auth, consultations, dashboard)
-- **Authentication (JWT)** → melindungi akses khusus Guru BK
-- **Validation (Pydantic)** → memastikan data request valid
-- **Business Logic** → mengelola proses konsultasi (create, accept, reject)
-- **Database** → menyimpan data siswa & konsultasi
+- API Router menangani endpoint (auth, consultations, dashboard)
+- Authentication (JWT) melindungi akses Guru BK
+- Validation memastikan data request valid
+- Business Logic mengelola proses konsultasi
+- Database menyimpan data
 
 ---
 
@@ -87,16 +87,16 @@ graph TD
 
 ```mermaid
 graph TD
-    UI["🖥️ UI Components"] --> State["📦 State Management"]
-    State --> API["📡 API Service (Axios)"]
-    API --> Backend["⚡ FastAPI Backend"]
+    UI --> State
+    State --> API
+    API --> Backend
 ```
 
 📌 **Penjelasan:**
-- **UI Components** → halaman utama, form konsultasi, dashboard BK
-- **State Management** → menyimpan state (form input, auth token)
-- **API Service (Axios)** → komunikasi ke backend
-- **Backend** → memproses request & mengembalikan data
+- UI Components: halaman & form
+- State Management: menyimpan data & token
+- API Service: komunikasi ke backend
+- Backend: memproses request
 
 ---
 
@@ -110,42 +110,42 @@ sequenceDiagram
     participant Database
     participant GuruBK
 
-    Siswa->>Frontend: Isi form konsultasi
-    Frontend->>Backend: POST /api/consultations
+    Siswa->>Frontend: Isi form
+    Frontend->>Backend: POST consultation
     Backend->>Database: Simpan data
     Backend-->>Frontend: Tracking Code
     Frontend-->>Siswa: Tampilkan kode
 
     GuruBK->>Frontend: Login
-    Frontend->>Backend: POST /auth/login
-    Backend-->>Frontend: JWT Token
+    Frontend->>Backend: POST login
+    Backend-->>Frontend: Token
 
-    Frontend->>Backend: GET /api/bk/consultations
-    Backend->>Database: Ambil data sesuai guru
-    Backend-->>Frontend: Data konsultasi
+    Frontend->>Backend: GET consultations
+    Backend->>Database: Ambil data
+    Backend-->>Frontend: Data
 
-    GuruBK->>Frontend: Accept / Reject
-    Frontend->>Backend: PATCH endpoint
-    Backend->>Database: Update status
-    Backend-->>Frontend: Response sukses
+    GuruBK->>Frontend: Accept/Reject
+    Frontend->>Backend: PATCH
+    Backend->>Database: Update
+    Backend-->>Frontend: Response
 ```
 
 📌 **Penjelasan:**
 - Siswa dapat mengajukan konsultasi tanpa login
 - Sistem menghasilkan tracking code
 - Guru BK login untuk mengelola konsultasi
-- Data bersifat **terisolasi per guru BK**
-- Proses accept/reject dilakukan secara real-time
+- Data terisolasi per guru BK
+- Accept/reject dilakukan secara real-time
 
 ---
 
 ### 🔷 6. Keunggulan Arsitektur
 
-- 🧩 **Modular** → frontend, backend, database terpisah
-- 🔐 **Secure** → JWT authentication untuk akses terbatas
-- ⚡ **Scalable** → mudah dikembangkan dan ditambah fitur
-- ☁️ **Cloud-ready** → siap deploy menggunakan Docker
-- 🔒 **Privacy-first** → data konsultasi hanya dapat diakses oleh guru terkait
+- Modular (frontend, backend, database terpisah)
+- Secure (JWT authentication)
+- Scalable (mudah dikembangkan)
+- Cloud-ready (Docker)
+- Privacy-first (data terisolasi)
 
 ---
 
@@ -153,7 +153,7 @@ sequenceDiagram
 
 Arsitektur SafeSpace dirancang untuk:
 - Mendukung layanan konseling yang aman & privat
-- Memastikan pemisahan tanggung jawab antar sistem
-- Memudahkan deployment dan pengembangan berkelanjutan
+- Memastikan pemisahan tanggung jawab sistem
+- Memudahkan deployment dan pengembangan
 
-Dengan kombinasi React, FastAPI, PostgreSQL, dan Docker, aplikasi ini menjadi solusi digital yang **modern, aman, dan scalable**.
+Dengan kombinasi React, FastAPI, PostgreSQL, dan Docker, aplikasi ini menjadi solusi digital yang modern, aman, dan scalable.
