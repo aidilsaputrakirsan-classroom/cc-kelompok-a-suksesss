@@ -40,22 +40,6 @@ SafeSpace hadir sebagai solusi digital untuk layanan konseling yang:
 - Mengurangi komunikasi informal yang tidak terdokumentasi  
 
 ---
-
-## 🔄 User Flow
-
-```mermaid
-flowchart TD
-    A[Siswa isi form] --> B[Submit konsultasi]
-    B --> C[Generate tracking code]
-    C --> D[Login Guru BK]
-    D --> E[Lihat pengajuan]
-    E --> F{Keputusan}
-    F -->|Accept| G[Kirim WhatsApp]
-    F -->|Reject| H[Tolak konsultasi]
-```
-
----
-
 ## ✨ Fitur Sistem
 
 ### 🎯 Core Features
