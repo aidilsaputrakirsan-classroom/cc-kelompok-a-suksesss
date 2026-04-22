@@ -48,11 +48,11 @@ SafeSpace hadir sebagai solusi digital untuk layanan konseling yang:
 flowchart TD
     A[Siswa isi form] --> B[Submit konsultasi]
     B --> C[Generate tracking code]
-    C --> D[Guru BK login dashboard]
-    D --> E[Melihat pengajuan]
+    C --> D[Login Guru BK]
+    D --> E[Lihat pengajuan]
     E --> F{Keputusan}
-    F -->|Accept| G[WhatsApp otomatis]
-    F -->|Reject| H[WhatsApp otomatis]
+    F -->|Accept| G[Kirim WhatsApp]
+    F -->|Reject| H[Tolak konsultasi]
 ```
 
 ---
@@ -98,25 +98,25 @@ flowchart TD
 
 ```mermaid
 graph LR
-    User((👤 User))
+    User((User))
     
     subgraph Frontend
-        FE["🌐 React App (Nginx)<br/>localhost:3000"]
+        FE[React App - Nginx - 3000]
     end
     
     subgraph Backend
-        BE["⚡ FastAPI Server<br/>localhost:8000"]
+        BE[FastAPI Server - 8000]
     end
     
     subgraph Database
-        DB[("🐘 PostgreSQL<br/>Port 5432")]
+        DB[(PostgreSQL - 5432)]
     end
 
     User --> FE
-    FE -->|HTTP Request| BE
-    BE -->|SQL Query| DB
-    DB -->|Data Response| BE
-    BE -->|JSON Response| FE
+    FE --> BE
+    BE --> DB
+    DB --> BE
+    BE --> FE
 ```
 
 ---
@@ -125,16 +125,16 @@ graph LR
 
 ```mermaid
 graph TD
-    subgraph Docker Network: cloudnet
-        FE["Frontend Container<br/>React + Nginx<br/>Port 3000"]
-        BE["Backend Container<br/>FastAPI<br/>Port 8000"]
-        DB["Database Container<br/>PostgreSQL<br/>Port 5432"]
+    subgraph cloudnet
+        FE[Frontend Container - React - 3000]
+        BE[Backend Container - FastAPI - 8000]
+        DB[Database Container - PostgreSQL - 5432]
     end
 
-    FE -->|API Call| BE
-    BE -->|Query| DB
-    DB -->|Result| BE
-    BE -->|Response| FE
+    FE --> BE
+    BE --> DB
+    DB --> BE
+    BE --> FE
 ```
 
 ---
@@ -143,13 +143,13 @@ graph TD
 
 ```mermaid
 graph TD
-    Client["Client Request"] --> Router["API Router"]
+    Client[Client Request] --> Router[API Router]
     
-    Router --> Auth["🔐 Authentication (JWT)"]
-    Router --> Validation["📋 Validation (Pydantic)"]
-    Router --> Logic["🧠 Business Logic (CRUD)"]
+    Router --> Auth[Authentication JWT]
+    Router --> Validation[Validation Pydantic]
+    Router --> Logic[Business Logic CRUD]
     
-    Logic --> DB[("Database PostgreSQL")]
+    Logic --> DB[(PostgreSQL)]
 ```
 
 ---
@@ -158,13 +158,12 @@ graph TD
 
 ```mermaid
 graph TD
-    UI["🖥️ UI Components"] --> State["📦 State Management"]
-    State --> API["📡 API Service (Axios)"]
-    API --> Backend["⚡ FastAPI Backend"]
+    UI[UI Components] --> State[State Management]
+    State --> API[API Service Axios]
+    API --> Backend[FastAPI Backend]
 ```
 
 ---
-
 ### Detail:
 
 | Service  | Port | Keterangan  |
