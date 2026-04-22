@@ -1,82 +1,71 @@
-# 🛡️ SafeSpace — Platform Konseling Aman & Privat
+# 🧠 SafeSpace — Platform Konseling Aman & Privat
 
-> **SafeSpace** adalah aplikasi manajemen bimbingan konseling berbasis cloud yang dirancang untuk memberikan ruang aman bagi siswa untuk berbagi cerita dan mendapatkan bantuan dari guru BK secara privat, fleksibel, dan terstruktur.
+> **SafeSpace** adalah aplikasi berbasis web untuk layanan bimbingan konseling yang memungkinkan siswa mengajukan konsultasi secara **aman, anonim, dan fleksibel**, serta membantu guru BK dalam mengelola pengajuan secara terstruktur dan real-time.
+
+---
+
+## 🌟 Highlight Utama
+
+- 🔐 Konseling tanpa akun (anonim)  
+- 👩‍🏫 Dashboard khusus Guru BK (JWT Protected)  
+- 💬 Integrasi WhatsApp otomatis  
+- 🔒 Isolasi data antar guru (privacy-based system)  
+- 🐳 Fully Dockerized (multi-container)  
+
 ---
 
 ## 📋 Daftar Isi
 
 1. [Tentang SafeSpace](#-tentang-safespace)
-2. [Fitur Sistem](#-fitur-sistem)
-3. [Fitur Per Role](#-fitur-per-role)
-4. [Arsitektur Sistem](#️-arsitektur-sistem)
-5. [Tech Stack](#-tech-stack)
-6. [Dokumentasi API](#-dokumentasi-api)
-7. [Panduan Menjalankan Sistem](#-panduan-menjalankan-sistem)
+2. [User Flow](#-user-flow)
+3. [Fitur Sistem](#-fitur-sistem)
+4. [Fitur Per Role](#-fitur-per-role)
+5. [Arsitektur Sistem](#️-arsitektur-sistem)
+6. [Tech Stack](#-tech-stack)
+7. [Dokumentasi API](#-dokumentasi-api)
 8. [Testing](#-testing)
-9. [Struktur Proyek](#-struktur-proyek)
-10. [Tim Pengembang](#-tim-pengembang)
+9. [Panduan Menjalankan](#-panduan-menjalankan)
+10. [Struktur Proyek](#-struktur-proyek)
+11. [Tim Pengembang](#-tim-pengembang)
+12. [Kesimpulan](#-kesimpulan)
 
 ---
 
 ## 🧩 Tentang SafeSpace
 
-### Latar Belakang
+SafeSpace hadir sebagai solusi digital untuk layanan konseling yang:
 
-Banyak siswa merasa kesulitan untuk menyampaikan masalah pribadi secara langsung karena:
+- Mudah diakses siswa tanpa login  
+- Menjaga kerahasiaan data  
+- Mempermudah guru BK dalam pengelolaan konsultasi  
+- Mengurangi komunikasi informal yang tidak terdokumentasi  
 
-- Rasa tidak nyaman atau takut tidak privasi  
-- Akses terbatas ke guru BK  
-- Tidak adanya sistem terstruktur untuk pengajuan konseling  
+---
 
-### Solusi
+## 🔄 User Flow
 
-SafeSpace hadir sebagai platform digital yang memungkinkan:
+```mermaid
+flowchart TD
+    A[Siswa isi form] --> B[Submit konsultasi]
+    B --> C[Generate tracking code]
+    C --> D[Guru BK login dashboard]
+    D --> E[Melihat pengajuan]
+    E --> F{Keputusan}
+    F -->|Accept| G[WhatsApp otomatis]
+    F -->|Reject| H[WhatsApp otomatis]
+```
 
-- Pengajuan konseling tanpa harus login  
-- Privasi data siswa terjaga  
-- Sistem terstruktur untuk guru BK dalam mengelola pengajuan  
 ---
 
 ## ✨ Fitur Sistem
 
-### 🔹 1. Pengajuan Konseling (Tanpa Login)
-- Siswa dapat langsung mengisi form tanpa akun  
-- Data yang diinput:
-  - Nama lengkap  
-  - Nomor WhatsApp
-  - Jenis kelamin  
-  - Kelas  
-  - Guru BK pilihan  
-  - Metode konseling  
-  - Topik masalah  
-  - Tanggal & waktu  
-  - Tempat  
----
+### 🎯 Core Features
 
-### 🔹 2. Dashboard Guru BK
-- Login & register akun  
-- Melihat daftar pengajuan konseling  
-- Status:
-  - Pending  
-  - Accepted  
-  - Rejected  
-- Aksi:
-  - Terima  
-  - Tolak  
-  - Hapus  
----
-
-### 🔹 3. Integrasi WhatsApp
-- Saat diterima:
-  - Otomatis kirim pesan ke siswa  
-- Saat ditolak:
-  - Kirim alasan penolakan  
----
-
-### 🔹 4. Security & Privacy
-- JWT Authentication untuk guru BK  
-- Data terpisah antar guru BK  
-- Endpoint terproteksi  
+- Form pengajuan konseling tanpa akun  
+- Dashboard Guru BK  
+- Accept / Reject konsultasi  
+- WhatsApp auto-message  
+- Data isolation per counselor  
 
 ---
 
@@ -84,199 +73,363 @@ SafeSpace hadir sebagai platform digital yang memungkinkan:
 
 ### 👤 Siswa (Tanpa Login)
 
-| Fitur | Deskripsi |
-|------|----------|
-| Isi Form Konseling | Mengajukan permintaan konseling |
-| Pilih Guru BK | Menentukan tujuan konseling |
-| Pilih Jadwal | Tanggal & waktu fleksibel |
-| Privasi Terjaga | Data hanya dilihat guru terkait |
+- Mengisi form konseling lengkap  
+- Memilih guru BK  
+- Mendapat tracking code  
+- Tidak perlu akun  
+- Data bersifat privat  
 
 ---
 
 ### 👩‍🏫 Guru BK
 
-| Fitur | Deskripsi |
-|------|----------|
-| Register & Login | Akses dashboard |
-| Lihat Pengajuan | Semua data siswa |
-| Accept / Reject | Kelola permintaan |
-| WhatsApp Integration | Hubungi siswa langsung |
-| Data Isolated | Tidak bisa lihat data guru lain |
+- Register & Login  
+- Melihat semua pengajuan  
+- Accept / Reject konsultasi  
+- Menghubungi siswa via WhatsApp  
+- Dashboard statistik  
+- Data hanya milik masing-masing guru  
 
 ---
 
 ## 🏗️ Arsitektur Sistem
 
+### 🔷 1. High-Level Architecture
+
 ```mermaid
 graph LR
-    User((User)) --> Frontend["Frontend (React)"]
-    Frontend --> Backend["Backend (FastAPI)"]
-    Backend --> DB[("PostgreSQL")]
+    User((👤 User))
+    
+    subgraph Frontend
+        FE["🌐 React App (Nginx)<br/>localhost:3000"]
+    end
+    
+    subgraph Backend
+        BE["⚡ FastAPI Server<br/>localhost:8000"]
+    end
+    
+    subgraph Database
+        DB[("🐘 PostgreSQL<br/>Port 5432")]
+    end
+
+    User --> FE
+    FE -->|HTTP Request| BE
+    BE -->|SQL Query| DB
+    DB -->|Data Response| BE
+    BE -->|JSON Response| FE
 ```
 
-### 🔹 Detail Container
+---
 
-| Service | Port | Fungsi |
-|--------|------|--------|
-| Frontend | 3000 | UI React |
-| Backend | 8000 | API FastAPI |
-| Database | 5433 | PostgreSQL |
+### 🔷 2. Docker Multi-Container Architecture
+
+```mermaid
+graph TD
+    subgraph Docker Network: cloudnet
+        FE["Frontend Container<br/>React + Nginx<br/>Port 3000"]
+        BE["Backend Container<br/>FastAPI<br/>Port 8000"]
+        DB["Database Container<br/>PostgreSQL<br/>Port 5432"]
+    end
+
+    FE -->|API Call| BE
+    BE -->|Query| DB
+    DB -->|Result| BE
+    BE -->|Response| FE
+```
+
+---
+
+### 🔷 3. Backend Architecture (FastAPI)
+
+```mermaid
+graph TD
+    Client["Client Request"] --> Router["API Router"]
+    
+    Router --> Auth["🔐 Authentication (JWT)"]
+    Router --> Validation["📋 Validation (Pydantic)"]
+    Router --> Logic["🧠 Business Logic (CRUD)"]
+    
+    Logic --> DB[("Database PostgreSQL")]
+```
+
+---
+
+### 🔷 4. Frontend Architecture (React)
+
+```mermaid
+graph TD
+    UI["🖥️ UI Components"] --> State["📦 State Management"]
+    State --> API["📡 API Service (Axios)"]
+    API --> Backend["⚡ FastAPI Backend"]
+```
+
+---
+
+### Detail:
+
+| Service  | Port | Keterangan  |
+|----------|------|------------|
+| Frontend | 3000 | UI aplikasi |
+| Backend  | 8000 | API         |
+| Database | 5433 | PostgreSQL  |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Kategori | Teknologi |
-|---------|----------|
-| Frontend | React + Vite |
-| Backend | FastAPI (Python) |
-| Database | PostgreSQL |
-| Auth | JWT |
-| Container | Docker |
-| API Docs | Swagger UI |
+SafeSpace dibangun menggunakan teknologi modern berbasis web dengan arsitektur terpisah antara frontend, backend, dan database, serta didukung containerization menggunakan Docker.
 
+---
+
+### 🎨 Frontend
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **React (Vite)** | UI Framework | Digunakan untuk membangun antarmuka pengguna yang interaktif dan modular dengan performa tinggi melalui Vite sebagai build tool. |
+| **Axios** | HTTP Client | Menghubungkan frontend dengan backend melalui REST API (GET, POST, PATCH, DELETE). |
+| **CSS** | Styling | Digunakan untuk mendesain tampilan aplikasi agar responsif dan user-friendly. |
+
+---
+
+### ⚙️ Backend
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **FastAPI** | API Framework | Framework Python modern untuk membangun REST API yang cepat, otomatis terdokumentasi (Swagger), dan async-ready. |
+| **SQLAlchemy** | ORM | Mengelola interaksi database menggunakan pendekatan object-oriented tanpa query SQL manual. |
+| **JWT (JSON Web Token)** | Authentication | Sistem autentikasi berbasis token untuk mengamankan akses dashboard Guru BK. |
+
+---
+
+### 🗄️ Database
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **PostgreSQL** | Database Engine | Database relasional yang digunakan untuk menyimpan data pengguna, konsultasi, dan hasil pengelolaan sistem. |
+
+---
+
+### 🐳 DevOps & Deployment
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **Docker** | Containerization | Membungkus aplikasi agar dapat berjalan konsisten di berbagai environment. |
+| **Docker Compose** | Orchestration | Mengelola dan menjalankan beberapa container (frontend, backend, database) secara bersamaan. |
+
+---
+
+## 📌 Ringkasan Arsitektur Teknologi
+
+- **Frontend (React)** → Menangani tampilan & interaksi user  
+- **Backend (FastAPI)** → Mengelola API & business logic  
+- **Database (PostgreSQL)** → Menyimpan data aplikasi  
+- **Docker** → Menyatukan seluruh komponen dalam environment yang konsisten  
 ---
 
 ## 📡 Dokumentasi API
 
-Beberapa endpoint utama:
+Swagger UI tersedia di:
 
-| Method | Endpoint | Deskripsi |
-|-------|----------|----------|
-| GET | /health | Cek status API |
-| POST | /auth/register | Register guru BK |
-| POST | /auth/login | Login |
-| GET | /auth/me | Data user login |
-| POST | /items | Tambah pengajuan |
-| GET | /items | Ambil data |
-| GET | /items/{id} | Detail data |
-| PUT | /items/{id} | Update |
-| DELETE | /items/{id} | Hapus |
-| GET | /items/stats | Statistik |
-| GET | /team | Info tim |
+👉 http://localhost:8000/docs
 
-📄 Swagger UI:  
-http://localhost:8000/docs
+### Endpoint Utama
 
----
-
-## 🚀 Panduan Menjalankan Sistem
-
-### 🔹 Menggunakan Docker
-
-```bash
-docker compose up -d
-```
-
-Cek status:
-
-```bash
-docker compose ps
-```
-
----
-
-### 🔹 Akses Aplikasi
-
-| Layanan | URL |
-|--------|-----|
-| Frontend | http://localhost:3000 |
-| Backend | http://localhost:8000 |
-| Swagger | http://localhost:8000/docs |
+| Method | Endpoint                          | Deskripsi         |
+|--------|----------------------------------|------------------|
+| POST   | /auth/counselors/register         | Register Guru BK  |
+| POST   | /auth/counselor/login             | Login             |
+| GET    | /auth/counselor/me                | Data user         |
+| POST   | /api/consultations                | Create konsultasi |
+| GET    | /api/bk/consultations             | List konsultasi   |
+| PATCH  | /api/bk/consultations/{id}/accept | Accept            |
+| PATCH  | /api/bk/consultations/{id}/reject | Reject            |
 
 ---
 
 ## 🧪 Testing
 
-### 🔹 1. Swagger Testing
+### 1. Blackbox Testing
 
-Yang diuji:
-- Endpoint berjalan  
-- Response sesuai  
-- Auth bekerja  
-- CRUD berhasil  
+File: `docs/blackbox-testing-uts.md`
+📄 [Blackbox Testing](docs/blackbox-testing-uts.md)
+
+- Testing dari sisi user  
+- Validasi form  
+- Flow end-to-end  
+
+### 2. Swagger API Testing
+
+File: `docs/swagger-testing-uts.md`
+📄 [Swagger API Testing](docs/swagger-testing-uts.md)
+
+- Testing endpoint API  
+- Auth flow JWT  
+- Validasi request/response  
 
 ---
 
-### 🔹 2. Black Box Testing
+## 🚀 Panduan Menjalankan
 
-Yang dicek:
-- Form input validasi  
-- Login berhasil / gagal  
-- Accept / Reject berfungsi  
-- Data tampil sesuai  
+### 🐳 Docker (Recommended)
 
----
-
-## 📂 Struktur Proyek
-
+```bash
+docker compose up -d
 ```
-cc-kelompok-a-suksesss/
-├── backend/                     # FastAPI Backend
-│   ├── Dockerfile               # Docker image configuration (NEW)
-│   ├── .dockerignore            # Docker ignore rules (NEW)
-│   ├── main.py                  # Entry point, API routes & CORS config
-│   ├── auth.py                  # JWT authentication utilities
-│   ├── database.py              # Database connection
-│   ├── models.py                # SQLAlchemy models (+ User model)
-│   ├── schemas.py               # Pydantic schemas (+ auth schemas)
-│   ├── crud.py                  # Business logic & CRUD operations
-│   ├── requirements.txt         # Python dependencies
-│   ├── .env                     # Environment variables (Updated for Docker)
-│   └── .env.example             # Example environment configuration
+
+Akses:
+
+- Frontend → http://localhost:3000  
+- Backend → http://localhost:8000  
+- Swagger → http://localhost:8000/docs  
+
+---
+
+### 💻 Manual
+
+**Backend:**
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 📂 Struktur Proyek SafeSpace
+
+```text
+CC-KELOMPOK-A-SUKSESSS/
 │
-├── frontend/                    # React Frontend (Vite)
-│   ├── src/
-│   │   ├── App.jsx              # Root component + auth integration
-│   │   ├── App.css              # Main styling
-│   │   ├── main.jsx             # React entry point
-│   │   │
-│   │   ├── components/
-│   │   │   ├── Header.jsx       # Header + user info & logout
-│   │   │   ├── LoginPage.jsx    # Login page
-│   │   │   ├── SearchBar.jsx    # Item search feature
-│   │   │   ├── ItemForm.jsx     # Add & edit item form
-│   │   │   ├── ItemList.jsx     # Item list display
-│   │   │   └── ItemCard.jsx     # Item card component
-│   │   │
-│   │   └── services/
-│   │       └── api.js           # API service + token management
+├── backend/                          # 🧠 Backend utama (FastAPI)
+│   ├── __pycache__/                  # Cache Python (auto-generated)
 │   │
-│   ├── .env                     # Frontend environment variables
-│   ├── .env.example             # Example environment configuration
-│   ├── index.html               # Main HTML template
-│   ├── package.json             # Node.js dependencies & scripts
-│   ├── vite.config.js           # Vite configuration
-│   └── eslint.config.js         # ESLint configuration
+│   ├── routers/                      # 📡 Modular API routes
+│   │   ├── __init__.py               # Inisialisasi package routers
+│   │   └── bk_dashboard.py           # Endpoint khusus dashboard Guru BK
+│   │
+│   ├── scripts/                      # ⚙️ Script helper & automation
+│   │   ├── reset_db.py               # Reset database (development)
+│   │   ├── seed_counselors.py        # Seed data awal guru BK
+│   │   └── seed_master_data.py       # Seed data master (kelas, topik, dll)
+│   │
+│   ├── .dockerignore                 # File yang di-ignore saat build Docker
+│   ├── .env                          # Environment lokal
+│   ├── .env.docker                   # Environment khusus Docker
+│   ├── .env.example                  # Template environment
+│   │
+│   ├── auth.py                       # 🔐 JWT authentication & security logic
+│   ├── crud.py                       # 🧠 Business logic & operasi database
+│   ├── database.py                   # 🔗 Koneksi ke PostgreSQL
+│   ├── Dockerfile                    # 📦 Konfigurasi image backend
+│   ├── main.py                       # 🚀 Entry point FastAPI (routes & config)
+│   ├── models.py                     # 🗄️ SQLAlchemy models (struktur tabel)
+│   ├── requirements.txt              # 📚 Dependencies Python
+│   └── schemas.py                    # 📋 Validasi data (Pydantic schemas)
 │
-├── docs/                        # Team documentation & testing results
-│   ├── member-Azizah.md
-│   ├── member-Rendy.md
-│   ├── member-Riska.md
-│   ├── member-Rizki.md
-│   ├── api-test-results.md      # API testing documentation (Swagger)
-│   ├── ui-test-results.md       # UI testing documentation
-│   ├── image-comparison.md      # Docker image comparison (NEW)
-│   ├── docker-cheatsheet.md     # Docker command reference (NEW)
-│   └── images/                  # Testing screenshots
+├── docs/                             # 📖 Dokumentasi & hasil testing
+│   ├── images/                       # 🖼️ Screenshot hasil testing
+│   │
+│   ├── api-test-results.md           # Hasil testing API (Swagger)
+│   ├── api-test-results.pdf          # Versi PDF laporan API
+│   ├── blackbox-testing-uts.md       # 🧪 Blackbox testing lengkap
+│   ├── database-schemes.md           # 📊 Desain database
+│   ├── docker-architecture.md        # 🐳 Arsitektur Docker
+│   ├── docker-cheatsheet.md          # 📌 Cheat sheet Docker command
+│   ├── image-comparison.md           # 📏 Perbandingan ukuran Docker image
+│   ├── LANGKAH_1_IMPLEMENTATION_SUMMARY.md  # Ringkasan implementasi awal
+│   │
+│   ├── member-Azizah.md              # Kontribusi anggota (QA)
+│   ├── member-Rendy.md               # Kontribusi anggota (Backend)
+│   ├── member-Riska.md               # Kontribusi anggota (Frontend)
+│   ├── member-Rizki.md               # Kontribusi anggota (DevOps)
+│   │
+│   ├── Postman_Dashboard_API_Collection.json # Koleksi API Postman
+│   ├── setup-guide.md                # 🛠️ Panduan setup project
+│   ├── swagger-testing-project.md    # Testing Swagger (project)
+│   ├── swagger-testing-uts.md        # Testing Swagger (UTS)
+│   ├── ui-test-results.md            # Testing UI (general)
+│   ├── ui-test-week4.md              # Testing UI minggu sebelumnya
+│   ├── UTS_VERIFICATION_CHECKLIST.md # Checklist validasi UTS
+│   └── uts-demo-script.md            # 🎤 Script demo UTS
 │
-├── .gitignore
-└── README.md
+├── frontend/                         # 🎨 Frontend (React + Vite)
+│   ├── node_modules/                 # Dependencies Node.js
+│   ├── public/                       # Static assets
+│   │   └── vite.svg                  # Default Vite icon
+│   │
+│   ├── src/                          # Source code utama React
+│   │   ├── assets/                   # Asset tambahan (image, dll)
+│   │   │
+│   │   ├── components/               # 🧩 Komponen UI
+│   │   │   ├── Header.jsx            # Header + info user
+│   │   │   ├── ItemCard.jsx          # Card tampilan data
+│   │   │   ├── ItemForm.jsx          # Form input/edit
+│   │   │   ├── ItemList.jsx          # List data
+│   │   │   ├── LoginPage.jsx         # Halaman login guru BK
+│   │   │   ├── SearchBar.jsx         # Fitur pencarian
+│   │   │   ├── SortBar.jsx           # Sorting data
+│   │   │   ├── Spinner.jsx           # Loading indicator
+│   │   │   └── Toast.jsx             # Notifikasi UI
+│   │   │
+│   │   ├── services/
+│   │   │   └── api.js                # 📡 API handler (axios + token)
+│   │   │
+│   │   ├── App.css                   # Styling utama
+│   │   ├── App.jsx                   # Root component
+│   │   ├── index.css                # Global CSS
+│   │   └── main.jsx                  # Entry point React
+│   │
+│   ├── .dockerignore                 # Ignore file saat build Docker
+│   ├── .env.example                  # Template env frontend
+│   ├── .gitignore                    # Git ignore rules
+│   ├── .gitkeep                      # Placeholder folder kosong
+│   ├── Dockerfile                    # 📦 Multi-stage build frontend
+│   ├── eslint.config.js              # Linting rules
+│   ├── index.html                    # Template HTML
+│   ├── nginx.conf                    # ⚙️ Config Nginx (serve React)
+│   ├── package-lock.json             # Lock dependencies
+│   ├── package.json                  # Dependencies & scripts
+│   └── vite.config.js                # Config Vite
+│
+├── scripts/                          # 🛠️ Automation script
+│   ├── docker-run.sh                 # Script run semua container
+│   ├── test_dashboard_api.ps1        # Testing API (PowerShell)
+│   └── test_dashboard_api.sh         # Testing API (Linux/Mac)
+│
+├── .gitignore                        # File yang di-ignore Git
+├── docker-compose.yml                # 🐳 Orkestrasi multi-container
+└── README.md                         # 📘 Dokumentasi utama project
 ```
 
 ---
 
 ## 👥 Tim Pengembang
 
-| Nama | Role | GitHub |
-|------|------|--------|
-| Rendy Rifandi Kurnia | Backend | NorEndGate |
-| Riska Fadlun Khairiyah Purba | Frontend | risch24 |
-| Rizki Abdul Aziz | DevOps | rizkiiaaz |
-| Siti Nur Azizah Putri Awni | QA & Docs | Azizah66 |
+| Nama                       | Role      | GitHub     |
+|---------------------------|-----------|-----------|
+| Rendy Rifandi Kurnia       | Backend   | NorEndGate |
+| Riska Fadlun K. Purba      | Frontend  | risch24    |
+| Rizki Abdul Aziz           | DevOps    | rizkiiaaz  |
+| Siti Nur Azizah Putri Awni | QA & Docs | Azizah66   |
 
 ---
 
+## 📊 Kesimpulan
+
+SafeSpace berhasil dikembangkan sebagai sistem konseling berbasis cloud dengan:
+
+- Arsitektur modular (frontend, backend, database)  
+- Sistem tanpa login untuk siswa  
+- Dashboard aman untuk guru BK  
+---
+
 <div align="center">
-  <sub>Built by SafeSpace Team</sub>
+  <sub>Built by Tim Suksesss</sub>
 </div>
