@@ -94,135 +94,50 @@ flowchart TD
 
 ## 🏗️ Arsitektur Sistem
 
-### 🔷 1. High-Level Architecture
+SafeSpace menggunakan arsitektur **3-tier (frontend, backend, database)** yang dipisahkan secara modular dan didukung oleh containerization menggunakan Docker.
 
-```mermaid
-graph LR
-    User((User))
-    
-    subgraph Frontend
-        FE[React App - Nginx - 3000]
-    end
-    
-    subgraph Backend
-        BE[FastAPI Server - 8000]
-    end
-    
-    subgraph Database
-        DB[(PostgreSQL - 5432)]
-    end
+- 📄 **Diagram arsitektur**  
+Diagram arsitektur lengkap dapat dilihat di:  
+👉 [System Architecture & Docker](./docs/arsitektur-sistem.md)
 
-    User --> FE
-    FE --> BE
-    BE --> DB
-    DB --> BE
-    BE --> FE
-```
+### 🔹 Komponen Utama
 
----
+- **Frontend (React + Nginx)**  
+  Menyediakan antarmuka pengguna untuk:
+  - Siswa (mengisi form konseling tanpa login)
+  - Guru BK (dashboard & manajemen konsultasi)
 
-### 🔷 2. Docker Multi-Container Architecture
+- **Backend (FastAPI)**  
+  Menangani:
+  - REST API
+  - Business logic (konsultasi, accept/reject)
+  - Authentication (JWT untuk Guru BK)
+  - Isolasi data per counselor
 
-```mermaid
-graph TD
-    subgraph cloudnet
-        FE[Frontend Container - React - 3000]
-        BE[Backend Container - FastAPI - 8000]
-        DB[Database Container - PostgreSQL - 5432]
-    end
-
-    FE --> BE
-    BE --> DB
-    DB --> BE
-    BE --> FE
-```
+- **Database (PostgreSQL)**  
+  Digunakan untuk:
+  - Menyimpan data konsultasi siswa
+  - Menyimpan data akun Guru BK
+  - Menjaga persistence data
 
 ---
 
-### 🔷 3. Backend Architecture (FastAPI)
+### 🔹 Karakteristik Sistem
 
-```mermaid
-graph TD
-    Client[Client Request] --> Router[API Router]
-    
-    Router --> Auth[Authentication JWT]
-    Router --> Validation[Validation Pydantic]
-    Router --> Logic[Business Logic CRUD]
-    
-    Logic --> DB[(PostgreSQL)]
-```
+- 👤 **Guest Access (Siswa tanpa login)**  
+  Siswa dapat langsung mengajukan konsultasi dan mendapatkan tracking code
 
----
+- 🔐 **Secure Access (Guru BK)**  
+  Dashboard dilindungi dengan JWT authentication
 
-### 🔷 4. Frontend Architecture (React)
+- 🔄 **Real-time Workflow**  
+  Guru BK dapat menerima atau menolak konsultasi secara langsung
 
-```mermaid
-graph TD
-    UI[UI Components] --> State[State Management]
-    State --> API[API Service Axios]
-    API --> Backend[FastAPI Backend]
-```
+- 🔒 **Data Isolation**  
+  Setiap Guru BK hanya dapat melihat data konsultasi miliknya
 
----
-### Detail:
-
-| Service  | Port | Keterangan  |
-|----------|------|------------|
-| Frontend | 3000 | UI aplikasi |
-| Backend  | 8000 | API         |
-| Database | 5433 | PostgreSQL  |
-
----
-
-## 🛠️ Tech Stack
-
-SafeSpace dibangun menggunakan teknologi modern berbasis web dengan arsitektur terpisah antara frontend, backend, dan database, serta didukung containerization menggunakan Docker.
-
----
-
-### 🎨 Frontend
-
-| Teknologi | Fungsi | Penjelasan |
-|----------|--------|-----------|
-| **React (Vite)** | UI Framework | Digunakan untuk membangun antarmuka pengguna yang interaktif dan modular dengan performa tinggi melalui Vite sebagai build tool. |
-| **Axios** | HTTP Client | Menghubungkan frontend dengan backend melalui REST API (GET, POST, PATCH, DELETE). |
-| **CSS** | Styling | Digunakan untuk mendesain tampilan aplikasi agar responsif dan user-friendly. |
-
----
-
-### ⚙️ Backend
-
-| Teknologi | Fungsi | Penjelasan |
-|----------|--------|-----------|
-| **FastAPI** | API Framework | Framework Python modern untuk membangun REST API yang cepat, otomatis terdokumentasi (Swagger), dan async-ready. |
-| **SQLAlchemy** | ORM | Mengelola interaksi database menggunakan pendekatan object-oriented tanpa query SQL manual. |
-| **JWT (JSON Web Token)** | Authentication | Sistem autentikasi berbasis token untuk mengamankan akses dashboard Guru BK. |
-
----
-
-### 🗄️ Database
-
-| Teknologi | Fungsi | Penjelasan |
-|----------|--------|-----------|
-| **PostgreSQL** | Database Engine | Database relasional yang digunakan untuk menyimpan data pengguna, konsultasi, dan hasil pengelolaan sistem. |
-
----
-
-### 🐳 DevOps & Deployment
-
-| Teknologi | Fungsi | Penjelasan |
-|----------|--------|-----------|
-| **Docker** | Containerization | Membungkus aplikasi agar dapat berjalan konsisten di berbagai environment. |
-| **Docker Compose** | Orchestration | Mengelola dan menjalankan beberapa container (frontend, backend, database) secara bersamaan. |
-
----
-
-## 📌 Ringkasan Arsitektur Teknologi
-
-- **Frontend (React)** → Menangani tampilan & interaksi user  
-- **Backend (FastAPI)** → Mengelola API & business logic  
-- **Database (PostgreSQL)** → Menyimpan data aplikasi  
-- **Docker** → Menyatukan seluruh komponen dalam environment yang konsisten  
+- ☁️ **Containerized Deployment**  
+  Seluruh service dapat dijalankan menggunakan Docker (multi-container)
 ---
 
 ## 📡 Dokumentasi API
