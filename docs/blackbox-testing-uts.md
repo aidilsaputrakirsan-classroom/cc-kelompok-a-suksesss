@@ -12,7 +12,7 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 - Fokus: Functional Testing (UI & Flow)
 - Environment: Browser (Chrome)
 - URL: http://localhost:3000
-- Tanggal Testing: (isi tanggal)
+- Tanggal Testing: 21 April 2026
 
 ---
 
@@ -33,6 +33,7 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 |----|----------|--------|----------------|--------|
 | BB-01 | Buka homepage | Akses http://localhost:3000 | Halaman tampil normal | ✅ Pass |
 
+![BB Testing](./images/CC%208.1.png)
 ---
 
 ### 2. Form Pengajuan Konseling
@@ -45,6 +46,9 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-05 | Pilih guru BK | Pilih salah satu opsi | Data tersimpan sesuai pilihan | ✅ Pass |
 | BB-06 | Pilih tanggal | Input tanggal valid | Data diterima sistem | ✅ Pass |
 
+![BB Testing](./images/CC%208.2.png)
+![BB Testing](./images/CC%208.4.png)
+![BB Testing](./images/CC%208.5.png)
 ---
 
 ### 3. Submit Pengajuan
@@ -54,6 +58,8 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-07 | Kirim pengajuan | Klik "Kirim" | Pengajuan berhasil | ✅ Pass |
 | BB-08 | Tracking code muncul | Setelah submit | Kode unik tampil | ✅ Pass |
 | BB-09 | Ajukan ulang | Klik "Ajukan Lagi" | Kembali ke form | ✅ Pass |
+
+![BB Testing](./images/CC%208.3.png)
 
 ---
 
@@ -67,6 +73,9 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-11 | Email duplikat | Register email sama | Error muncul | ✅ Pass |
 | BB-12 | Password kosong | Submit tanpa password | Validasi error | ✅ Pass |
 
+![BB Testing](./images/CC%208.6.png)
+![BB Testing](./images/CC%208.7.png)
+![BB Testing](./images/CC%208.8.png)
 ---
 
 ### 2. Login
@@ -77,6 +86,11 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-14 | Password salah | Input salah | Login gagal | ✅ Pass |
 | BB-15 | Field kosong | Submit kosong | Validasi error | ✅ Pass |
 
+![BB Testing](./images/CC%208.9.png)
+![BB Testing](./images/CC%208.10.png)
+![BB Testing](./images/CC%208.11.png)
+![BB Testing](./images/CC%208.12.png)
+
 ---
 
 ### 3. Dashboard Konseling
@@ -86,6 +100,7 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-16 | Lihat data konsultasi | Buka dashboard | Data tampil | ✅ Pass |
 | BB-17 | Filter status | Lihat pending/accepted/rejected | Data sesuai filter | ✅ Pass |
 
+![BB Testing](./images/CC%208.13.png)
 ---
 
 ### 4. Accept / Reject Konseling
@@ -97,6 +112,12 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 | BB-20 | WhatsApp auto message (accept) | Klik accept | Redirect WA + pesan otomatis | ✅ Pass |
 | BB-21 | WhatsApp auto message (reject) | Klik reject | Redirect WA + pesan penolakan | ✅ Pass |
 
+![BB Testing](./images/CC%208.14.png)
+![BB Testing](./images/CC%208.15.png)
+![BB Testing](./images/CC%208.16.png)
+![BB Testing](./images/CC%208.17.png)
+![BB Testing](./images/CC%208.18.png)
+![BB Testing](./images/CC%208.19.png)
 ---
 
 ### 5. Isolasi Data Antar Guru
@@ -105,6 +126,8 @@ Metode ini berfokus pada pengujian fungsi sistem dari sisi pengguna tanpa meliha
 |----|----------|--------|----------------|--------|
 | BB-22 | Data antar guru | Login akun berbeda | Tidak bisa lihat data guru lain | ✅ Pass |
 
+![BB Testing](./images/CC%208.20.png)
+![BB Testing](./images/CC%208.21.png)
 ---
 
 ## 🔄 C. End-to-End Flow Testing

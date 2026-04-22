@@ -25,6 +25,7 @@ Pengujian dilakukan untuk memastikan seluruh endpoint berjalan dengan baik sesua
 | API-05 | /auth/token | POST | Generate token | Token berhasil dibuat | ✅ Pass |
 | API-06 | /auth/me | GET | Ambil data user | Data user tampil | ✅ Pass |
 
+
 ---
 
 ## 🩺 B. Health Check
