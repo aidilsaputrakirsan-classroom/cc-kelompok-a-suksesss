@@ -123,6 +123,57 @@ Diagram arsitektur lengkap dapat dilihat di:
   Seluruh service dapat dijalankan menggunakan Docker (multi-container)
 ---
 
+## 🛠️ Tech Stack
+
+SafeSpace dibangun menggunakan teknologi modern berbasis web dengan arsitektur terpisah antara frontend, backend, dan database, serta didukung containerization menggunakan Docker.
+
+---
+
+### 🎨 Frontend
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **React (Vite)** | UI Framework | Digunakan untuk membangun antarmuka pengguna yang interaktif dan modular dengan performa tinggi melalui Vite sebagai build tool. |
+| **Axios** | HTTP Client | Menghubungkan frontend dengan backend melalui REST API (GET, POST, PATCH, DELETE). |
+| **CSS** | Styling | Digunakan untuk mendesain tampilan aplikasi agar responsif dan user-friendly. |
+
+---
+
+### ⚙️ Backend
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **FastAPI** | API Framework | Framework Python modern untuk membangun REST API yang cepat, otomatis terdokumentasi (Swagger), dan async-ready. |
+| **SQLAlchemy** | ORM | Mengelola interaksi database menggunakan pendekatan object-oriented tanpa query SQL manual. |
+| **Pydantic** | Data Validation | Validasi data request & response agar sesuai dengan schema yang telah ditentukan. |
+| **JWT (JSON Web Token)** | Authentication | Sistem autentikasi berbasis token untuk mengamankan akses dashboard Guru BK. |
+
+---
+
+### 🗄️ Database
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **PostgreSQL** | Database Engine | Database relasional yang digunakan untuk menyimpan data pengguna, konsultasi, dan hasil pengelolaan sistem. |
+
+---
+
+### 🐳 DevOps & Deployment
+
+| Teknologi | Fungsi | Penjelasan |
+|----------|--------|-----------|
+| **Docker** | Containerization | Membungkus aplikasi agar dapat berjalan konsisten di berbagai environment. |
+| **Docker Compose** | Orchestration | Mengelola dan menjalankan beberapa container (frontend, backend, database) secara bersamaan. |
+
+---
+
+## 📌 Ringkasan Arsitektur Teknologi
+
+- **Frontend (React)** → Menangani tampilan & interaksi user  
+- **Backend (FastAPI)** → Mengelola API & business logic  
+- **Database (PostgreSQL)** → Menyimpan data aplikasi  
+- **Docker** → Menyatukan seluruh komponen dalam environment yang konsisten  
+---
 ## 📡 Dokumentasi API
 
 Swagger UI tersedia di:
