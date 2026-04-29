@@ -1,4 +1,4 @@
-.PHONY: up down build logs ps clean restart shell-backend shell-db shell-frontend
+.PHONY: up down build logs ps clean restart shell-backend shell-db shell-frontend lint test pr-check
 
 # Start semua services
 up:
@@ -44,3 +44,19 @@ shell-db:
 # Masuk ke terminal frontend
 shell-frontend:
 	docker compose exec frontend sh
+
+# Jalankan linter untuk mengecek kerapian kode
+lint:
+	@echo "Menjalankan linter..."
+	# Nanti diisi dengan perintah linter (misal: flake8 / eslint)
+
+# Jalankan unit test
+test:
+	@echo "Menjalankan unit tests..."
+	# Nanti diisi dengan perintah test (misal: pytest)
+
+# Cek kesiapan kodingan sebelum di-merge (PR Check)
+pr-check:
+	@echo "Menjalankan PR checks (Build & Test)..."
+	make build
+	make test
