@@ -5,20 +5,20 @@
 # Reviewer otomatis ditambahkan saat PR mengubah file terkait
 
 # Backend — Lead Backend
-/backend/                @NorEndGate-lead-backend
+/backend/                @NorEndGate
 
 # Frontend — Lead Frontend
-/frontend/               @risch24-lead-frontend
+/frontend/               @risch24
 
 # Docker & Infrastructure — Lead DevOps
-docker-compose.yml       @rizkiiaaz-lead-devops
-/backend/Dockerfile      @rizkiiaaz-lead-devops
-/frontend/Dockerfile     @rizkiiaaz-lead-devops
-Makefile                 @rizkiiaaz-lead-devops
+docker-compose.yml       @rizkiiaaz
+/backend/Dockerfile      @rizkiiaaz
+/frontend/Dockerfile     @rizkiiaaz
+Makefile                 @rizkiiaaz
 
 # Documentation — Lead QA & Docs
-README.md                @Azizah66-lead-qa
-/docs/                   @Azizah66-lead-qa
+README.md                @Azizah66
+/docs/                   @Azizah66
 
 # CI/CD (jika 5 orang) — Lead CI/CD
 # /.github/workflows/   @username-lead-cicd
