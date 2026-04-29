@@ -13,8 +13,8 @@
 # Docker & Infrastructure — Lead DevOps
 docker-compose.yml       @rizkiiaaz-lead-devops
 /backend/Dockerfile      @rizkiiaaz-lead-devops
-/frontend/Dockerfile     @rizkiaaz-lead-devops
-Makefile                 @rizkiaaz-lead-devops
+/frontend/Dockerfile     @rizkiiaaz-lead-devops
+Makefile                 @rizkiiaaz-lead-devops
 
 # Documentation — Lead QA & Docs
 README.md                @Azizah66-lead-qa
