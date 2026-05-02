@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
+import AboutPage from './components/AboutPage'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -25,6 +26,7 @@ function useReveal() {
 export default function App() {
   const [view, setView] = useState('home')
   const [heroRef, heroVis] = useReveal()
+  const [showAbout, setShowAbout] = useState(false)
 
   useEffect(() => {
     fetch(`${API_URL}/health`)
@@ -32,6 +34,10 @@ export default function App() {
       .then(d => console.log('✅ Backend:', d))
       .catch(() => console.warn('⚠️ Backend tidak terhubung'))
   }, [])
+
+    if (showAbout) {
+    return <AboutPage onBack={() => setShowAbout(false)} />
+  }
 
   return (
     <div className="shell">
@@ -47,6 +53,7 @@ export default function App() {
           <button className={`nav-link ${view === 'home'  ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
           <button className={`nav-link ${view === 'alur'  ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
           <button className={`nav-link ${view === 'bk'    ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
+          <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>📄 About</button>
           <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
         </div>
       </nav>
