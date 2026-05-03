@@ -606,6 +606,202 @@ textarea.f-input { resize: vertical; min-height: 80px; }
 .btn-delete:hover:not(:disabled) { background:rgba(239,68,68,.16); border-color:rgba(239,68,68,.35); transform:translateY(-1px); }
 .btn-delete:disabled { opacity:.5; cursor:not-allowed; }
 
+/* ════════════════════════════════════════════════════════════
+   ABOUT PAGE — Styling
+   ════════════════════════════════════════════════════════════ */
+
+.about-container {
+  /* 1. Buat kontainer membentang full-screen */
+  width: 100%;
+  min-height: 100vh;
+  
+  /* 2. Beri warna hitam gelap menyesuaikan halaman utama */
+  background-color: var(--clr-bg); 
+  
+  /* (Opsional) Tambahkan efek glow/gradient tipis agar persis seperti di beranda */
+  background-image:
+    radial-gradient(ellipse 60% 45% at 10% 0%, rgba(109,40,217,.15) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(76,29,149,.10) 0%, transparent 60%);
+
+  /* 3. Trik agar backgroundnya full, TAPI konten teksnya tetap di tengah dengan maksimal lebar 900px */
+  padding: 60px max(20px, calc((100vw - 900px) / 2)); 
+  
+  color: var(--clr-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  box-sizing: border-box;
+}
+
+.about-header { margin-bottom: 40px; }
+
+.about-back-btn {
+  padding: 10px 20px;
+  background-color: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.5);
+  color: #c4b5fd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--t-fast);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.about-back-btn:hover {
+  background-color: rgba(124, 58, 237, 0.35);
+  border-color: rgba(124, 58, 237, 0.8);
+}
+
+.about-title-section { margin-bottom: 50px; }
+
+.about-label {
+  color: #2dd4bf;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.about-title {
+  font-size: 48px;
+  font-weight: 800;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #c4b5fd 0%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Playfair Display', serif;
+}
+
+.about-description {
+  font-size: 16px;
+  color: rgba(220, 215, 255, 0.7);
+  line-height: 1.8;
+  max-width: 600px;
+  margin: 0;
+}
+
+/* ── Tech Stack Section ──────────────────────────────────────── */
+.about-section { margin-bottom: 50px; }
+
+.about-section-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #c4b5fd;
+  border-bottom: 2px solid rgba(124, 58, 237, 0.3);
+  padding-bottom: 12px;
+  font-family: 'Playfair Display', serif;
+}
+
+.about-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.about-tech-card {
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: var(--t-normal);
+}
+
+.about-tech-card:hover {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.4);
+  transform: translateY(-4px);
+}
+
+.about-tech-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.about-tech-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2dd4bf;
+  margin-bottom: 4px;
+}
+
+.about-tech-description {
+  font-size: 12px;
+  color: rgba(220, 215, 255, 0.6);
+}
+
+/* ── Team Section ────────────────────────────────────────────── */
+.about-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.about-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: rgba(10, 14, 26, 0.5);
+}
+
+.about-table thead {
+  background-color: rgba(124, 58, 237, 0.2);
+  border-bottom: 2px solid rgba(124, 58, 237, 0.3);
+}
+
+.about-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 700;
+  color: #2dd4bf;
+  font-size: 14px;
+}
+
+.about-table tbody tr {
+  border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+  transition: background var(--t-fast);
+}
+
+.about-table tbody tr:hover {
+  background-color: rgba(124, 58, 237, 0.08);
+}
+
+.about-table td {
+  padding: 16px;
+  font-size: 14px;
+  color: #f0eeff;
+}
+
+.about-table td:nth-child(2) {
+  color: rgba(220, 215, 255, 0.7);
+  font-family: monospace;
+}
+
+.about-table td:nth-child(3) {
+  color: #2dd4bf;
+  font-weight: 600;
+}
+
+/* ── Footer Info ─────────────────────────────────────────────── */
+.about-footer {
+  margin-top: 50px;
+  padding: 24px;
+  background-color: rgba(124, 58, 237, 0.05);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  border-radius: 12px;
+  text-align: center;
+  color: rgba(220, 215, 255, 0.6);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.about-footer p { margin: 0; }
+.about-footer p:not(:first-child) { margin-top: 8px; }
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 950px) {
   .hero-grid, .form-page { grid-template-columns: 1fr; }
