@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
+import DarkModeToggle from './components/DarkModeToggle'
 import AboutPage from './components/AboutPage'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -46,13 +47,14 @@ export default function App() {
       {/* ── Navbar ── */}
       <nav className="nav">
         <div className="nav-brand" onClick={() => setView('home')}>
-          <div className="nav-logo">🌿</div>
+          <div className="nav-logo">👩🏻‍🏫</div>
           <span>SafeSpace</span>
         </div>
         <div className="nav-links">
           <button className={`nav-link ${view === 'home'  ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
           <button className={`nav-link ${view === 'alur'  ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
           <button className={`nav-link ${view === 'bk'    ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
+          <DarkModeToggle />
           <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>📄 About</button>
           <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
         </div>
