@@ -31,6 +31,7 @@ from schemas import (
 
 load_dotenv()
 
+# Buat semua tabel jika belum ada saat aplikasi старт.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -39,10 +40,11 @@ app = FastAPI(
     version="0.2.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
 allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
 
+# CORS dibuka untuk frontend lokal dan origin yang diizinkan via environment.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins_list,
@@ -59,6 +61,7 @@ app.include_router(bk_dashboard.router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Mengubah error validasi Pydantic menjadi format yang lebih singkat."""
     errors = []
     for error in exc.errors():
         field = " -> ".join(str(loc) for loc in error["loc"] if loc != "body")
@@ -71,11 +74,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.get("/health")
 def health_check():
+    """Endpoint ringan untuk mengecek apakah service hidup."""
     return {"status": "healthy", "service": "SafeSpace API", "version": "0.2.0"}
 
 
 @app.post("/auth/counselors/register", response_model=UserBase, status_code=201)
 def register_counselor(payload: CounselorRegisterRequest, db: Session = Depends(get_db)):
+    """Mendaftarkan akun konselor baru."""
     counselor = crud.create_counselor(db=db, user_data=payload)
     if not counselor:
         raise HTTPException(status_code=400, detail="Email sudah terdaftar")
@@ -84,6 +89,7 @@ def register_counselor(payload: CounselorRegisterRequest, db: Session = Depends(
 
 @app.post("/auth/counselor/login", response_model=TokenResponse)
 def counselor_login(payload: CounselorLoginRequest, db: Session = Depends(get_db)):
+    """Login konselor dengan body JSON."""
     counselor = crud.authenticate_counselor(db=db, email=payload.email, password=payload.password)
     if not counselor:
         raise HTTPException(status_code=401, detail="Email atau password konselor salah")
@@ -97,6 +103,7 @@ def counselor_login_oauth2(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
+    """Login konselor menggunakan form OAuth2 untuk Swagger UI."""
     counselor = crud.authenticate_counselor(db=db, email=form_data.username, password=form_data.password)
     if not counselor:
         raise HTTPException(status_code=401, detail="Email atau password konselor salah")
@@ -107,16 +114,19 @@ def counselor_login_oauth2(
 
 @app.get("/auth/me", response_model=UserBase)
 def get_me(current_user: User = Depends(get_current_user)):
+    """Mengembalikan data user yang sedang login."""
     return current_user
 
 
 @app.get("/auth/counselor/me", response_model=UserBase)
 def get_counselor_me(current_user: User = Depends(get_current_counselor)):
+    """Mengembalikan data konselor yang sedang login."""
     return current_user
 
 
 @app.post("/api/consultations", response_model=ConsultationGuestResponse, status_code=201)
 def create_guest_consultation(payload: ConsultationGuestCreate, db: Session = Depends(get_db)):
+    """Membuat pengajuan konsultasi baru dari pengguna publik."""
     try:
         consultation = crud.create_guest_consultation(db=db, payload=payload)
         return consultation
@@ -126,21 +136,25 @@ def create_guest_consultation(payload: ConsultationGuestCreate, db: Session = De
 
 @app.get("/api/public/master-data", response_model=PublicMasterDataResponse)
 def get_public_master_data(db: Session = Depends(get_db)):
+    """Mengambil data master yang dipakai form publik."""
     return crud.get_public_master_data(db=db)
 
 
 @app.get("/api/public/counselors", response_model=list[CounselorPublicItem])
 def get_public_counselors(db: Session = Depends(get_db)):
+    """Mengambil daftar konselor aktif untuk halaman publik."""
     return crud.get_active_counselors_public(db=db)
 
 
 @app.post("/api/dev/seed/master-data", response_model=SeedMasterDataResponse)
 def seed_master_data(db: Session = Depends(get_db)):
+    """Mengisi master data awal untuk kebutuhan development."""
     return crud.seed_master_data(db=db)
 
 
 @app.post("/api/dev/seed/counselors", response_model=SeedCounselorsResponse)
 def seed_initial_counselors(payload: SeedCounselorsRequest, db: Session = Depends(get_db)):
+    """Menambahkan data konselor awal dari payload request."""
     return crud.seed_counselors(db=db, counselors=payload.counselors)
 
 
@@ -150,6 +164,7 @@ def list_consultations_for_counselor(
     current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
 ):
+    """Mengambil daftar konsultasi milik konselor yang sedang login."""
     return crud.get_consultations_for_counselor(
         db=db,
         counselor_id=current_user.id,
@@ -163,6 +178,7 @@ def accept_consultation(
     current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
 ):
+    """Menandai konsultasi sebagai diterima."""
     consultation = crud.update_consultation_status(
         db=db,
         consultation_id=consultation_id,
@@ -180,6 +196,7 @@ def reject_consultation(
     current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
 ):
+    """Menandai konsultasi sebagai ditolak."""
     consultation = crud.update_consultation_status(
         db=db,
         consultation_id=consultation_id,
@@ -193,6 +210,7 @@ def reject_consultation(
 
 @app.get("/team")
 def team_info():
+    """Menampilkan informasi tim proyek."""
     return {
         "team": "cloud-team-suksesss",
         "members": [

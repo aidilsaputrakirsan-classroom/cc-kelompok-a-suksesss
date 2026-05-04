@@ -4,30 +4,29 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Load environment variables dari .env
+# Muat environment variables dari file .env agar konfigurasi tidak hard-coded.
 load_dotenv()
 
-# Ambil DATABASE_URL dari environment
+# Ambil URL database dari environment.
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL tidak ditemukan di .env!")
 
-# Buat engine (koneksi ke database)
+# Engine adalah objek inti SQLAlchemy untuk membuka koneksi ke database.
 engine = create_engine(DATABASE_URL)
 
-# Buat session factory
+# Factory untuk membuat session database per request.
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class untuk models
+# Base class yang dipakai semua model SQLAlchemy.
 Base = declarative_base()
 
 
-# Dependency: dapatkan database session
 def get_db():
     """
     Dependency injection untuk FastAPI.
-    Membuka session saat request masuk, menutup saat selesai.
+    Membuka session saat request masuk dan menutupnya setelah selesai.
     """
     db = SessionLocal()
     try:

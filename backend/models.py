@@ -8,27 +8,32 @@ from database import Base
 
 
 class UserRole(str, enum.Enum):
+    """Role pengguna di sistem."""
     COUNSELOR = "COUNSELOR"
     ADMIN = "ADMIN"
 
 
 class Gender(str, enum.Enum):
+    """Jenis kelamin student."""
     MALE = "MALE"
     FEMALE = "FEMALE"
 
 
 class ConsultationMethod(str, enum.Enum):
+    """Metode konsultasi yang tersedia."""
     INDIVIDUAL = "INDIVIDUAL"
     GROUP = "GROUP"
 
 
 class ConsultationStatus(str, enum.Enum):
+    """Status perjalanan konsultasi."""
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
 
 
 class User(Base):
+    """Tabel akun user, terutama konselor dan admin."""
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -48,6 +53,7 @@ class User(Base):
 
 
 class Student(Base):
+    """Tabel identitas student yang mengajukan konsultasi."""
     __tablename__ = "students"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -61,6 +67,7 @@ class Student(Base):
 
 
 class SchoolClass(Base):
+    """Master data kelas sekolah."""
     __tablename__ = "school_classes"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -71,6 +78,7 @@ class SchoolClass(Base):
 
 
 class Topic(Base):
+    """Master data topik konsultasi."""
     __tablename__ = "topics"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -83,6 +91,7 @@ class Topic(Base):
 
 
 class TimeSlot(Base):
+    """Master data slot waktu konsultasi."""
     __tablename__ = "time_slots"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -95,6 +104,7 @@ class TimeSlot(Base):
 
 
 class Place(Base):
+    """Master data tempat konsultasi."""
     __tablename__ = "places"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -105,6 +115,7 @@ class Place(Base):
 
 
 class Consultation(Base):
+    """Tabel inti yang menyimpan permintaan konsultasi."""
     __tablename__ = "consultations"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -134,6 +145,7 @@ class Consultation(Base):
 
 
 class News(Base):
+    """Tabel artikel berita atau informasi sekolah."""
     __tablename__ = "news"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
