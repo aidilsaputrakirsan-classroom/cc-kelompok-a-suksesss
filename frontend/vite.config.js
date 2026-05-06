@@ -17,9 +17,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
     css: true,
+    pool: 'threads',
     server: {
       deps: {
-        inline: ['@exodus/bytes']
+        inline: [/html-encoding-sniffer/, /@exodus\/bytes/]
       }
     }
   }
