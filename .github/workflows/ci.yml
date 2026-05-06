@@ -66,6 +66,9 @@ jobs:
     name: ⚛️ Test Frontend
     runs-on: ubuntu-latest
 
+    env:
+      NODE_OPTIONS: --experimental-vm-modules
+
     defaults:
       run:
         working-directory: ./frontend
