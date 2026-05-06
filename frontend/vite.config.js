@@ -17,10 +17,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
     css: true,
-    pool: 'threads',
+    environmentOptions: {
+      jsdom: {
+        resources: 'usable',
+      },
+    },
     server: {
       deps: {
-        inline: [/html-encoding-sniffer/, /@exodus\/bytes/]
+        inline: ['html-encoding-sniffer']
       }
     }
   }
