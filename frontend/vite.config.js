@@ -17,14 +17,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
     css: true,
-    environmentOptions: {
-      jsdom: {
-        resources: 'usable',
-      },
-    },
-    server: {
-      deps: {
-        inline: ['html-encoding-sniffer']
+    deps: {
+      optimizer: {
+        web: {
+          include: ['@exodus/bytes', 'html-encoding-sniffer']
+        }
       }
     }
   }
