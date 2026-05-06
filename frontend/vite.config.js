@@ -17,5 +17,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
     css: true,
+    server: {
+      deps: {
+        inline: ['@exodus/bytes']
+      }
+    }
   }
 })
