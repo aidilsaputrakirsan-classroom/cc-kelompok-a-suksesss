@@ -539,6 +539,68 @@ textarea.f-input { resize: vertical; min-height: 80px; }
   font-size: .9rem;
 }
 
+/* ── Filter section ──────────────────────────────────────── */
+.bk-filter-section {
+  background: rgba(124,58,237,.08);
+  border: 1px solid rgba(124,58,237,.2);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.bk-filter-title {
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--clr-text-3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 10px;
+}
+
+.bk-filter-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.bk-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bk-filter-label {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--clr-text-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.bk-filter-select {
+  padding: 7px 10px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r-sm);
+  color: var(--clr-text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: var(--t-fast);
+}
+
+.bk-filter-select:hover {
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.15);
+}
+
+.bk-filter-select:focus {
+  outline: none;
+  background: rgba(124,58,237,.15);
+  border-color: rgba(124,58,237,.3);
+  box-shadow: 0 0 0 2px rgba(124,58,237,.1);
+}
+
 /* ════════════════════════════════════════════════════════════
    DONUT CHART
    ════════════════════════════════════════════════════════════ */

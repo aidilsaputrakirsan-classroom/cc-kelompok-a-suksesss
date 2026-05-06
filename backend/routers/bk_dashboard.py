@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 import crud
 from auth import get_current_counselor
 from database import get_db
-from models import User
+from models import User, ConsultationStatus
 from schemas import ConsultationDetailResponse, DashboardStatsResponse, PaginatedConsultationListResponse, ConsultationListItemResponse
 
 
@@ -53,24 +53,30 @@ def get_dashboard_stats(
 @router.get(
     "/consultations",
     response_model=PaginatedConsultationListResponse,
-    summary="Daftar Konsultasi dengan Pagination",
-    description="Menampilkan daftar konsultasi milik guru BK dengan pagination (limit & offset).",
+    summary="Daftar Konsultasi dengan Pagination & Filter",
+    description="Menampilkan daftar konsultasi milik guru BK dengan pagination dan optional filter (method, gender, status).",
     status_code=200,
 )
 def list_consultations_paginated(
     limit: int = Query(10, ge=1, le=100, description="Jumlah data per halaman (default: 10, max: 100)"),
     offset: int = Query(0, ge=0, description="Offset data (default: 0)"),
+    method: str | None = Query(None, description="Filter by method: INDIVIDUAL atau GROUP"),
+    gender: str | None = Query(None, description="Filter by gender: MALE atau FEMALE"),
+    status: str | None = Query(None, description="Filter by status: PENDING, ACCEPTED, atau REJECTED"),
     current_user: User = Depends(get_current_counselor),
     db: Session = Depends(get_db),
 ):
     """
-    📋 Consultation List dengan Pagination endpoint.
+    📋 Consultation List dengan Pagination & Filter endpoint.
     
-    Returns daftar konsultasi yang dimiliki oleh guru BK dengan pagination.
+    Returns daftar konsultasi yang dimiliki oleh guru BK dengan pagination dan optional filter.
     
     Query Parameters:
     - limit: Jumlah data per halaman (1-100, default 10)
     - offset: Offset untuk pagination (default 0)
+    - method: Filter by consultation method (INDIVIDUAL/GROUP, optional)
+    - gender: Filter by student gender (MALE/FEMALE, optional)
+    - status: Filter by consultation status (PENDING/ACCEPTED/REJECTED, optional)
     
     Response format:
     {
@@ -82,15 +88,27 @@ def list_consultations_paginated(
     
     ✅ Data isolation: Hanya menampilkan data konsultasi untuk counselor_id = current_user.id
     ✅ Sorted by created_at DESC (konsultasi terbaru di atas)
+    ✅ Optional filtering by method, gender, status
     
     TODO[FE]: Gunakan limit & offset untuk implementasi pagination UI di frontend
-    TODO[FE]: Tombol Next/Prev: next_offset = offset + limit; prev_offset = max(0, offset - limit)
+    TODO[FE]: Tambahkan filter dropdown untuk method, gender, status
     """
+    # Parse status parameter ke enum jika provided
+    status_filter = None
+    if status is not None:
+        try:
+            status_filter = ConsultationStatus[status.upper()]
+        except KeyError:
+            status_filter = None
+    
     result = crud.get_consultations_paginated(
         db=db,
         counselor_id=current_user.id,
         limit=limit,
         offset=offset,
+        method=method,
+        gender=gender,
+        status_filter=status_filter,
     )
     return result
 
