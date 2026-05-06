@@ -31,7 +31,7 @@ from schemas import (
 
 load_dotenv()
 
-# Buat semua tabel jika belum ada saat aplikasi старт.
+# Buat semua tabel jika belum ada saat aplikasi startup.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
