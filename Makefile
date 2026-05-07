@@ -48,15 +48,19 @@ shell-frontend:
 # Jalankan linter untuk mengecek kerapian kode
 lint:
 	@echo "Menjalankan linter..."
-	# Nanti diisi dengan perintah linter (misal: flake8 / eslint)
+	cd frontend && npm run lint
 
 # Jalankan unit test
 test:
-	@echo "Menjalankan unit tests..."
-	# Nanti diisi dengan perintah test (misal: pytest)
+	@echo "Menjalankan unit tests Backend (Pytest)..."
+	cd backend && pytest
+	@echo "Menjalankan unit tests Frontend (Vitest)..."
+	cd frontend && npm test
 
 # Cek kesiapan kodingan sebelum di-merge (PR Check)
 pr-check:
-	@echo "Menjalankan PR checks (Build & Test)..."
-	make build
+	@echo "Menjalankan PR checks lokal (Lint, Build & Test)..."
+	make lint
 	make test
+	make build
+	@echo "✅ Semua check lokal berhasil! Kodingan aman untuk di-push dan di-PR."
