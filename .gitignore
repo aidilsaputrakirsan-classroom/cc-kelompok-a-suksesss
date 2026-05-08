@@ -17,4 +17,8 @@ dist/
 .vscode/
 .idea/
 
+# Ignore SQLite databases
+*.db
+backend/test.db
+
 2026-modul-praktikum-cloudcomputing
