@@ -1,11 +1,16 @@
 """
 Konfigurasi test — setup database test terpisah dari database utama.
 """
+import os
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
+# Paksa database test memakai SQLite sebelum app utama diimport.
+os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 from database import Base, get_db
 from main import app
