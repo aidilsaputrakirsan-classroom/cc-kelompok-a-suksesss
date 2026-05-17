@@ -10,6 +10,7 @@ PHONE_ID_REGEX = re.compile(r"^\+62\d{8,13}$")
 
 
 class UserBase(BaseModel):
+    """Representasi data user yang aman untuk response API."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -23,6 +24,7 @@ class UserBase(BaseModel):
 
 
 class CounselorRegisterRequest(BaseModel):
+    """Payload untuk registrasi akun konselor."""
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=72)
@@ -55,17 +57,20 @@ class CounselorRegisterRequest(BaseModel):
 
 
 class CounselorLoginRequest(BaseModel):
+    """Payload untuk login konselor."""
     email: EmailStr
     password: str = Field(..., min_length=1)
 
 
 class TokenResponse(BaseModel):
+    """Response standar setelah login berhasil."""
     access_token: str
     token_type: str = "bearer"
     user: UserBase
 
 
 class ConsultationGuestCreate(BaseModel):
+    """Payload dari form konsultasi publik."""
     student_name: str = Field(..., min_length=2, max_length=100)
     class_id: int = Field(..., ge=1)
     gender: Gender
@@ -87,6 +92,7 @@ class ConsultationGuestCreate(BaseModel):
 
 
 class ConsultationGuestResponse(BaseModel):
+    """Response ringkas untuk konsultasi yang baru dibuat."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -97,6 +103,7 @@ class ConsultationGuestResponse(BaseModel):
 
 
 class SeedMasterDataResponse(BaseModel):
+    """Response ringkas saat data master berhasil di-seed."""
     school_classes: int
     topics: int
     time_slots: int
@@ -104,11 +111,13 @@ class SeedMasterDataResponse(BaseModel):
 
 
 class MasterDataOption(BaseModel):
+    """Opsi sederhana untuk dropdown master data."""
     id: int
     name: str
 
 
 class TimeSlotOption(BaseModel):
+    """Opsi slot waktu yang membawa informasi jam mulai dan selesai."""
     id: int
     name: str
     start_time: str | None = None
@@ -116,6 +125,7 @@ class TimeSlotOption(BaseModel):
 
 
 class PublicMasterDataResponse(BaseModel):
+    """Kumpulan master data publik yang dibutuhkan form konsultasi."""
     school_classes: list[MasterDataOption]
     topics: list[MasterDataOption]
     time_slots: list[TimeSlotOption]
@@ -123,6 +133,7 @@ class PublicMasterDataResponse(BaseModel):
 
 
 class CounselorPublicItem(BaseModel):
+    """Item konselor yang boleh ditampilkan ke publik."""
     id: int
     name: str
     specialization: str | None = None
@@ -130,6 +141,7 @@ class CounselorPublicItem(BaseModel):
 
 
 class SeedCounselorItem(BaseModel):
+    """Satu item data konselor untuk kebutuhan seeding."""
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=72)
@@ -138,15 +150,18 @@ class SeedCounselorItem(BaseModel):
 
 
 class SeedCounselorsRequest(BaseModel):
+    """Payload untuk mengisi banyak data konselor sekaligus."""
     counselors: list[SeedCounselorItem] = Field(..., min_length=1)
 
 
 class SeedCounselorsResponse(BaseModel):
+    """Response hasil proses seeding konselor."""
     created: int
     skipped_existing: int
 
 
 class ConsultationStudentSummary(BaseModel):
+    """Ringkasan data student pada daftar konsultasi."""
     name: str
     school_class: str
     gender: Gender
@@ -154,6 +169,7 @@ class ConsultationStudentSummary(BaseModel):
 
 
 class ConsultationCounselorListItem(BaseModel):
+    """Item daftar konsultasi untuk dashboard konselor."""
     id: int
     tracking_code: str
     method: ConsultationMethod
@@ -167,6 +183,7 @@ class ConsultationCounselorListItem(BaseModel):
 
 
 class ConsultationStatusUpdateResponse(BaseModel):
+    """Response saat status konsultasi diubah."""
     id: int
     tracking_code: str
     status: ConsultationStatus
@@ -175,17 +192,7 @@ class ConsultationStatusUpdateResponse(BaseModel):
 # ==================== DASHBOARD BK ====================
 
 class DashboardStatsResponse(BaseModel):
-    """
-    Statistik dashboard untuk guru BK.
-    
-    Example:
-    {
-      "total": 50,
-      "pending": 10,
-      "accepted": 35,
-      "rejected": 5
-    }
-    """
+    """Statistik dashboard untuk guru BK."""
     total: int = Field(..., ge=0, description="Total jumlah konsultasi milik counselor")
     pending: int = Field(..., ge=0, description="Jumlah konsultasi dengan status PENDING")
     accepted: int = Field(..., ge=0, description="Jumlah konsultasi dengan status ACCEPTED")
@@ -193,23 +200,7 @@ class DashboardStatsResponse(BaseModel):
 
 
 class ConsultationListItemResponse(BaseModel):
-    """
-    Item dalam daftar konsultasi di dashboard.
-    Optimized untuk pagination list view.
-    
-    Example:
-    {
-      "id": 1,
-      "tracking_code": "SS-ABC1234567",
-      "student_name": "Budi Santoso",
-      "class": "X-A",
-      "topic": "Belajar",
-      "status": "PENDING",
-      "date": "2026-04-20",
-      "time_slot": "Istirahat ke-1 (10:00-10:30)",
-      "created_at": "2026-04-17T10:30:45.123456+00:00"
-    }
-    """
+    """Item daftar konsultasi yang sudah disiapkan untuk pagination dashboard."""
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -228,22 +219,7 @@ class ConsultationListItemResponse(BaseModel):
 
 
 class PaginatedConsultationListResponse(BaseModel):
-    """
-    Response untuk endpoint list konsultasi dengan pagination.
-    
-    Example:
-    {
-      "data": [...],
-      "total": 50,
-      "page": 1,
-      "limit": 10
-    }
-    
-    Notes:
-    - page = (offset // limit) + 1
-    - Untuk next page: next_offset = offset + limit
-    - Untuk prev page: prev_offset = max(0, offset - limit)
-    """
+    """Response paginated untuk daftar konsultasi dashboard."""
     data: list[ConsultationListItemResponse]
     total: int = Field(..., ge=0, description="Total jumlah data (tanpa pagination)")
     page: int = Field(..., ge=1, description="Nomor halaman (calculated: offset // limit + 1)")
@@ -251,6 +227,7 @@ class PaginatedConsultationListResponse(BaseModel):
 
 
 class ConsultationDetailResponse(BaseModel):
+    """Detail lengkap satu konsultasi untuk halaman detail dashboard."""
     id: int
     tracking_code: str
     student_name: str
