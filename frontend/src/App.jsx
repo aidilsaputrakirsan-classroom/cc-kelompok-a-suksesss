@@ -495,6 +495,9 @@ function BKDashboard() {
   const [consultations, setC]   = useState([])
   const [actionErr, setAE]      = useState('')
   const [deletingId, setDeletingId] = useState(null)
+  const [filterMethod, setFilterMethod] = useState('')
+  const [filterGender, setFilterGender] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
@@ -508,8 +511,12 @@ function BKDashboard() {
     created_at:       item.created_at,
     /* Nama siswa — paginated pakai student_name, legacy pakai student.name */
     student_name:     item.student_name || item.student?.name || '',
+    /* Gender siswa — paginated: gender in item, legacy: student.gender */
+    student_gender:   item.student_gender || item.student?.gender || '',
     /* Nomor WA — paginated tidak ada, legacy dari student.phone */
     student_phone:    item.student_phone || item.student?.phone || '',
+    /* Counselor name */
+    counselor_name:   item.counselor_name || '',
     /* Kelas — paginated: item.class, legacy: student.school_class */
     class:            item.class || item.student?.school_class || '',
     /* Topik — paginated: item.topic, legacy: item.topic_name */
@@ -523,16 +530,23 @@ function BKDashboard() {
     rejection_reason: item.rejection_reason || null,
   })
 
-  const fetchDashboard = async (bt = token) => {
+  const fetchDashboard = async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
     const h = bt ? { Authorization: `Bearer ${bt}` } : {}
     setLD(true); setAE('')
     try {
+      /* Build URL dengan filter parameters */
+      const params = new URLSearchParams()
+      params.append('limit', '50')
+      params.append('offset', '0')
+      if (fm) params.append('method', fm.toUpperCase())
+      if (fg) params.append('gender', fg.toUpperCase())
+      if (fs) params.append('status', fs.toUpperCase())
+      
       /* Fetch stats + daftar konsultasi secara paralel
-         Gunakan endpoint legacy /api/bk/consultations (tanpa pagination params)
-         agar mendapatkan place_name, time_slot_name, student.phone, dll. */
+         Gunakan endpoint /api/bk/consultations dengan filter parameters */
       const [sRes, cRes] = await Promise.all([
         fetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
-        fetch(`${API_URL}/api/bk/consultations`, { headers: h }),
+        fetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
       ])
       if (!sRes.ok) { const e = await sRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat stats') }
       if (!cRes.ok) { const e = await cRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat konsultasi') }
@@ -547,7 +561,7 @@ function BKDashboard() {
     } catch (e) { setAE(e.message) } finally { setLD(false) }
   }
 
-  useEffect(() => { if (token) fetchDashboard(token) }, [token])
+  useEffect(() => { if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus) }, [token, filterMethod, filterGender, filterStatus])
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoginErr(''); setLL(true)
@@ -697,6 +711,39 @@ function BKDashboard() {
 
               {/* Kolom kanan: Daftar konsultasi */}
               <div className="bk-list-panel">
+                
+                {/* Filter section */}
+                <div className="bk-filter-section">
+                  <div className="bk-filter-title">🔍 Filter Konsultasi</div>
+                  <div className="bk-filter-group">
+                    <div className="bk-filter-item">
+                      <label className="bk-filter-label">Metode</label>
+                      <select className="bk-filter-select" value={filterMethod} onChange={(e) => setFilterMethod(e.target.value)}>
+                        <option value="">Semua</option>
+                        <option value="INDIVIDUAL">Individual (1-1)</option>
+                        <option value="GROUP">Kelompok</option>
+                      </select>
+                    </div>
+                    <div className="bk-filter-item">
+                      <label className="bk-filter-label">Gender</label>
+                      <select className="bk-filter-select" value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
+                        <option value="">Semua</option>
+                        <option value="MALE">Laki-laki</option>
+                        <option value="FEMALE">Perempuan</option>
+                      </select>
+                    </div>
+                    <div className="bk-filter-item">
+                      <label className="bk-filter-label">Status</label>
+                      <select className="bk-filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                        <option value="">Semua</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="ACCEPTED">Accepted</option>
+                        <option value="REJECTED">Rejected</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
                   <div className="bk-panel-title" style={{ margin: 0 }}>Konsultasi Terbaru</div>
                   <button className="nav-cta" style={{ padding: '8px 16px', fontSize: '.8rem' }} onClick={() => fetchDashboard()} disabled={loadingData}>

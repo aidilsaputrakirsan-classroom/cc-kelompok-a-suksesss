@@ -391,14 +391,25 @@ def get_dashboard_stats(db: Session, counselor_id: int) -> dict:
     }
 
 
-def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offset: int) -> dict:
+def get_consultations_paginated(
+    db: Session,
+    counselor_id: int,
+    limit: int,
+    offset: int,
+    method: str | None = None,
+    gender: str | None = None,
+    status_filter: ConsultationStatus | None = None,
+) -> dict:
     """
-    📋 Get paginated consultation list untuk guru BK.
+    📋 Get paginated consultation list untuk guru BK dengan optional filters.
     
     Args:
     - counselor_id: ID konselor (from JWT token)
     - limit: Jumlah data per halaman (1-100)
     - offset: Offset pagination (0, 10, 20, ...)
+    - method: Filter by method (INDIVIDUAL/GROUP)
+    - gender: Filter by student gender (MALE/FEMALE)
+    - status_filter: Filter by status (PENDING/ACCEPTED/REJECTED)
     
     Returns:
     {
@@ -424,6 +435,7 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
     ✅ Data isolation: Filter by counselor_id = param
     ✅ Sorted: Order by created_at DESC (terbaru di atas)
     ✅ Pagination: LIMIT = limit, OFFSET = offset
+    ✅ Filtering: Optional method, gender, status filters
     """
     # Data isolation: Query hanya untuk consultation milik counselor ini
     base_query = (
@@ -431,6 +443,26 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
         .filter(Consultation.counselor_id == counselor_id)
         .order_by(Consultation.created_at.desc())
     )
+    
+    # Apply filters
+    if method is not None:
+        from models import ConsultationMethod
+        try:
+            method_enum = ConsultationMethod[method.upper()]
+            base_query = base_query.filter(Consultation.method == method_enum)
+        except KeyError:
+            pass
+    
+    if gender is not None:
+        from models import Gender
+        try:
+            gender_enum = Gender[gender.upper()]
+            base_query = base_query.join(Student).filter(Student.gender == gender_enum)
+        except KeyError:
+            pass
+    
+    if status_filter is not None:
+        base_query = base_query.filter(Consultation.status == status_filter)
     
     # Count total sebelum pagination
     total = base_query.count()
@@ -446,8 +478,10 @@ def get_consultations_paginated(db: Session, counselor_id: int, limit: int, offs
             "id": consultation.id,
             "tracking_code": consultation.tracking_code,
             "student_name": consultation.student.name,
+            "student_gender": consultation.student.gender,
             "student_phone": consultation.student.phone,
             "counselor_name": consultation.counselor.name,
+            "method": consultation.method,
             "class": consultation.school_class.name,
             "topic": consultation.topic.name,
             "status": consultation.status,
