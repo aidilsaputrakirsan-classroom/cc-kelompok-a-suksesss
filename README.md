@@ -1,5 +1,7 @@
 # 🧠 SafeSpace — Platform Konseling Aman & Privat
 
+![CI Pipeline](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-suksesss/actions/workflows/ci.yml/badge.svg)
+
 > **SafeSpace** adalah aplikasi berbasis web untuk layanan bimbingan konseling yang memungkinkan siswa mengajukan konsultasi secara **aman, anonim, dan fleksibel**, serta membantu guru BK dalam mengelola pengajuan secara terstruktur dan real-time.
 
 ---
@@ -26,7 +28,7 @@
 8. [Panduan Menjalankan](#-panduan-menjalankan)
 9. [Struktur Proyek](#-struktur-proyek)
 10. [Tim Pengembang](#-tim-pengembang)
-11. [Kesimpulan](#-kesimpulan)
+11. [Roadmap](#-roadmap)
 
 ---
 
@@ -369,14 +371,19 @@ CC-KELOMPOK-A-SUKSESSS/
 
 ---
 
-## 📊 Kesimpulan
+## 📅 Roadmap
 
-SafeSpace berhasil dikembangkan sebagai sistem konseling berbasis cloud dengan:
-
-- Arsitektur modular (frontend, backend, database)  
-- Sistem tanpa login untuk siswa  
-- Dashboard aman untuk guru BK  
----
+| Minggu | Target | Status |
+|--------|--------|--------|
+| 1 | Setup & Hello World | ✅ |
+| 2 | REST API + Database | ✅ |
+| 3 | React Frontend | ✅ |
+| 4 | Full-Stack Integration | ✅ |
+| 5-7 | Docker & Compose | ✅ |
+| 8 | UTS Demo | ✅ |
+| 9-11 | CI/CD Pipeline | ✅ |
+| 12-14 | Microservices | ⬜ |
+| 15-16 | Final & UAS | ⬜ |
 
 <div align="center">
   <sub>Built by Tim Suksesss</sub>
