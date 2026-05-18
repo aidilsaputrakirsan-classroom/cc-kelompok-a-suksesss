@@ -41,7 +41,12 @@ def db_session():
         session.close()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
-        for candidate in TEST_DB_PATH.parent.glob("test.db*"):
+        for candidate in [
+            TEST_DB_PATH,
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-journal"),
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-wal"),
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-shm"),
+        ]:
             if candidate.exists():
                 try:
                     candidate.unlink()
