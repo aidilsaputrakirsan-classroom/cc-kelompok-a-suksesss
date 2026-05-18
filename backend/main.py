@@ -40,9 +40,9 @@ app = FastAPI(
     version="0.2.0",
 )
 
-allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
-allow_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+allow_origin_regex = None
 
 # CORS dibuka untuk frontend lokal dan origin yang diizinkan via environment.
 app.add_middleware(
