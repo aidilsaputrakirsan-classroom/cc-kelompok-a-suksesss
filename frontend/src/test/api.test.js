@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock fetch global
-global.fetch = vi.fn()
+// Gunakan stubGlobal dari Vitest (tanpa perlu variabel global)
+vi.stubGlobal('fetch', vi.fn())
 
 describe('API Service', () => {
   beforeEach(() => {

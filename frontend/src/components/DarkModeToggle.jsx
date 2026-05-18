@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 function DarkModeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
-
-  useEffect(() => {
-    // Cek localStorage saat component mount
-    const savedMode = localStorage.getItem('darkMode')
-    if (savedMode === 'true') {
-      setIsDarkMode(true)
+  // Lazy initialization: baca localStorage sekali saat pertama render
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem('darkMode') === 'true'
+    // Terapkan class ke body dan shell saat pertama kali
+    if (savedMode) {
       document.body.classList.add('dark-mode')
       document.querySelector('.shell')?.classList.add('dark-mode')
     }
-  }, [])
+    return savedMode
+  })
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode
     setIsDarkMode(newMode)
     
-    // Toggle class di body dan shell
     if (newMode) {
       document.body.classList.add('dark-mode')
       document.querySelector('.shell')?.classList.add('dark-mode')
@@ -26,7 +24,6 @@ function DarkModeToggle() {
       document.querySelector('.shell')?.classList.remove('dark-mode')
     }
     
-    // Simpan ke localStorage
     localStorage.setItem('darkMode', newMode.toString())
   }
 
