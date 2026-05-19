@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import './App.css'
 import DarkModeToggle from './components/DarkModeToggle'
 import AboutPage from './components/AboutPage'
@@ -188,9 +188,6 @@ function StepBox({ num, title, desc }) {
 
 /* ════════════════════════════════════════════════════════════
    CONSULT FORM — terhubung ke backend
-   POST /api/consultations
-   GET  /api/public/master-data
-   GET  /api/public/counselors
    ════════════════════════════════════════════════════════════ */
 function ConsultForm() {
   const FALLBACK = {
@@ -481,7 +478,7 @@ function DonutChart({ stats }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   BKDASHBOARD — Login + Register tabs + Dashboard
+   BKDASHBOARD — Login + Register tabs + Dashboard (DIPERBAIKI)
    ════════════════════════════════════════════════════════════ */
 function BKDashboard() {
   const [authTab, setAuthTab]   = useState('login')
@@ -509,32 +506,23 @@ function BKDashboard() {
     status:           item.status,
     date:             item.date,
     created_at:       item.created_at,
-    /* Nama siswa — paginated pakai student_name, legacy pakai student.name */
     student_name:     item.student_name || item.student?.name || '',
-    /* Gender siswa — paginated: gender in item, legacy: student.gender */
     student_gender:   item.student_gender || item.student?.gender || '',
-    /* Nomor WA — paginated tidak ada, legacy dari student.phone */
     student_phone:    item.student_phone || item.student?.phone || '',
-    /* Counselor name */
     counselor_name:   item.counselor_name || '',
-    /* Kelas — paginated: item.class, legacy: student.school_class */
     class:            item.class || item.student?.school_class || '',
-    /* Topik — paginated: item.topic, legacy: item.topic_name */
     topic:            item.topic || item.topic_name || '',
-    /* Time slot — paginated: item.time_slot (formatted), legacy: item.time_slot_name */
     time_slot:        item.time_slot || item.time_slot_name || '',
-    /* Tempat — paginated: tidak ada, legacy: item.place_name */
     place_name:       item.place_name || '',
-    /* WhatsApp link dari backend (jika ada) */
     whatsapp_link:    item.whatsapp_link || null,
     rejection_reason: item.rejection_reason || null,
   })
 
-  const fetchDashboard = async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
+  // 🔧 PERBAIKAN: bungkus fetchDashboard dengan useCallback
+  const fetchDashboard = useCallback(async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
     const h = bt ? { Authorization: `Bearer ${bt}` } : {}
     setLD(true); setAE('')
     try {
-      /* Build URL dengan filter parameters */
       const params = new URLSearchParams()
       params.append('limit', '50')
       params.append('offset', '0')
@@ -542,8 +530,6 @@ function BKDashboard() {
       if (fg) params.append('gender', fg.toUpperCase())
       if (fs) params.append('status', fs.toUpperCase())
       
-      /* Fetch stats + daftar konsultasi secara paralel
-         Gunakan endpoint /api/bk/consultations dengan filter parameters */
       const [sRes, cRes] = await Promise.all([
         fetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
         fetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
@@ -553,15 +539,16 @@ function BKDashboard() {
 
       const sd = await sRes.json()
       const cd = await cRes.json()
-
       setStats(sd)
-      /* Handle both: flat array (legacy) dan {data:[...]} (paginated) */
       const rawItems = Array.isArray(cd) ? cd : (cd.data || [])
       setC(rawItems.map(normalizeItem))
     } catch (e) { setAE(e.message) } finally { setLD(false) }
-  }
+  }, [token, filterMethod, filterGender, filterStatus]) // dependency yang digunakan
 
-  useEffect(() => { if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus) }, [token, filterMethod, filterGender, filterStatus])
+  // 🔧 PERBAIKAN: tambahkan fetchDashboard ke dependency array
+  useEffect(() => {
+    if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus)
+  }, [token, filterMethod, filterGender, filterStatus, fetchDashboard])
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoginErr(''); setLL(true)
@@ -594,7 +581,7 @@ function BKDashboard() {
     } catch (e) { setAE(e.message) }
   }
 
-  /* ── WhatsApp helpers (tidak berubah dari versi asli) ── */
+  /* ── WhatsApp helpers ── */
   const normalizeWaNumber = (phone) => {
     if (!phone) return null
     const value  = String(phone).trim()
@@ -639,7 +626,6 @@ function BKDashboard() {
     } catch (e) { setAE(e.message) } finally { setDeletingId(null) }
   }
 
-  /* ── Format tanggal ── */
   const fmtDate = (d) => {
     if (!d) return '—'
     try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }
@@ -692,7 +678,7 @@ function BKDashboard() {
 
             {actionErr && <div className="alert alert-error"><span className="alert-icon">⚠️</span>{actionErr}</div>}
 
-            {/* ── STAT CARDS (4 kartu angka) ── */}
+            {/* ── STAT CARDS ── */}
             <div className="stat-card-grid">
               <StatCard label="Total Konsultasi"     value={stats?.total    ?? 0} />
               <StatCard label="Menunggu Persetujuan" value={stats?.pending  ?? 0} valueColor="#f59e0b" />
@@ -700,7 +686,7 @@ function BKDashboard() {
               <StatCard label="Ditolak"              value={stats?.rejected ?? 0} valueColor="#ef4444" />
             </div>
 
-            {/* ── CHART + DAFTAR KONSULTASI (2 kolom, mirip referensi) ── */}
+            {/* ── CHART + DAFTAR KONSULTASI ── */}
             <div className="bk-main-grid">
 
               {/* Kolom kiri: Donut chart */}
@@ -760,11 +746,9 @@ function BKDashboard() {
                     {consultations.map(item => (
                       <div key={item.id} className="consult-item">
 
-                        {/* Baris atas: nama + badge status */}
                         <div className="consult-item-header">
                           <div>
                             <div className="consult-item-name">{item.student_name}</div>
-                            {/* ── BARIS 2: kelas + metode ── */}
                             <div className="consult-item-meta">
                               {item.class} · {item.topic} · {item.method}
                             </div>
@@ -772,7 +756,6 @@ function BKDashboard() {
                           <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
                         </div>
 
-                        {/* ── BARIS 3 (BARU): detail tanggal, waktu, tempat, topik ── */}
                         <div className="consult-item-details">
                           <span className="consult-detail-tag">
                             <span className="detail-icon">📅</span>
@@ -798,10 +781,8 @@ function BKDashboard() {
                           )}
                         </div>
 
-                        {/* ── Kode tracking ── */}
                         <div className="consult-item-code">{item.tracking_code}</div>
 
-                        {/* ── Action buttons ── */}
                         {item.status === 'PENDING' && (
                           <div className="consult-item-actions">
                             <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
@@ -868,7 +849,7 @@ function BKLoginForm({ email, setEmail, password, setPassword, error, loading, o
 }
 
 /* ════════════════════════════════════════════════════════════
-   BKREGISTERFORM — POST /auth/counselors/register
+   BKREGISTERFORM
    ════════════════════════════════════════════════════════════ */
 function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
   const [f, setF]                 = useState({ name: '', email: '', password: '', phone: '', specialization: '' })
@@ -1013,7 +994,7 @@ function StatCard({ label, value, valueColor }) {
   )
 }
 
-/* ── Helper kecil ────────────────────────────────────────────── */
+/* ── Helper kecil ── */
 function Required() {
   return <span style={{ color: '#a78bfa', marginLeft: '2px' }}>*</span>
 }

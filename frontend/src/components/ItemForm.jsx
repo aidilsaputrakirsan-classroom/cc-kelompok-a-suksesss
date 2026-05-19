@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
   const [formData, setFormData] = useState({ name: "", description: "", price: "", quantity: "0" })
   const [error, setError] = useState("")
+  const prevEditingItemRef = useRef()
 
   useEffect(() => {
+    // Hanya update jika editingItem benar-benar berubah (deep comparison sederhana)
+    if (JSON.stringify(editingItem) === JSON.stringify(prevEditingItemRef.current)) {
+      return
+    }
+    prevEditingItemRef.current = editingItem
+
     if (editingItem) {
       setFormData({
         name: editingItem.name,
@@ -87,4 +94,4 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
   )
 }
 
-export default ItemForm;
+export default ItemForm
