@@ -2,17 +2,15 @@ import ItemCard from "./ItemCard"
 
 function ItemList({ items, onEdit, onDelete, loading }) {
   if (loading) {
-    return <p style={styles.message}>⏳ Memuat data...</p>
+    return <p style={styles.message}>⏳ Memuat daftar pengajuan...</p>
   }
 
   if (items.length === 0) {
     return (
       <div style={styles.empty}>
         <p style={styles.emptyIcon}>📭</p>
-        <p style={styles.emptyText}>Belum ada item.</p>
-        <p style={styles.emptyHint}>
-          Gunakan form di atas untuk menambahkan item pertama.
-        </p>
+        <p style={styles.emptyText}>Belum ada pengajuan konseling.</p>
+        <p style={styles.emptyHint}>Akan muncul ketika siswa mengajukan konseling.</p>
       </div>
     )
   }
