@@ -11,16 +11,16 @@ describe('ItemForm Component', () => {
     expect(nameInput).toBeInTheDocument()
     expect(priceInput).toBeInTheDocument()
     expect(nameInput).toHaveValue('')
-    expect(priceInput).toHaveValue('')
+    // Untuk input type="number", nilai kosong adalah null, bukan ''
+    expect(priceInput).toHaveValue(null)
   })
 
-  it('memanggil onSubmit dengan data yang benar saat submit valid', async () => {
+  it('memanggil onSubmit dengan data yang benar saat submit valid', () => {
     const handleSubmit = vi.fn()
     render(<ItemForm onSubmit={handleSubmit} />)
     fireEvent.change(screen.getByPlaceholderText(/contoh: laptop/i), { target: { value: 'Monitor' } })
     fireEvent.change(screen.getByPlaceholderText(/contoh: 15000000/i), { target: { value: '2000000' } })
     fireEvent.change(screen.getByPlaceholderText(/opsional/i), { target: { value: 'Monitor 24 inch' } })
-    // Input quantity biasanya default '0', cari berdasarkan display value
     const quantityInput = screen.getByDisplayValue('0')
     fireEvent.change(quantityInput, { target: { value: '3' } })
     fireEvent.click(screen.getByRole('button', { name: /tambah item/i }))
