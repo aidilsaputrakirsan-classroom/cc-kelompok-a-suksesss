@@ -22,7 +22,7 @@ describe('ItemList Component', () => {
     render(<ItemList items={mockItems} loading={false} onEdit={() => {}} onDelete={() => {}} />)
     expect(screen.getByText('Laptop')).toBeInTheDocument()
     expect(screen.getByText('Mouse')).toBeInTheDocument()
-    // Harga ditampilkan dengan format Rp 15.000.000 (ada titik pemisah ribuan)
+    // Harga dengan format Rp 15.000.000 (ada titik pemisah ribuan)
     expect(screen.getByText(/Rp 15\.000\.000/)).toBeInTheDocument()
     expect(screen.getByText(/Rp 250\.000/)).toBeInTheDocument()
   })

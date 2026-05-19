@@ -5,17 +5,24 @@ import ItemForm from '../ItemForm'
 describe('ItemForm Component', () => {
   it('menampilkan form kosong saat tidak dalam mode edit', () => {
     render(<ItemForm onSubmit={() => {}} />)
-    expect(screen.getByPlaceholderText('Contoh: Laptop')).toHaveValue('')
-    expect(screen.getByPlaceholderText('Contoh: 15000000')).toHaveValue('')
+    // Gunakan regex untuk placeholder, tidak case-sensitive
+    const nameInput = screen.getByPlaceholderText(/contoh: laptop/i)
+    const priceInput = screen.getByPlaceholderText(/contoh: 15000000/i)
+    expect(nameInput).toBeInTheDocument()
+    expect(priceInput).toBeInTheDocument()
+    expect(nameInput).toHaveValue('')
+    expect(priceInput).toHaveValue('')
   })
 
-  it('memanggil onSubmit dengan data yang benar saat submit valid', () => {
+  it('memanggil onSubmit dengan data yang benar saat submit valid', async () => {
     const handleSubmit = vi.fn()
     render(<ItemForm onSubmit={handleSubmit} />)
-    fireEvent.change(screen.getByPlaceholderText('Contoh: Laptop'), { target: { value: 'Monitor' } })
-    fireEvent.change(screen.getByPlaceholderText('Contoh: 15000000'), { target: { value: '2000000' } })
-    fireEvent.change(screen.getByPlaceholderText('Opsional'), { target: { value: 'Monitor 24 inch' } })
-    fireEvent.change(screen.getByDisplayValue('0'), { target: { value: '3' } })
+    fireEvent.change(screen.getByPlaceholderText(/contoh: laptop/i), { target: { value: 'Monitor' } })
+    fireEvent.change(screen.getByPlaceholderText(/contoh: 15000000/i), { target: { value: '2000000' } })
+    fireEvent.change(screen.getByPlaceholderText(/opsional/i), { target: { value: 'Monitor 24 inch' } })
+    // Input quantity biasanya default '0', cari berdasarkan display value
+    const quantityInput = screen.getByDisplayValue('0')
+    fireEvent.change(quantityInput, { target: { value: '3' } })
     fireEvent.click(screen.getByRole('button', { name: /tambah item/i }))
     expect(handleSubmit).toHaveBeenCalledTimes(1)
     expect(handleSubmit).toHaveBeenCalledWith(
@@ -27,7 +34,7 @@ describe('ItemForm Component', () => {
   it('menampilkan error jika nama item kosong', () => {
     const handleSubmit = vi.fn()
     render(<ItemForm onSubmit={handleSubmit} />)
-    fireEvent.change(screen.getByPlaceholderText('Contoh: 15000000'), { target: { value: '1000' } })
+    fireEvent.change(screen.getByPlaceholderText(/contoh: 15000000/i), { target: { value: '1000' } })
     fireEvent.click(screen.getByRole('button', { name: /tambah item/i }))
     expect(handleSubmit).not.toHaveBeenCalled()
     expect(screen.getByText(/nama item wajib diisi/i)).toBeInTheDocument()
