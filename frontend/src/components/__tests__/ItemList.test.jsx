@@ -2,28 +2,27 @@ import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import ItemList from '../ItemList'
 
+// Data mock yang kompatibel dengan ItemCard (memiliki properti name dan price)
 const mockItems = [
-  { id: 1, name: 'Laptop', price: 15000000, quantity: 2 },
-  { id: 2, name: 'Mouse', price: 250000, quantity: 5 }
+  { id: 1, student_name: 'Ahmad', name: 'Ahmad', topic: 'Karir', price: 0, quantity: 1, status: 'PENDING' },
+  { id: 2, student_name: 'Budi', name: 'Budi', topic: 'Belajar', price: 0, quantity: 1, status: 'ACCEPTED' }
 ]
 
-describe('ItemList Component', () => {
-  it('menampilkan pesan loading saat prop loading=true', () => {
+describe('ItemList Component (Daftar Konseling)', () => {
+  it('menampilkan pesan loading saat loading=true', () => {
     render(<ItemList items={[]} loading={true} onEdit={() => {}} onDelete={() => {}} />)
-    expect(screen.getByText(/memuat data/i)).toBeInTheDocument()
+    expect(screen.getByText(/Memuat daftar pengajuan/i)).toBeInTheDocument()
   })
 
-  it('menampilkan pesan empty state jika items kosong dan tidak loading', () => {
+  it('menampilkan empty state jika items kosong', () => {
     render(<ItemList items={[]} loading={false} onEdit={() => {}} onDelete={() => {}} />)
-    expect(screen.getByText(/belum ada item/i)).toBeInTheDocument()
+    expect(screen.getByText(/Belum ada pengajuan konseling/i)).toBeInTheDocument()
   })
 
   it('menampilkan daftar item jika items tidak kosong', () => {
     render(<ItemList items={mockItems} loading={false} onEdit={() => {}} onDelete={() => {}} />)
-    expect(screen.getByText('Laptop')).toBeInTheDocument()
-    expect(screen.getByText('Mouse')).toBeInTheDocument()
-    // Harga dengan format Rp 15.000.000 (ada titik pemisah ribuan)
-    expect(screen.getByText(/Rp 15\.000\.000/)).toBeInTheDocument()
-    expect(screen.getByText(/Rp 250\.000/)).toBeInTheDocument()
+    // Nama siswa muncul karena properti 'name' ada
+    expect(screen.getByText('Ahmad')).toBeInTheDocument()
+    expect(screen.getByText('Budi')).toBeInTheDocument()
   })
 })

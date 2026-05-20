@@ -17,7 +17,7 @@ function SearchBar({ onSearch }) {
     <form onSubmit={handleSubmit} style={styles.form}>
       <input
         type="text"
-        placeholder="Cari item berdasarkan nama atau deskripsi..."
+        placeholder="Cari pengajuan (nama siswa, topik)..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         style={styles.input}
