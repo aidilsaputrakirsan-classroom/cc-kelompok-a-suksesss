@@ -6,6 +6,34 @@
 
 ---
 
+## 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| Frontend | [https://safespace-itk.onrender.com/](https://safespace-itk.onrender.com/) |
+| Backend API | [https://safespace-db.onrender.com/health/](https://safespace-db.onrender.com/health) |
+| API Docs (Swagger) | [https://safespace-db.onrender.com/docs](https://safespace-db.onrender.com/docs) |
+
+---
+
+## 🔄 CI/CD
+
+![CI Pipeline](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-suksesss/actions/workflows/ci.yml/badge.svg)
+
+Pipeline otomatis berjalan saat push ke branch `main`:
+
+1. ✅ Test backend menggunakan pytest
+2. ✅ Test frontend menggunakan Vitest
+3. ✅ Build Docker images
+4. 🚀 Deploy otomatis ke cloud platform
+
+### Workflow CI/CD
+- Pull Request → menjalankan CI pipeline
+- Merge ke `main` → menjalankan CI + CD pipeline
+- Deployment dilakukan otomatis menggunakan GitHub Actions
+
+---
+
 ## 🌟 Highlight Utama
 
 - 🔐 Konseling tanpa akun (anonim)  
