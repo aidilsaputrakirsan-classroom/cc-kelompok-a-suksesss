@@ -140,7 +140,7 @@ Database digunakan untuk:
 
 | Variable | Description | Example Value |
 |---|---|---|
-| `VITE_API_URL` | URL backend production | `https://safespace-db.onrender.com/health` |
+| `VITE_API_URL` | URL frontend production | `https://safespace-db.onrender.com` |
 
 ---
 
@@ -150,7 +150,6 @@ Repository menggunakan GitHub Secrets untuk menyimpan data sensitif.
 
 | Secret | Keterangan |
 |---|---|
-| `RAILWAY_TOKEN` | Token deployment Railway |
 | `SECRET_KEY` | Secret JWT backend |
 | `DATABASE_URL` | Connection string database |
 
@@ -178,6 +177,7 @@ Saat kode di-merge ke `main`:
 - Backend dan frontend di-build
 - Deployment otomatis dijalankan
 - Production service diperbarui
+- Melakukan pengecekan Health Check otomatis
 
 ---
 

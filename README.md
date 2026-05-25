@@ -10,8 +10,8 @@
 
 | Service | URL |
 |---------|-----|
-| Frontend | [https://safespace-itk.onrender.com/](https://safespace-itk.onrender.com/) |
-| Backend API | [https://safespace-db.onrender.com/health/](https://safespace-db.onrender.com/health) |
+| Frontend | [https://safespace-itk.onrender.com/](https://safespace-itk.onrender.com) |
+| Backend API | [https://safespace-db.onrender.com/health/](https://safespace-db.onrender.com) |
 | API Docs (Swagger) | [https://safespace-db.onrender.com/docs](https://safespace-db.onrender.com/docs) |
 
 ---
