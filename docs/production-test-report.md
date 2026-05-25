@@ -20,7 +20,7 @@ Testing dilakukan untuk memastikan:
 | Service | URL |
 |---------|-----|
 | Frontend | https://safespace-itk.onrender.com/ |
-| Backend API | https://safespace-db.onrender.com/health |
+| Backend API | https://safespace-db.onrender.com |
 | Swagger Docs | https://safespace-db.onrender.com/docs |
 
 ---
@@ -50,10 +50,11 @@ Testing dilakukan untuk memastikan:
 
 | Test Case | Expected Result | Actual Result | Status |
 |-----------|----------------|---------------|--------|
-| Create Item | Item berhasil dibuat | Data berhasil tersimpan | ✅ PASS |
-| Read Items | Data item tampil | Item berhasil ditampilkan | ✅ PASS |
-| Update Item | Data item berubah | Update berhasil | ✅ PASS |
-| Delete Item | Item berhasil dihapus | Delete berhasil | ✅ PASS |
+| Create Consultation (Student) | Consultation request berhasil dibuat | Data konsultasi berhasil tersimpan | ✅ PASS |
+| Read Consultations (Counselor) | Data konsultasi tampil | Daftar konsultasi berhasil ditampilkan | ✅ PASS |
+| Accept / Reject Consultation | Status konsultasi berubah sesuai aksi | Status berhasil diperbarui | ✅ PASS |
+| Update Consultation Status | Status konsultasi berhasil diupdate | Perubahan status berhasil disimpan | ✅ PASS |
+| Delete Consultation | Data konsultasi berhasil dihapus | Delete berhasil dilakukan | ✅ PASS |
 
 ---
 
@@ -101,8 +102,8 @@ Testing dilakukan untuk memastikan:
 | Verification | Status |
 |--------------|--------|
 | Backend Docker Build | ✅ PASS |
-| Frontend Docker Build | ✅ PASS |
-| Docker Compose | ✅ Working |
+| Frontend Docker Build     | ✅ PASS |
+| Docker Compose (Local/CI Only) | ✅ Working |
 | Multi-stage Build | ✅ Configured |
 
 ---
