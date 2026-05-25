@@ -14,12 +14,14 @@ Milestone 2 berfokus pada implementasi CI/CD pipeline, automated testing, deploy
 - Login menggunakan JWT Authentication
 - Protected routes menggunakan Bearer Token
 
-## 📦 Item Management (CRUD)
-- Create item
-- Read item
-- Update item
-- Delete item
-- Pagination endpoint
+## 💬 Consultation Management (CRUD)
+
+- Create consultation request (student)
+- Read consultation data (counselor)
+- Accept / reject consultation request
+- Update consultation status
+- Delete consultation data
+- Consultation pagination endpoint
 
 ## 🩺 Health Check Endpoint
 - Endpoint `/health`
@@ -59,7 +61,7 @@ Tahapan pipeline:
 | Service | URL |
 |---------|-----|
 | Frontend | https://safespace-itk.onrender.com/ |
-| Backend API | https://safespace-db.onrender.com/health |
+| Backend API | https://safespace-db.onrender.com|
 | API Documentation | https://safespace-db.onrender.com/docs |
 
 ---
@@ -83,7 +85,7 @@ Tahapan pipeline:
 - Docker
 - Docker Compose
 - GitHub Actions
-- Render / Railway
+- Render
 
 ## Collaboration Tools
 - GitHub Flow
