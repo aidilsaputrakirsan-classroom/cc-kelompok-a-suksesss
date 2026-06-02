@@ -18,7 +18,8 @@ os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH.as_posix()}"
 from database import Base, get_db
 from main import app
 
-# Database test — SQLite file sementara agar app dan test memakai engine yang sama.
+# Database test — gunakan URL SQLite yang sama dengan app utama agar keduanya
+# mengarah ke file database test yang sama, meski masing-masing memakai engine sendiri.
 SQLALCHEMY_TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 
 engine = create_engine(
@@ -40,7 +41,12 @@ def db_session():
         session.close()
         Base.metadata.drop_all(bind=engine)
         engine.dispose()
-        for candidate in TEST_DB_PATH.parent.glob("test.db*"):
+        for candidate in [
+            TEST_DB_PATH,
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-journal"),
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-wal"),
+            TEST_DB_PATH.parent / (TEST_DB_PATH.name + "-shm"),
+        ]:
             if candidate.exists():
                 try:
                     candidate.unlink()

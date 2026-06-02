@@ -1,5 +1,6 @@
-import logging
+import os
 
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,6 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from config import settings
 import crud
 from auth import create_access_token, get_current_counselor, get_current_user
 from database import engine, get_db
@@ -29,25 +29,29 @@ from schemas import (
     UserBase,
 )
 
+load_dotenv()
+
 # Buat semua tabel jika belum ada saat aplikasi startup.
 Base.metadata.create_all(bind=engine)
 
-logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL, logging.INFO))
-
 app = FastAPI(
-    title=settings.APP_NAME,
+    title="SafeSpace API",
     description="REST API untuk SafeSpace, sistem manajemen bimbingan konseling berbasis cloud",
     version="0.2.0",
-    debug=settings.DEBUG,
 )
+
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins_list = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
+allow_origin_regex = None
 
 # CORS dibuka untuk frontend lokal dan origin yang diizinkan via environment.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
-    allow_methods=settings.CORS_ALLOW_METHODS,
-    allow_headers=settings.CORS_ALLOW_HEADERS,
+    allow_origins=origins_list,
+    allow_origin_regex=allow_origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ==================== ROUTER REGISTRATION ====================

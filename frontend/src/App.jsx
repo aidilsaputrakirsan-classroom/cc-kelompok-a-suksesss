@@ -1,23 +1,59 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import './App.css'
 import DarkModeToggle from './components/DarkModeToggle'
 import AboutPage from './components/AboutPage'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost'
+
+/* ── Global Error Handler for Microservices ── */
+async function safeFetch(url, options = {}) {
+  try {
+    const response = await fetch(url, options)
+    
+    if (response.status === 503) {
+      console.error('⚠️ Service temporarily unavailable')
+      alert('⚠️ Layanan sedang gangguan. Tim DevOps sedang memperbaiki.')
+      throw new Error('Service unavailable')
+    }
+    
+    if (response.status === 401) {
+      sessionStorage.removeItem('bkToken')
+      window.location.href = '/'
+      throw new Error('Session expired')
+    }
+    
+    return response
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.error('🔌 Cannot connect to API Gateway')
+      alert('🔌 Tidak dapat terhubung ke server. Pastikan Docker berjalan.')
+    }
+    throw error
+  }
+}
 
 /* ── Scroll reveal hook ─────────────────────────────────────── */
 function useReveal() {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
+  
   useEffect(() => {
-    const el = ref.current; if (!el) return
+    const el = ref.current
+    if (!el) return
+    
     const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } },
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true)
+          obs.disconnect()
+        }
+      },
       { threshold: 0.1 }
     )
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
+  
   return [ref, visible]
 }
 
@@ -30,13 +66,13 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false)
 
   useEffect(() => {
-    fetch(`${API_URL}/health`)
+    safeFetch(`${API_URL}/health`)
       .then(r => r.json())
       .then(d => console.log('✅ Backend:', d))
       .catch(() => console.warn('⚠️ Backend tidak terhubung'))
   }, [])
 
-    if (showAbout) {
+  if (showAbout) {
     return <AboutPage onBack={() => setShowAbout(false)} />
   }
 
@@ -51,9 +87,9 @@ export default function App() {
           <span>SafeSpace</span>
         </div>
         <div className="nav-links">
-          <button className={`nav-link ${view === 'home'  ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
-          <button className={`nav-link ${view === 'alur'  ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
-          <button className={`nav-link ${view === 'bk'    ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
+          <button className={`nav-link ${view === 'home' ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
+          <button className={`nav-link ${view === 'alur' ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
+          <button className={`nav-link ${view === 'bk' ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
           <DarkModeToggle />
           <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>📄 About</button>
           <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
@@ -61,102 +97,108 @@ export default function App() {
       </nav>
 
       <main className="view-container">
-
-        {/* ══ VIEW: HOME ══════════════════════════════════════ */}
-        {view === 'home' && (
-          <div ref={heroRef} className={`reveal ${heroVis ? 'is-visible' : ''}`}>
-            <section className="hero-grid">
-              <div>
-                <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
-                  SAFE & PRIVATE COUNSELING
-                </div>
-                <h1 className="hero-h1">
-                  Tempat Aman untuk<br />
-                  <span className="gradient-text">Cerita Kamu.</span>
-                </h1>
-                <p style={{ color: 'rgba(220,215,255,.7)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
-                  Privasi adalah prioritas kami. Konsultasikan masalahmu secara anonim dan aman
-                  dengan guru BK profesional — tanpa perlu membuat akun.
-                </p>
-                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                  <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '12px 28px', fontSize: '.95rem' }}>
-                    Ajukan Sekarang
-                  </button>
-                  <button className="btn-ghost" onClick={() => setView('alur')}>
-                    Lihat Cara Kerja ↓
-                  </button>
-                </div>
-              </div>
-              <div style={{ display: 'grid', placeItems: 'center' }}>
-                <div style={{ width: '100%', height: '320px', background: 'rgba(124,58,237,.08)', borderRadius: '28px', border: '1px solid rgba(124,58,237,.18)', display: 'grid', placeItems: 'center' }}>
-                  <span style={{ fontSize: '5rem' }}>🍃</span>
-                </div>
-              </div>
-            </section>
-
-            <section style={{ marginTop: '90px' }}>
-              <div style={{ textAlign: 'center', marginBottom: '8px', color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
-              <h2 className="p-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: 0 }}>Tiga Fondasi Utama</h2>
-              <div className="card-grid">
-                <PrincipleCard icon="🔐" title="Privat" desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
-                <PrincipleCard icon="🌱" title="Mudah"  desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
-                <PrincipleCard icon="☁️" title="Fleksibel" desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
-              </div>
-            </section>
-          </div>
-        )}
-
-        {/* ══ VIEW: ALUR KERJA ════════════════════════════════ */}
-        {view === 'alur' && (
-          <div>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
-              <h1 className="hero-h1" style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', marginTop: '10px' }}>Bagaimana ini bekerja?</h1>
-            </div>
-            <div className="step-container">
-              <StepBox num="01" title="Isi Formulir"       desc="Pilih guru BK, waktu, dan ceritakan sedikit tentang apa yang kamu hadapi." />
-              <StepBox num="02" title="Terima Kode Pelacak" desc="Setelah mengirim, simpan kode unik yang muncul untuk cek status di kemudian hari." />
-              <StepBox num="03" title="Konfirmasi Guru BK" desc="Gurumu akan melihat pengajuanmu dan memberikan jadwal pasti melalui sistem." />
-              <StepBox num="04" title="Mulai Konseling"    desc="Bertemu di tempat yang disepakati dan mulailah perjalanan kesehatan mentalmu." />
-            </div>
-            <div style={{ textAlign: 'center', marginTop: '48px' }}>
-              <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '13px 32px', fontSize: '.95rem' }}>
-                Siap Untuk Memulai? →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ══ VIEW: AJUKAN KONSELING ══════════════════════════ */}
-        {view === 'ajukan' && (
-          <div className="form-page">
-            <div className="form-sidebar">
-              <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
-              <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
-              <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
-              <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
-                  <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
-                    <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
-                    {text}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="form-main">
-              <ConsultForm />
-            </div>
-          </div>
-        )}
-
-        {/* ══ VIEW: DASHBOARD BK ══════════════════════════════ */}
+        {view === 'home' && <HomeView heroRef={heroRef} heroVis={heroVis} setView={setView} />}
+        {view === 'alur' && <AlurView setView={setView} />}
+        {view === 'ajukan' && <AjukanView />}
         {view === 'bk' && <BKDashboard />}
-
       </main>
 
       <footer style={{ textAlign: 'center', padding: '36px', color: 'rgba(220,215,255,.35)', fontSize: '.78rem', borderTop: '1px solid rgba(255,255,255,.05)' }}>
         SafeSpace — Cloud Counseling System ITK © 2026
       </footer>
+    </div>
+  )
+}
+
+/* ══ VIEW: HOME ══════════════════════════════════════ */
+function HomeView({ heroRef, heroVis, setView }) {
+  return (
+    <div ref={heroRef} className={`reveal ${heroVis ? 'is-visible' : ''}`}>
+      <section className="hero-grid">
+        <div>
+          <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
+            SAFE & PRIVATE COUNSELING
+          </div>
+          <h1 className="hero-h1">
+            Tempat Aman untuk<br />
+            <span className="gradient-text">Cerita Kamu.</span>
+          </h1>
+          <p style={{ color: 'rgba(220,215,255,.7)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
+            Privasi adalah prioritas kami. Konsultasikan masalahmu secara anonim dan aman
+            dengan guru BK profesional — tanpa perlu membuat akun.
+          </p>
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '12px 28px', fontSize: '.95rem' }}>
+              Ajukan Sekarang
+            </button>
+            <button className="btn-ghost" onClick={() => setView('alur')}>
+              Lihat Cara Kerja ↓
+            </button>
+          </div>
+        </div>
+        <div style={{ display: 'grid', placeItems: 'center' }}>
+          <div style={{ width: '100%', height: '320px', background: 'rgba(124,58,237,.08)', borderRadius: '28px', border: '1px solid rgba(124,58,237,.18)', display: 'grid', placeItems: 'center' }}>
+            <span style={{ fontSize: '5rem' }}>🍃</span>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ marginTop: '90px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '8px', color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
+        <h2 className="p-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: 0 }}>Tiga Fondasi Utama</h2>
+        <div className="card-grid">
+          <PrincipleCard icon="🔐" title="Privat" desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
+          <PrincipleCard icon="🌱" title="Mudah" desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
+          <PrincipleCard icon="☁️" title="Fleksibel" desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/* ══ VIEW: ALUR KERJA ════════════════════════════════ */
+function AlurView({ setView }) {
+  return (
+    <div>
+      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
+        <h1 className="hero-h1" style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', marginTop: '10px' }}>Bagaimana ini bekerja?</h1>
+      </div>
+      <div className="step-container">
+        <StepBox num="01" title="Isi Formulir" desc="Pilih guru BK, waktu, dan ceritakan sedikit tentang apa yang kamu hadapi." />
+        <StepBox num="02" title="Terima Kode Pelacak" desc="Setelah mengirim, simpan kode unik yang muncul untuk cek status di kemudian hari." />
+        <StepBox num="03" title="Konfirmasi Guru BK" desc="Gurumu akan melihat pengajuanmu dan memberikan jadwal pasti melalui sistem." />
+        <StepBox num="04" title="Mulai Konseling" desc="Bertemu di tempat yang disepakati dan mulailah perjalanan kesehatan mentalmu." />
+      </div>
+      <div style={{ textAlign: 'center', marginTop: '48px' }}>
+        <button className="nav-cta" onClick={() => setView('ajukan')} style={{ padding: '13px 32px', fontSize: '.95rem' }}>
+          Siap Untuk Memulai? →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ══ VIEW: AJUKAN KONSELING ══════════════════════════ */
+function AjukanView() {
+  return (
+    <div className="form-page">
+      <div className="form-sidebar">
+        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
+        <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
+        <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
+        <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
+            <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
+              <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
+              {text}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="form-main">
+        <ConsultForm />
+      </div>
     </div>
   )
 }
@@ -187,27 +229,24 @@ function StepBox({ num, title, desc }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   CONSULT FORM — terhubung ke backend
-   POST /api/consultations
-   GET  /api/public/master-data
-   GET  /api/public/counselors
+   CONSULT FORM
    ════════════════════════════════════════════════════════════ */
 function ConsultForm() {
   const FALLBACK = {
     school_classes: [{ id: 1, name: 'X-A' }, { id: 2, name: 'X-B' }, { id: 3, name: 'XI IPA 1' }, { id: 4, name: 'XI IPS 1' }, { id: 5, name: 'XII IPA 1' }],
-    topics:         [{ id: 1, name: 'Belajar' }, { id: 2, name: 'Karir' }, { id: 3, name: 'Keluarga' }, { id: 4, name: 'Sosial' }, { id: 5, name: 'Pribadi' }],
-    time_slots:     [{ id: 1, name: 'Istirahat ke-1', start_time: '10:00', end_time: '10:30' }, { id: 2, name: 'Istirahat ke-2', start_time: '12:00', end_time: '12:30' }, { id: 3, name: 'Pulang Sekolah', start_time: '14:00', end_time: '15:30' }],
-    places:         [{ id: 1, name: 'Ruang BK 1' }, { id: 2, name: 'Ruang BK 2' }, { id: 3, name: 'Online' }],
-    counselors:     [{ id: 1, name: 'Bu Anita' }, { id: 2, name: 'Pak Budi' }, { id: 3, name: 'Bu Citra' }],
+    topics: [{ id: 1, name: 'Belajar' }, { id: 2, name: 'Karir' }, { id: 3, name: 'Keluarga' }, { id: 4, name: 'Sosial' }, { id: 5, name: 'Pribadi' }],
+    time_slots: [{ id: 1, name: 'Istirahat ke-1', start_time: '10:00', end_time: '10:30' }, { id: 2, name: 'Istirahat ke-2', start_time: '12:00', end_time: '12:30' }, { id: 3, name: 'Pulang Sekolah', start_time: '14:00', end_time: '15:30' }],
+    places: [{ id: 1, name: 'Ruang BK 1' }, { id: 2, name: 'Ruang BK 2' }, { id: 3, name: 'Online' }],
+    counselors: [{ id: 1, name: 'Bu Anita' }, { id: 2, name: 'Pak Budi' }, { id: 3, name: 'Bu Citra' }],
   }
 
-  const [opts, setOpts]       = useState({ ...FALLBACK })
-  const [optsLoading, setOL]  = useState(true)
-  const [optsError, setOE]    = useState('')
+  const [opts, setOpts] = useState({ ...FALLBACK })
+  const [optsLoading, setOL] = useState(true)
+  const [optsError, setOE] = useState('')
   const [loading, setLoading] = useState(false)
-  const [done, setDone]       = useState(null)
-
+  const [done, setDone] = useState(null)
   const [f, setF] = useState({ nama: '', phone: '', classId: '', gender: '', counselorId: '', method: 'INDIVIDUAL', topicId: '', date: '', timeSlotId: '', placeId: '' })
+  
   const set = (k, v) => setF(p => ({ ...p, [k]: v }))
 
   useEffect(() => {
@@ -216,27 +255,32 @@ function ConsultForm() {
       setOL(true); setOE('')
       try {
         const [mRes, cRes] = await Promise.all([
-          fetch(`${API_URL}/api/public/master-data`),
-          fetch(`${API_URL}/api/public/counselors`),
+          safeFetch(`${API_URL}/api/public/master-data`),
+          safeFetch(`${API_URL}/api/public/counselors`),
         ])
         if (!mRes.ok || !cRes.ok) throw new Error('Gagal memuat opsi')
         const [master, counselors] = await Promise.all([mRes.json(), cRes.json()])
         if (cancelled) return
-        const timeSlots = (master.time_slots || []).map(s => ({ ...s, label: s.start_time ? `${s.name} (${s.start_time}–${s.end_time})` : s.name }))
+        
+        const timeSlots = (master.time_slots || []).map(s => ({
+          ...s,
+          label: s.start_time ? `${s.name} (${s.start_time}–${s.end_time})` : s.name
+        }))
+        
         const o = {
           school_classes: master.school_classes || FALLBACK.school_classes,
-          topics:         master.topics         || FALLBACK.topics,
-          time_slots:     timeSlots.length ? timeSlots : FALLBACK.time_slots,
-          places:         master.places         || FALLBACK.places,
-          counselors:     counselors.length ? counselors : FALLBACK.counselors,
+          topics: master.topics || FALLBACK.topics,
+          time_slots: timeSlots.length ? timeSlots : FALLBACK.time_slots,
+          places: master.places || FALLBACK.places,
+          counselors: counselors.length ? counselors : FALLBACK.counselors,
         }
         setOpts(o)
         setF(p => ({
           ...p,
-          classId:     String(o.school_classes[0]?.id ?? ''),
-          topicId:     String(o.topics[0]?.id ?? ''),
-          timeSlotId:  String(o.time_slots[0]?.id ?? ''),
-          placeId:     String(o.places[0]?.id ?? ''),
+          classId: String(o.school_classes[0]?.id ?? ''),
+          topicId: String(o.topics[0]?.id ?? ''),
+          timeSlotId: String(o.time_slots[0]?.id ?? ''),
+          placeId: String(o.places[0]?.id ?? ''),
           counselorId: String(o.counselors[0]?.id ?? ''),
         }))
       } catch {
@@ -259,20 +303,20 @@ function ConsultForm() {
     }
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/consultations`, {
+      const res = await safeFetch(`${API_URL}/api/consultations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          student_name:  f.nama.trim(),
-          class_id:      parseInt(f.classId),
-          gender:        f.gender,
+          student_name: f.nama.trim(),
+          class_id: parseInt(f.classId),
+          gender: f.gender,
           student_phone: f.phone.trim(),
-          counselor_id:  parseInt(f.counselorId),
-          method:        f.method,
-          topic_id:      parseInt(f.topicId),
-          date:          f.date,
-          time_slot_id:  parseInt(f.timeSlotId),
-          place_id:      parseInt(f.placeId),
+          counselor_id: parseInt(f.counselorId),
+          method: f.method,
+          topic_id: parseInt(f.topicId),
+          date: f.date,
+          time_slot_id: parseInt(f.timeSlotId),
+          place_id: parseInt(f.placeId),
         }),
       })
       const data = await res.json()
@@ -291,20 +335,22 @@ function ConsultForm() {
     }
   }
 
-  if (done) return (
-    <div className="register-success">
-      <div className="success-ring">🎉</div>
-      <div className="success-title">Pengajuan Terkirim!</div>
-      <p className="success-sub">Simpan kode berikut untuk memantau status konseling kamu.</p>
-      <div className="success-code-box">
-        <span className="success-code-label">Kode Pelacak</span>
-        <span className="success-code-value">{done.tracking_code}</span>
+  if (done) {
+    return (
+      <div className="register-success">
+        <div className="success-ring">🎉</div>
+        <div className="success-title">Pengajuan Terkirim!</div>
+        <p className="success-sub">Simpan kode berikut untuk memantau status konseling kamu.</p>
+        <div className="success-code-box">
+          <span className="success-code-label">Kode Pelacak</span>
+          <span className="success-code-value">{done.tracking_code}</span>
+        </div>
+        <button className="btn-ghost" onClick={() => { setDone(null); setF(p => ({ ...p, nama: '', phone: '', gender: '', date: '' })) }} style={{ marginTop: '8px' }}>
+          Ajukan Lagi
+        </button>
       </div>
-      <button className="btn-ghost" onClick={() => { setDone(null); setF(p => ({ ...p, nama: '', phone: '', gender: '', date: '' })) }} style={{ marginTop: '8px' }}>
-        Ajukan Lagi
-      </button>
-    </div>
-  )
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -406,35 +452,36 @@ function ConsultForm() {
 }
 
 /* ════════════════════════════════════════════════════════════
-   PIE CHART SVG — komponen visualisasi statistik
+   PIE CHART SVG
    ════════════════════════════════════════════════════════════ */
 function DonutChart({ stats }) {
-  const total    = stats?.total    || 0
-  const pending  = stats?.pending  || 0
+  const total = stats?.total || 0
+  const pending = stats?.pending || 0
   const accepted = stats?.accepted || 0
   const rejected = stats?.rejected || 0
 
-  if (total === 0) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'rgba(220,215,255,.4)', fontSize: '.85rem' }}>
-      Belum ada data
-    </div>
-  )
+  if (total === 0) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'rgba(220,215,255,.4)', fontSize: '.85rem' }}>
+        Belum ada data
+      </div>
+    )
+  }
 
-  // SVG donut chart
   const cx = 80, cy = 80, r = 56, stroke = 20
   const circumference = 2 * Math.PI * r
 
   const segments = [
     { value: accepted, color: '#10b981', label: 'Diterima' },
-    { value: pending,  color: '#f59e0b', label: 'Menunggu' },
-    { value: rejected, color: '#ef4444', label: 'Ditolak'  },
+    { value: pending, color: '#f59e0b', label: 'Menunggu' },
+    { value: rejected, color: '#ef4444', label: 'Ditolak' },
   ]
 
   let offset = 0
   const arcs = segments.map(seg => {
-    const pct   = total > 0 ? seg.value / total : 0
-    const dash  = pct * circumference
-    const gap   = circumference - dash
+    const pct = total > 0 ? seg.value / total : 0
+    const dash = pct * circumference
+    const gap = circumference - dash
     const startOffset = circumference - offset * circumference / total
     offset += seg.value
     return { ...seg, dash, gap, strokeDashoffset: startOffset }
@@ -444,9 +491,7 @@ function DonutChart({ stats }) {
     <div className="donut-wrap">
       <div className="donut-chart-area">
         <svg width="160" height="160" viewBox="0 0 160 160">
-          {/* Background ring */}
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={stroke} />
-          {/* Segments */}
           {arcs.map((arc, i) => (
             <circle key={i} cx={cx} cy={cy} r={r} fill="none"
               stroke={arc.color} strokeWidth={stroke}
@@ -456,18 +501,15 @@ function DonutChart({ stats }) {
               style={{ transition: 'stroke-dasharray .8s ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
             />
           ))}
-          {/* Center text */}
           <text x={cx} y={cy - 6} textAnchor="middle" fill="#f0eeff" fontSize="22" fontWeight="700" fontFamily="Playfair Display, serif">{total}</text>
           <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(220,215,255,.5)" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">Total</text>
         </svg>
       </div>
-
-      {/* Legend */}
       <div className="donut-legend">
         {[
           { label: 'Diterima', value: accepted, color: '#10b981' },
-          { label: 'Menunggu', value: pending,  color: '#f59e0b' },
-          { label: 'Ditolak',  value: rejected, color: '#ef4444' },
+          { label: 'Menunggu', value: pending, color: '#f59e0b' },
+          { label: 'Ditolak', value: rejected, color: '#ef4444' },
         ].map(item => (
           <div key={item.label} className="donut-legend-item">
             <span className="donut-legend-dot" style={{ background: item.color }} />
@@ -481,19 +523,19 @@ function DonutChart({ stats }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   BKDASHBOARD — Login + Register tabs + Dashboard
+   BKDASHBOARD
    ════════════════════════════════════════════════════════════ */
 function BKDashboard() {
-  const [authTab, setAuthTab]   = useState('login')
-  const [email, setEmail]       = useState('anita.bk@safespace.sch.id')
+  const [authTab, setAuthTab] = useState('login')
+  const [email, setEmail] = useState('anita.bk@safespace.sch.id')
   const [password, setPassword] = useState('Counselor123')
-  const [token, setTokenValue]  = useState(sessionStorage.getItem('bkToken') || '')
+  const [token, setTokenValue] = useState(sessionStorage.getItem('bkToken') || '')
   const [loginErr, setLoginErr] = useState('')
-  const [loadingLogin, setLL]   = useState(false)
-  const [loadingData, setLD]    = useState(false)
-  const [stats, setStats]       = useState(null)
-  const [consultations, setC]   = useState([])
-  const [actionErr, setAE]      = useState('')
+  const [loadingLogin, setLL] = useState(false)
+  const [loadingData, setLD] = useState(false)
+  const [stats, setStats] = useState(null)
+  const [consultations, setC] = useState([])
+  const [actionErr, setAE] = useState('')
   const [deletingId, setDeletingId] = useState(null)
   const [filterMethod, setFilterMethod] = useState('')
   const [filterGender, setFilterGender] = useState('')
@@ -501,40 +543,29 @@ function BKDashboard() {
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
-  /* ── Normalizer: buat item kompatibel antara paginated & legacy response ── */
   const normalizeItem = (item) => ({
-    id:               item.id,
-    tracking_code:    item.tracking_code,
-    method:           item.method,
-    status:           item.status,
-    date:             item.date,
-    created_at:       item.created_at,
-    /* Nama siswa — paginated pakai student_name, legacy pakai student.name */
-    student_name:     item.student_name || item.student?.name || '',
-    /* Gender siswa — paginated: gender in item, legacy: student.gender */
-    student_gender:   item.student_gender || item.student?.gender || '',
-    /* Nomor WA — paginated tidak ada, legacy dari student.phone */
-    student_phone:    item.student_phone || item.student?.phone || '',
-    /* Counselor name */
-    counselor_name:   item.counselor_name || '',
-    /* Kelas — paginated: item.class, legacy: student.school_class */
-    class:            item.class || item.student?.school_class || '',
-    /* Topik — paginated: item.topic, legacy: item.topic_name */
-    topic:            item.topic || item.topic_name || '',
-    /* Time slot — paginated: item.time_slot (formatted), legacy: item.time_slot_name */
-    time_slot:        item.time_slot || item.time_slot_name || '',
-    /* Tempat — paginated: tidak ada, legacy: item.place_name */
-    place_name:       item.place_name || '',
-    /* WhatsApp link dari backend (jika ada) */
-    whatsapp_link:    item.whatsapp_link || null,
+    id: item.id,
+    tracking_code: item.tracking_code,
+    method: item.method,
+    status: item.status,
+    date: item.date,
+    created_at: item.created_at,
+    student_name: item.student_name || item.student?.name || '',
+    student_gender: item.student_gender || item.student?.gender || '',
+    student_phone: item.student_phone || item.student?.phone || '',
+    counselor_name: item.counselor_name || '',
+    class: item.class || item.student?.school_class || '',
+    topic: item.topic || item.topic_name || '',
+    time_slot: item.time_slot || item.time_slot_name || '',
+    place_name: item.place_name || '',
+    whatsapp_link: item.whatsapp_link || null,
     rejection_reason: item.rejection_reason || null,
   })
 
-  const fetchDashboard = async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
+  const fetchDashboard = useCallback(async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
     const h = bt ? { Authorization: `Bearer ${bt}` } : {}
     setLD(true); setAE('')
     try {
-      /* Build URL dengan filter parameters */
       const params = new URLSearchParams()
       params.append('limit', '50')
       params.append('offset', '0')
@@ -542,31 +573,29 @@ function BKDashboard() {
       if (fg) params.append('gender', fg.toUpperCase())
       if (fs) params.append('status', fs.toUpperCase())
       
-      /* Fetch stats + daftar konsultasi secara paralel
-         Gunakan endpoint /api/bk/consultations dengan filter parameters */
       const [sRes, cRes] = await Promise.all([
-        fetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
-        fetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
+        safeFetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
+        safeFetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
       ])
       if (!sRes.ok) { const e = await sRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat stats') }
       if (!cRes.ok) { const e = await cRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat konsultasi') }
 
       const sd = await sRes.json()
       const cd = await cRes.json()
-
       setStats(sd)
-      /* Handle both: flat array (legacy) dan {data:[...]} (paginated) */
       const rawItems = Array.isArray(cd) ? cd : (cd.data || [])
       setC(rawItems.map(normalizeItem))
     } catch (e) { setAE(e.message) } finally { setLD(false) }
-  }
+  }, [token, filterMethod, filterGender, filterStatus])
 
-  useEffect(() => { if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus) }, [token, filterMethod, filterGender, filterStatus])
+  useEffect(() => {
+    if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus)
+  }, [token, filterMethod, filterGender, filterStatus, fetchDashboard])
 
   const handleLogin = async (e) => {
     e.preventDefault(); setLoginErr(''); setLL(true)
     try {
-      const res  = await fetch(`${API_URL}/auth/counselor/login`, {
+      const res = await safeFetch(`${API_URL}/auth/counselor/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
@@ -587,17 +616,16 @@ function BKDashboard() {
   const updateStatus = async (id, action) => {
     setAE('')
     try {
-      const res  = await fetch(`${API_URL}/api/bk/consultations/${id}/${action}`, { method: 'PATCH', headers })
+      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}/${action}`, { method: 'PATCH', headers })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail || `Gagal ${action}`)
       await fetchDashboard()
     } catch (e) { setAE(e.message) }
   }
 
-  /* ── WhatsApp helpers (tidak berubah dari versi asli) ── */
   const normalizeWaNumber = (phone) => {
     if (!phone) return null
-    const value  = String(phone).trim()
+    const value = String(phone).trim()
     const digits = value.replace(/\D/g, '')
     if (value.startsWith('+62') && digits.startsWith('62')) return digits
     if (digits.startsWith('62')) return digits
@@ -633,13 +661,12 @@ function BKDashboard() {
     if (!ok) return
     setAE(''); setDeletingId(id)
     try {
-      const res  = await fetch(`${API_URL}/api/bk/consultations/${id}`, { method: 'DELETE', headers })
+      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}`, { method: 'DELETE', headers })
       if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.detail || 'Gagal menghapus konsultasi') }
       await fetchDashboard()
     } catch (e) { setAE(e.message) } finally { setDeletingId(null) }
   }
 
-  /* ── Format tanggal ── */
   const fmtDate = (d) => {
     if (!d) return '—'
     try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }
@@ -648,8 +675,6 @@ function BKDashboard() {
 
   return (
     <div className="form-page" style={{ alignItems: 'stretch' }}>
-
-      {/* Sidebar */}
       <div className="form-sidebar">
         <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
         <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
@@ -664,24 +689,18 @@ function BKDashboard() {
         </div>
       </div>
 
-      {/* Konten utama */}
       <div className="form-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
         {!token ? (
-          /* ── Belum login ── */
           <div style={{ background: 'rgba(10,14,26,.65)', border: '1px solid rgba(255,255,255,.07)', borderRadius: '18px', padding: '28px' }}>
             <div className="auth-tab-bar">
-              <button className={`auth-tab ${authTab === 'login'    ? 'active' : ''}`} onClick={() => { setAuthTab('login');    setLoginErr('') }}>🔐 Login</button>
+              <button className={`auth-tab ${authTab === 'login' ? 'active' : ''}`} onClick={() => { setAuthTab('login'); setLoginErr('') }}>🔐 Login</button>
               <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
             </div>
-            {authTab === 'login'    && <BKLoginForm email={email} setEmail={setEmail} password={password} setPassword={setPassword} error={loginErr} loading={loadingLogin} onSubmit={handleLogin} onSwitchToRegister={() => setAuthTab('register')} />}
+            {authTab === 'login' && <BKLoginForm email={email} setEmail={setEmail} password={password} setPassword={setPassword} error={loginErr} loading={loadingLogin} onSubmit={handleLogin} onSwitchToRegister={() => setAuthTab('register')} />}
             {authTab === 'register' && <BKRegisterForm onSuccess={() => setAuthTab('login')} onSwitchToLogin={() => setAuthTab('login')} />}
           </div>
-
         ) : (
-          /* ── Sudah login ── */
           <>
-            {/* Header dashboard */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <div>
                 <div className="form-section-title">Dashboard Aktif</div>
@@ -692,27 +711,20 @@ function BKDashboard() {
 
             {actionErr && <div className="alert alert-error"><span className="alert-icon">⚠️</span>{actionErr}</div>}
 
-            {/* ── STAT CARDS (4 kartu angka) ── */}
             <div className="stat-card-grid">
-              <StatCard label="Total Konsultasi"     value={stats?.total    ?? 0} />
-              <StatCard label="Menunggu Persetujuan" value={stats?.pending  ?? 0} valueColor="#f59e0b" />
-              <StatCard label="Disetujui"            value={stats?.accepted ?? 0} valueColor="#10b981" />
-              <StatCard label="Ditolak"              value={stats?.rejected ?? 0} valueColor="#ef4444" />
+              <StatCard label="Total Konsultasi" value={stats?.total ?? 0} />
+              <StatCard label="Menunggu Persetujuan" value={stats?.pending ?? 0} valueColor="#f59e0b" />
+              <StatCard label="Disetujui" value={stats?.accepted ?? 0} valueColor="#10b981" />
+              <StatCard label="Ditolak" value={stats?.rejected ?? 0} valueColor="#ef4444" />
             </div>
 
-            {/* ── CHART + DAFTAR KONSULTASI (2 kolom, mirip referensi) ── */}
             <div className="bk-main-grid">
-
-              {/* Kolom kiri: Donut chart */}
               <div className="bk-chart-panel">
                 <div className="bk-panel-title">Statistik Konsultasi</div>
                 <DonutChart stats={stats} />
               </div>
 
-              {/* Kolom kanan: Daftar konsultasi */}
               <div className="bk-list-panel">
-                
-                {/* Filter section */}
                 <div className="bk-filter-section">
                   <div className="bk-filter-title">🔍 Filter Konsultasi</div>
                   <div className="bk-filter-group">
@@ -759,49 +771,23 @@ function BKDashboard() {
                   <div style={{ display: 'grid', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
                     {consultations.map(item => (
                       <div key={item.id} className="consult-item">
-
-                        {/* Baris atas: nama + badge status */}
                         <div className="consult-item-header">
                           <div>
                             <div className="consult-item-name">{item.student_name}</div>
-                            {/* ── BARIS 2: kelas + metode ── */}
-                            <div className="consult-item-meta">
-                              {item.class} · {item.topic} · {item.method}
-                            </div>
+                            <div className="consult-item-meta">{item.class} · {item.topic} · {item.method}</div>
                           </div>
                           <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
                         </div>
 
-                        {/* ── BARIS 3 (BARU): detail tanggal, waktu, tempat, topik ── */}
                         <div className="consult-item-details">
-                          <span className="consult-detail-tag">
-                            <span className="detail-icon">📅</span>
-                            {fmtDate(item.date)}
-                          </span>
-                          {item.time_slot && (
-                            <span className="consult-detail-tag">
-                              <span className="detail-icon">⏰</span>
-                              {item.time_slot}
-                            </span>
-                          )}
-                          {item.place_name && (
-                            <span className="consult-detail-tag">
-                              <span className="detail-icon">📍</span>
-                              {item.place_name}
-                            </span>
-                          )}
-                          {item.topic && (
-                            <span className="consult-detail-tag">
-                              <span className="detail-icon">📝</span>
-                              {item.topic}
-                            </span>
-                          )}
+                          <span className="consult-detail-tag"><span className="detail-icon">📅</span>{fmtDate(item.date)}</span>
+                          {item.time_slot && <span className="consult-detail-tag"><span className="detail-icon">⏰</span>{item.time_slot}</span>}
+                          {item.place_name && <span className="consult-detail-tag"><span className="detail-icon">📍</span>{item.place_name}</span>}
+                          {item.topic && <span className="consult-detail-tag"><span className="detail-icon">📝</span>{item.topic}</span>}
                         </div>
 
-                        {/* ── Kode tracking ── */}
                         <div className="consult-item-code">{item.tracking_code}</div>
 
-                        {/* ── Action buttons ── */}
                         {item.status === 'PENDING' && (
                           <div className="consult-item-actions">
                             <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
@@ -823,7 +809,6 @@ function BKDashboard() {
                             {deletingId === item.id ? 'Menghapus...' : '🗑 Hapus'}
                           </button>
                         </div>
-
                       </div>
                     ))}
                   </div>
@@ -868,14 +853,14 @@ function BKLoginForm({ email, setEmail, password, setPassword, error, loading, o
 }
 
 /* ════════════════════════════════════════════════════════════
-   BKREGISTERFORM — POST /auth/counselors/register
+   BKREGISTERFORM
    ════════════════════════════════════════════════════════════ */
 function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
-  const [f, setF]                 = useState({ name: '', email: '', password: '', phone: '', specialization: '' })
-  const [showPw, setShowPw]       = useState(false)
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState('')
-  const [fieldErrors, setFE]      = useState({})
+  const [f, setF] = useState({ name: '', email: '', password: '', phone: '', specialization: '' })
+  const [showPw, setShowPw] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [fieldErrors, setFE] = useState({})
   const [successData, setSuccess] = useState(null)
 
   const set = (k, v) => { setF(p => ({ ...p, [k]: v })); setFE(p => ({ ...p, [k]: '' })); setError('') }
@@ -900,15 +885,22 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
     setLoading(true)
     try {
       const payload = {
-        name:  f.name.trim(), email: f.email.trim(), password: f.password,
-        ...(f.phone.trim()          ? { phone: f.phone.trim() }          : {}),
+        name: f.name.trim(), email: f.email.trim(), password: f.password,
+        ...(f.phone.trim() ? { phone: f.phone.trim() } : {}),
         ...(f.specialization.trim() ? { specialization: f.specialization.trim() } : {}),
       }
-      const res  = await fetch(`${API_URL}/auth/counselors/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      const res = await safeFetch(`${API_URL}/auth/counselors/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
       if (!res.ok) {
         if (typeof data.detail === 'string') { setError(data.detail); return }
-        if (Array.isArray(data.detail)) { const m = {}; data.detail.forEach(e => { const k = e.loc?.[e.loc.length - 1]; if (k) m[k] = e.msg.replace('Value error, ', '') }); setFE(m); return }
+        if (Array.isArray(data.detail)) {
+          const m = {}
+          data.detail.forEach(e => {
+            const k = e.loc?.[e.loc.length - 1]
+            if (k) m[k] = e.msg.replace('Value error, ', '')
+          })
+          setFE(m); return
+        }
         setError('Registrasi gagal. Coba lagi.'); return
       }
       setSuccess(data)
@@ -924,17 +916,19 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
     return { w: '22%', color: '#ef4444', label: 'Lemah' }
   })()
 
-  if (successData) return (
-    <div className="register-success">
-      <div className="success-ring">🎉</div>
-      <div className="success-title">Akun Berhasil Dibuat!</div>
-      <p className="success-sub">Selamat datang, <strong>{successData.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
-      <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,.07)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
-        <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
+  if (successData) {
+    return (
+      <div className="register-success">
+        <div className="success-ring">🎉</div>
+        <div className="success-title">Akun Berhasil Dibuat!</div>
+        <p className="success-sub">Selamat datang, <strong>{successData.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
+        <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,.07)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
+          <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
+        </div>
+        <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
       </div>
-      <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
-    </div>
-  )
+    )
+  }
 
   return (
     <div>
@@ -1013,7 +1007,7 @@ function StatCard({ label, value, valueColor }) {
   )
 }
 
-/* ── Helper kecil ────────────────────────────────────────────── */
+/* ── Helper kecil ── */
 function Required() {
   return <span style={{ color: '#a78bfa', marginLeft: '2px' }}>*</span>
 }
