@@ -40,8 +40,6 @@ services:
       target: development
     container_name: safespace-backend
     restart: unless-stopped
-    env_file:
-      - ./backend/.env.docker
     environment:
       APP_NAME: ${APP_NAME:-SafeSpace}
       ENVIRONMENT: ${ENVIRONMENT:-development}
