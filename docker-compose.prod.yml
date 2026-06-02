@@ -3,8 +3,12 @@
 
 services:
   backend:
+    build:
+      target: production
     environment:
+      - ENVIRONMENT=production
       - DEBUG=false
+      - LOG_LEVEL=INFO
       - CORS_ORIGINS=https://yourdomain.com
     restart: always
 
