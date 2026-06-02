@@ -3,6 +3,8 @@
 
 services:
   backend:
+    build:
+      target: production
     environment:
       - ENVIRONMENT=production
       - DEBUG=false
