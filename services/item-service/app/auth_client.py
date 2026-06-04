@@ -20,7 +20,12 @@ def verify_token_with_auth_service(authorization: str | None = Header(default=No
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Auth Service unavailable") from exc
 
     if response.status_code != 200:
-        detail = response.json().get("detail", "Token tidak valid")
+        try:
+            detail = response.json().get("detail")
+        except ValueError:
+            detail = None
+
+        detail = detail or "Token tidak valid"
         if response.status_code in {401, 403}:
             raise HTTPException(status_code=response.status_code, detail=detail)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Auth Service unavailable")
