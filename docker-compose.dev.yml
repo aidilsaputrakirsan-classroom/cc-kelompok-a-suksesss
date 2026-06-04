@@ -1,0 +1,28 @@
+# ============================================================
+# Docker Compose — Development Override (Hot-Reload)
+# ============================================================
+
+version: '3.8'
+
+services:
+  # 🔐 Mengaktifkan Hot-Reload pada Auth Service
+  auth-service:
+    volumes:
+      - ./services/auth-service:/app
+    # Menimpa perintah CMD asli dengan menambahkan flag --reload dari uvicorn
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+  # 📦 Mengaktifkan Hot-Reload pada Item Service
+  item-service:
+    volumes:
+      - ./services/item-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+
+  # 🎨 Mengaktifkan Hot-Reload pada Frontend React (Vite)
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Anonymous volume agar node_modules lokal tidak merusak container
+    ports:
+      - "5173:5173" # Membuka port internal Vite untuk bypass jika diperlukan saat dev
+    command: npm run dev -- --host
