@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.auth_client import verify_token_with_auth_service
+from app.auth_client import auth_circuit, verify_token_optional, verify_token_with_auth_service
 from app.database import Base, engine, get_db
 from app.schemas import ItemCreate, ItemListResponse, ItemResponse, ItemStatsResponse, ItemUpdate
 
@@ -29,7 +29,13 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check() -> dict:
-    return {"status": "healthy", "service": "item-service"}
+    cb_status = auth_circuit.status()
+    overall_status = "healthy" if cb_status["state"] == "CLOSED" else "degraded"
+    return {
+        "status": overall_status,
+        "service": "item-service",
+        "dependencies": {"auth_service": cb_status},
+    }
 
 
 @app.post("/items", response_model=ItemResponse, status_code=201)
@@ -53,10 +59,17 @@ def list_items(
 
 @app.get("/items/stats", response_model=ItemStatsResponse)
 def item_stats(
-    user: dict = Depends(verify_token_with_auth_service),
+    user: dict | None = Depends(verify_token_optional),
     db: Session = Depends(get_db),
 ):
-    return crud.get_items_stats(db=db, owner_id=int(user["user_id"]))
+    owner_id = int(user["user_id"]) if user is not None else None
+    return crud.get_items_stats(db=db, owner_id=owner_id)
+
+
+@app.get("/items/public", response_model=ItemListResponse)
+def public_items(db: Session = Depends(get_db)):
+    items = crud.list_public_items(db=db)
+    return {"total": len(items), "items": items}
 
 
 @app.get("/items/{item_id}", response_model=ItemResponse)
