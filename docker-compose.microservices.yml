@@ -54,7 +54,7 @@ services:
     container_name: safespace-auth-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:1@auth-db:5432/auth_db
+      DATABASE_URL: "postgresql://postgres:${AUTH_DB_PASSWORD:-postgres}@auth-db:5432/auth_db"
       SECRET_KEY: change-me-in-production
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
     ports:
