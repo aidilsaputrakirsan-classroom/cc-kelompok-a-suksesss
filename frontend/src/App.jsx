@@ -2,31 +2,36 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import './App.css'
 import DarkModeToggle from './components/DarkModeToggle'
 import AboutPage from './components/AboutPage'
+import ServiceBanner from './components/ServiceBanner'
+import RetryButton from './components/RetryButton'
+import { useServiceHealth } from './hooks/useServiceHealth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost'
 
-/* ── Global Error Handler for Microservices ── */
+/* ── safeFetch v2 (Modul 13) — Tanpa alert, lempar error object ── */
 async function safeFetch(url, options = {}) {
   try {
     const response = await fetch(url, options)
     
     if (response.status === 503) {
-      console.error('⚠️ Service temporarily unavailable')
-      alert('⚠️ Layanan sedang gangguan. Tim DevOps sedang memperbaiki.')
-      throw new Error('Service unavailable')
+      const error = new Error('Service temporarily unavailable')
+      error.type = 'service-down'
+      throw error
     }
     
     if (response.status === 401) {
       sessionStorage.removeItem('bkToken')
-      window.location.href = '/'
-      throw new Error('Session expired')
+      const error = new Error('Session expired')
+      error.type = 'auth-error'
+      throw error
     }
     
     return response
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      console.error('🔌 Cannot connect to API Gateway')
-      alert('🔌 Tidak dapat terhubung ke server. Pastikan Docker berjalan.')
+      const networkError = new Error('Cannot connect to API Gateway')
+      networkError.type = 'network-error'
+      throw networkError
     }
     throw error
   }
@@ -64,6 +69,9 @@ export default function App() {
   const [view, setView] = useState('home')
   const [heroRef, heroVis] = useReveal()
   const [showAbout, setShowAbout] = useState(false)
+  
+  // Modul 13: Hook untuk monitor status service
+  const { healthStatus, checkHealth } = useServiceHealth(API_URL)
 
   useEffect(() => {
     safeFetch(`${API_URL}/health`)
@@ -79,6 +87,11 @@ export default function App() {
   return (
     <div className="shell">
       <div className="orb orb-1" />
+
+      {/* ── Service Banner (Modul 13) ── */}
+      {healthStatus.network === 'down' && (
+        <ServiceBanner type="network" onRetry={checkHealth} />
+      )}
 
       {/* ── Navbar ── */}
       <nav className="nav">
@@ -99,8 +112,8 @@ export default function App() {
       <main className="view-container">
         {view === 'home' && <HomeView heroRef={heroRef} heroVis={heroVis} setView={setView} />}
         {view === 'alur' && <AlurView setView={setView} />}
-        {view === 'ajukan' && <AjukanView />}
-        {view === 'bk' && <BKDashboard />}
+        {view === 'ajukan' && <AjukanView serviceDown={healthStatus.network === 'down'} />}
+        {view === 'bk' && <BKDashboard serviceDown={healthStatus.network === 'down'} />}
       </main>
 
       <footer style={{ textAlign: 'center', padding: '36px', color: 'rgba(220,215,255,.35)', fontSize: '.78rem', borderTop: '1px solid rgba(255,255,255,.05)' }}>
@@ -179,14 +192,22 @@ function AlurView({ setView }) {
   )
 }
 
-/* ══ VIEW: AJUKAN KONSELING ══════════════════════════ */
-function AjukanView() {
+/* ══ VIEW: AJUKAN KONSELING (Modul 13: degraded state info) ══ */
+function AjukanView({ serviceDown }) {
   return (
     <div className="form-page">
       <div className="form-sidebar">
         <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
         <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
         <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
+        
+        {/* Modul 13: Info degraded state */}
+        {serviceDown && (
+          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
+            ⚠️ Layanan sedang dalam mode terbatas. Pengajuan mungkin tertunda hingga layanan pulih.
+          </div>
+        )}
+        
         <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
             <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
@@ -229,7 +250,7 @@ function StepBox({ num, title, desc }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   CONSULT FORM
+   CONSULT FORM (Modul 13: Error Box + Retry Button)
    ════════════════════════════════════════════════════════════ */
 function ConsultForm() {
   const FALLBACK = {
@@ -245,6 +266,7 @@ function ConsultForm() {
   const [optsError, setOE] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(null)
+  const [submitError, setSubmitError] = useState(null) // Modul 13: inline error state
   const [f, setF] = useState({ nama: '', phone: '', classId: '', gender: '', counselorId: '', method: 'INDIVIDUAL', topicId: '', date: '', timeSlotId: '', placeId: '' })
   
   const set = (k, v) => setF(p => ({ ...p, [k]: v }))
@@ -302,6 +324,7 @@ function ConsultForm() {
       return
     }
     setLoading(true)
+    setSubmitError(null) // Reset error sebelum submit
     try {
       const res = await safeFetch(`${API_URL}/api/consultations`, {
         method: 'POST',
@@ -324,12 +347,19 @@ function ConsultForm() {
         const msg = typeof data.detail === 'string' ? data.detail
           : Array.isArray(data.detail) ? data.detail.map(e => e.message || e.msg).join(', ')
           : 'Pengajuan gagal'
-        alert(`Gagal:\n${msg}`)
+        setSubmitError({ type: 'api-error', message: msg })
         return
       }
       setDone(data)
-    } catch {
-      alert('Tidak dapat terhubung ke server. Pastikan backend menyala!')
+    } catch (error) {
+      // Modul 13: Handle error tanpa alert, tampilkan inline
+      if (error.type === 'service-down') {
+        setSubmitError({ type: 'service-down', message: 'Layanan konsultasi sedang tidak tersedia. Silakan coba lagi dalam beberapa saat.' })
+      } else if (error.type === 'network-error') {
+        setSubmitError({ type: 'network-error', message: 'Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil.' })
+      } else {
+        setSubmitError({ type: 'unknown', message: 'Terjadi kesalahan. Silakan coba lagi.' })
+      }
     } finally {
       setLoading(false)
     }
@@ -355,6 +385,25 @@ function ConsultForm() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {optsError && <div className="alert alert-warn"><span className="alert-icon">⚠️</span>{optsError}</div>}
+
+      {/* Modul 13: Error Box dengan Retry Button */}
+      {submitError && (
+        <div className="error-box">
+          <div className="error-box__header">
+            <span className="error-box__icon">
+              {submitError.type === 'network-error' ? '🔌' : '⚠️'}
+            </span>
+            <div className="error-box__content">
+              <div className="error-box__title">Gagal Mengirim</div>
+              <div className="error-box__message">{submitError.message}</div>
+            </div>
+          </div>
+          <div className="error-box__actions">
+            <RetryButton onRetry={handleSubmit} isLoading={loading} />
+            <button className="error-box__dismiss-btn" onClick={() => setSubmitError(null)}>Tutup</button>
+          </div>
+        </div>
+      )}
 
       <div className="input-group">
         <label>Nama Lengkap <Required /></label>
@@ -523,14 +572,15 @@ function DonutChart({ stats }) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   BKDASHBOARD
+   BKDASHBOARD (Modul 13: Retry button saat login gagal)
    ════════════════════════════════════════════════════════════ */
-function BKDashboard() {
+function BKDashboard({ serviceDown }) {
   const [authTab, setAuthTab] = useState('login')
   const [email, setEmail] = useState('anita.bk@safespace.sch.id')
   const [password, setPassword] = useState('Counselor123')
   const [token, setTokenValue] = useState(sessionStorage.getItem('bkToken') || '')
   const [loginErr, setLoginErr] = useState('')
+  const [loginErrorType, setLoginErrorType] = useState(null) // Modul 13
   const [loadingLogin, setLL] = useState(false)
   const [loadingData, setLD] = useState(false)
   const [stats, setStats] = useState(null)
@@ -593,7 +643,10 @@ function BKDashboard() {
   }, [token, filterMethod, filterGender, filterStatus, fetchDashboard])
 
   const handleLogin = async (e) => {
-    e.preventDefault(); setLoginErr(''); setLL(true)
+    e.preventDefault()
+    setLoginErr('')
+    setLoginErrorType(null)
+    setLL(true)
     try {
       const res = await safeFetch(`${API_URL}/auth/counselor/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -605,7 +658,15 @@ function BKDashboard() {
       sessionStorage.setItem('bkToken', data.access_token)
       setStats(null); setC([])
       await fetchDashboard(data.access_token)
-    } catch (e) { setLoginErr(e.message) } finally { setLL(false) }
+    } catch (e) {
+      setLoginErr(e.message)
+      // Modul 13: Deteksi tipe error untuk UI
+      if (e.type === 'service-down') setLoginErrorType('service-down')
+      else if (e.type === 'network-error') setLoginErrorType('network-error')
+      else setLoginErrorType('api-error')
+    } finally { 
+      setLL(false) 
+    }
   }
 
   const handleLogout = () => {
@@ -679,6 +740,14 @@ function BKDashboard() {
         <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
         <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
         <p className="p-desc">Login atau daftar sebagai guru BK untuk mengakses dan mengelola pengajuan konseling siswa secara real-time.</p>
+        
+        {/* Modul 13: Info degraded state */}
+        {serviceDown && (
+          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
+            ⚠️ Layanan autentikasi sedang gangguan. Beberapa fitur dashboard mungkin tidak tersedia.
+          </div>
+        )}
+        
         <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
           {[['✓', 'Protected JWT endpoint'], ['✓', 'Data isolated per counselor'], ['✓', 'Accept / Reject live action']].map(([i, t]) => (
             <div key={t} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.87rem', fontWeight: 500 }}>
@@ -696,7 +765,30 @@ function BKDashboard() {
               <button className={`auth-tab ${authTab === 'login' ? 'active' : ''}`} onClick={() => { setAuthTab('login'); setLoginErr('') }}>🔐 Login</button>
               <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
             </div>
-            {authTab === 'login' && <BKLoginForm email={email} setEmail={setEmail} password={password} setPassword={setPassword} error={loginErr} loading={loadingLogin} onSubmit={handleLogin} onSwitchToRegister={() => setAuthTab('register')} />}
+            {authTab === 'login' && (
+              <>
+                <BKLoginForm 
+                  email={email} 
+                  setEmail={setEmail} 
+                  password={password} 
+                  setPassword={setPassword} 
+                  error={loginErr} 
+                  loading={loadingLogin} 
+                  onSubmit={handleLogin} 
+                  onSwitchToRegister={() => setAuthTab('register')} 
+                />
+                {/* Modul 13: Retry button saat login gagal */}
+                {loginErrorType && (
+                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+                    <RetryButton 
+                      onRetry={handleLogin} 
+                      isLoading={loadingLogin}
+                      label={loginErrorType === 'service-down' ? 'Coba Login Lagi' : 'Refresh'}
+                    />
+                  </div>
+                )}
+              </>
+            )}
             {authTab === 'register' && <BKRegisterForm onSuccess={() => setAuthTab('login')} onSwitchToLogin={() => setAuthTab('login')} />}
           </div>
         ) : (
