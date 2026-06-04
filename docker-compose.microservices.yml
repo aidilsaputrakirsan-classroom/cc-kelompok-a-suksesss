@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1
+      POSTGRES_PASSWORD: ${ITEM_DB_PASSWORD:-postgres}
       POSTGRES_DB: item_db
     ports:
       - "5435:5432"
