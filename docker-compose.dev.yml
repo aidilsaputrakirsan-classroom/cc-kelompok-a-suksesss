@@ -10,19 +10,27 @@ services:
     volumes:
       - ./services/auth-service:/app
     # Menimpa perintah CMD asli dengan menambahkan flag --reload dari uvicorn
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
   # 📦 Mengaktifkan Hot-Reload pada Item Service
   item-service:
     volumes:
       - ./services/item-service:/app
-    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
 
   # 🎨 Mengaktifkan Hot-Reload pada Frontend React (Vite)
   frontend:
+    image: node:18-alpine
+    container_name: safespace-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
       - /app/node_modules # Anonymous volume agar node_modules lokal tidak merusak container
     ports:
-      - "5173:5173" # Membuka port internal Vite untuk bypass jika diperlukan saat dev
+      - "3001:5173" # Membuka port internal Vite untuk bypass jika diperlukan saat dev
     command: npm run dev -- --host
+    depends_on:
+      gateway:
+        condition: service_started

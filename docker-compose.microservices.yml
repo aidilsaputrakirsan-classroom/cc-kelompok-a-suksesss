@@ -78,7 +78,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://postgres:${ITEM_DB_PASSWORD:-postgres}@item-db:5432/item_db"
       AUTH_SERVICE_URL: http://auth-service:8001
-      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
     ports:
       - "8002:8002"
     depends_on:
@@ -114,8 +114,6 @@ services:
         VITE_API_URL: http://localhost:8080
     container_name: safespace-frontend
     restart: unless-stopped
-    ports:
-      - "3000:80"
     depends_on:
       gateway:
         condition: service_started
