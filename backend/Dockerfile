@@ -1,25 +1,27 @@
-# 1. Gunakan base image Python yang ringan
-FROM python:3.12-slim
+FROM python:3.12-slim AS base
 
-# 2. Set working directory di dalam container
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
 WORKDIR /app
 
-# 3. Copy file requirements terlebih dahulu (untuk efisiensi cache)
 COPY requirements.txt .
-
-# 4. Install dependencies backend
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Copy seluruh sisa kode aplikasi ke dalam container
 COPY . .
 
-# 6. === OPTIMASI TUGAS 5: Tambahkan non-root user ===
-RUN useradd -m appuser
+FROM base AS development
+ENV ENVIRONMENT=development
+ENV DEBUG=True
+ENV LOG_LEVEL=DEBUG
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+FROM base AS production
+ENV ENVIRONMENT=production
+ENV DEBUG=False
+ENV LOG_LEVEL=INFO
+
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
-# ====================================================
 
-# 7. Buka port 8000 untuk FastAPI
-EXPOSE 8000
-
-# 8. Command untuk menjalankan server saat container menyala
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "if [ -z \"$DATABASE_URL\" ]; then echo 'ERROR: DATABASE_URL must be set in production and must not use the SQLite default.' >&2; exit 1; fi; case \"$DATABASE_URL\" in sqlite:*) echo 'ERROR: SQLite is not supported with --workers 4 in production. Configure a non-SQLite DATABASE_URL.' >&2; exit 1 ;; esac; exec python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4"]

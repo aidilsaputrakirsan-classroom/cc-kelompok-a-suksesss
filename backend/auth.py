@@ -1,23 +1,15 @@
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from dotenv import load_dotenv
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import get_db
 from models import User, UserRole
-
-load_dotenv()
-
-# Ambil konfigurasi autentikasi dari environment agar mudah diubah per environment.
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key-for-development")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 # Context hashing password untuk menyimpan password dalam bentuk hash, bukan plain text.
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -45,17 +37,17 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Membuat JWT access token dengan masa berlaku tertentu."""
     to_encode = data.copy()
     # Jika tidak ada durasi khusus, pakai durasi default dari konfigurasi.
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     # Claim exp dipakai JWT untuk menentukan kapan token kedaluwarsa.
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def decode_token(token: str) -> dict:
     """Mendekode token dan memastikan tanda tangan JWT masih valid."""
     try:
         # Jika signature atau format token salah, jose akan melempar JWTError.
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
     except JWTError:
         # Semua masalah token dipetakan ke 401 agar klien diminta login ulang.
