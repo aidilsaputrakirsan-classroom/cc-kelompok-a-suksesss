@@ -26,6 +26,15 @@ def list_items(db: Session, owner_id: int | None = None) -> list[Item]:
     return query.order_by(Item.created_at.desc()).all()
 
 
+def list_public_items(db: Session) -> list[Item]:
+    return (
+        db.query(Item)
+        .filter(Item.is_public.is_(True))
+        .order_by(Item.created_at.desc())
+        .all()
+    )
+
+
 def get_item(db: Session, item_id: int, owner_id: int | None = None) -> Item | None:
     query = db.query(Item).filter(Item.id == item_id)
     if owner_id is not None:

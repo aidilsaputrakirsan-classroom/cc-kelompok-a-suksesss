@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 TEST_DB_PATH = Path(__file__).resolve().parent.parent / "test_item.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB_PATH.as_posix()}"
 
-from app.auth_client import verify_token_with_auth_service
+from app.auth_client import verify_token_optional
 from app.database import Base, get_db
 from app.main import app
 
@@ -48,7 +48,18 @@ def client(db_session):
         return {"user_id": 1, "email": "guru@example.com", "name": "Guru BK", "role": "USER"}
 
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[verify_token_with_auth_service] = override_verify_token
+    app.dependency_overrides[verify_token_optional] = override_verify_token
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def plain_client(db_session):
+    def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
