@@ -27,7 +27,7 @@ services:
       - ./frontend:/app
       - /app/node_modules # Anonymous volume agar node_modules lokal tidak merusak container
     ports:
-      - "3001:5173" # Membuka port internal Vite untuk bypass jika diperlukan saat dev
+      - "3000:5173"
     command: npm run dev -- --host
     depends_on:
       gateway:
