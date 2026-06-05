@@ -2,8 +2,6 @@
 # Docker Compose — Development Override (Hot-Reload)
 # ============================================================
 
-version: '3.8'
-
 services:
   # 🔐 Mengaktifkan Hot-Reload pada Auth Service
   auth-service:

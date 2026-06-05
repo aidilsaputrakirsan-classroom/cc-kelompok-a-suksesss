@@ -1,49 +1,62 @@
-.PHONY: up down build logs ps clean restart shell-backend shell-db shell-frontend lint test pr-check
+.PHONY: up down build logs ps clean restart shell-auth shell-item shell-db shell-frontend lint test pr-check dev
 
-# Start semua services
+# ---------------------------------------------------------
+# VARIABEL: Kunci utama agar Docker membaca semua file
+# ---------------------------------------------------------
+COMPOSE_CMD=docker compose -f docker-compose.yml -f docker-compose.microservices.yml -f docker-compose.dev.yml
+
+# Start semua services di background
 up:
-	docker compose up -d
+	$(COMPOSE_CMD) up -d
 
 # Start dengan rebuild (Gunakan ini kalau ada kodingan baru)
 build:
-	docker compose up --build -d
+	$(COMPOSE_CMD) up --build -d
+
+# Shortcut untuk development (Hot-Reload)
+dev:
+	$(COMPOSE_CMD) up --build
 
 # Stop & remove containers (Data aman)
 down:
-	docker compose down
+	$(COMPOSE_CMD) down
 
 # Stop, remove, DAN hapus volumes (⚠️ AWAS: Seluruh data database hilang!)
 clean:
-	docker compose down -v
+	$(COMPOSE_CMD) down -v
 	docker system prune -f
 
 # Restart semua services
 restart:
-	docker compose restart
+	$(COMPOSE_CMD) restart
 
 # Lihat logs secara real-time (semua services)
 logs:
-	docker compose logs -f
+	$(COMPOSE_CMD) logs -f
 
-# Lihat logs khusus backend saja
+# Lihat logs khusus backend saja (Auth & Item)
 logs-backend:
-	docker compose logs -f backend
+	$(COMPOSE_CMD) logs -f auth-service item-service
 
 # Lihat status container yang sedang berjalan
 ps:
-	docker compose ps
+	$(COMPOSE_CMD) ps
 
-# Masuk ke terminal backend
-shell-backend:
-	docker compose exec backend bash
+# Masuk ke terminal Auth Service
+shell-auth:
+	$(COMPOSE_CMD) exec auth-service bash
 
-# Masuk ke dalam PostgreSQL database
+# Masuk ke terminal Item Service
+shell-item:
+	$(COMPOSE_CMD) exec item-service bash
+
+# Masuk ke dalam PostgreSQL database (Auth DB)
 shell-db:
-	docker compose exec db psql -U postgres -d safespace
+	$(COMPOSE_CMD) exec auth-db psql -U postgres -d safespace
 
 # Masuk ke terminal frontend
 shell-frontend:
-	docker compose exec frontend sh
+	$(COMPOSE_CMD) exec frontend sh
 
 # Jalankan linter untuk mengecek kerapian kode
 lint:
@@ -64,7 +77,3 @@ pr-check:
 	make test
 	make build
 	@echo "✅ Semua check lokal berhasil! Kodingan aman untuk di-push dan di-PR."
-
-# Shortcut untuk development (Hot-Reload)
-dev:
-	docker compose -f docker-compose.microservices.yml -f docker-compose.dev.yml up --build
