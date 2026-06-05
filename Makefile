@@ -64,3 +64,7 @@ pr-check:
 	make test
 	make build
 	@echo "✅ Semua check lokal berhasil! Kodingan aman untuk di-push dan di-PR."
+
+# Shortcut untuk development (Hot-Reload)
+dev:
+	docker compose -f docker-compose.microservices.yml -f docker-compose.dev.yml up --build
