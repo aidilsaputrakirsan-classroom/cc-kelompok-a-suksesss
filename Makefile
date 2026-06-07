@@ -17,6 +17,10 @@ build:
 dev:
 	$(COMPOSE_CMD) up --build
 
+# Menjalankan versi production (Tanpa hot-reload, port tertutup dan lebih stabil)
+prod:
+	docker compose -f docker-compose.prod.yml up -d --build
+
 # Stop & remove containers (Data aman)
 down:
 	$(COMPOSE_CMD) down
@@ -26,12 +30,16 @@ clean:
 	$(COMPOSE_CMD) down -v
 	docker system prune -f
 
-# Restart semua services
+# Restart semua services (Gunakan ini kalau ada perubahan konfigurasi atau ingin refresh cepat)
 restart:
 	$(COMPOSE_CMD) restart
 
-# Lihat logs secara real-time (semua services)
+# Lihat logs menggunakan Helper Script untuk format yang lebih baik (Semua services, dengan filter warna-warni)
 logs:
+	bash ./scripts/logs.sh all
+
+# Lihat logs bawaan secara real-time (semua services, tanpa filter)
+logs-raw:
 	$(COMPOSE_CMD) logs -f
 
 # Lihat logs khusus backend saja (Auth & Item)
