@@ -68,6 +68,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -97,6 +102,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -128,6 +138,27 @@ services:
     depends_on:
       gateway:
         condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: safespace-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - auth-service
+      - item-service
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: safespace-grafana
+    ports:
+      - "3002:3000"  # Port default untuk membuka dashboard Grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Password default untuk login nanti
+    depends_on:
+      - prometheus
 
 volumes:
   auth_pgdata:
