@@ -48,3 +48,16 @@ def test_duplicate_register_returns_400(client):
         },
     )
     assert duplicate_response.status_code == 400
+
+
+def test_metrics_endpoint_reports_request_counts(client):
+    client.get("/health")
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["service"] == "auth-service"
+    assert body["status"] == "healthy"
+    assert body["request_count"] >= 2
+    assert body["error_count"] == 0
+    assert "latency_ms" in body
