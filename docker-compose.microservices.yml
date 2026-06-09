@@ -159,6 +159,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin # Password default untuk login nanti
     depends_on:
       - prometheus
+    volumes:
+      - ./monitoring/grafana-data:/var/lib/grafana
 
 volumes:
   auth_pgdata:
