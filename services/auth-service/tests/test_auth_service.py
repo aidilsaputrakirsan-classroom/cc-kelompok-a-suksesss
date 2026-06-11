@@ -51,6 +51,9 @@ def test_duplicate_register_returns_400(client):
 
 
 def test_metrics_endpoint_reports_request_counts(client):
+    from app.main import metrics
+
+    start_count = metrics.request_count
     client.get("/health")
     response = client.get("/metrics")
 
@@ -58,6 +61,6 @@ def test_metrics_endpoint_reports_request_counts(client):
     body = response.json()
     assert body["service"] == "auth-service"
     assert body["status"] == "healthy"
-    assert body["request_count"] >= 2
+    assert body["request_count"] >= start_count + 1
     assert body["error_count"] == 0
     assert "latency_ms" in body
