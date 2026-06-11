@@ -5,8 +5,9 @@ import AboutPage from './components/AboutPage'
 import ServiceBanner from './components/ServiceBanner'
 import RetryButton from './components/RetryButton'
 import { useServiceHealth } from './hooks/useServiceHealth'
+import StatusPage from './pages/StatusPage'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 /* ── safeFetch v2 (Modul 13) — Tanpa alert, lempar error object ── */
 async function safeFetch(url, options = {}) {
@@ -29,7 +30,7 @@ async function safeFetch(url, options = {}) {
     return response
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      const networkError = new Error('Cannot connect to API Gateway')
+      const networkError = new Error('Cannot connect to backend server')
       networkError.type = 'network-error'
       throw networkError
     }
@@ -69,8 +70,6 @@ export default function App() {
   const [view, setView] = useState('home')
   const [heroRef, heroVis] = useReveal()
   const [showAbout, setShowAbout] = useState(false)
-  
-  // Modul 13: Hook untuk monitor status service
   const { healthStatus, checkHealth } = useServiceHealth(API_URL)
 
   useEffect(() => {
@@ -103,8 +102,9 @@ export default function App() {
           <button className={`nav-link ${view === 'home' ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
           <button className={`nav-link ${view === 'alur' ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
           <button className={`nav-link ${view === 'bk' ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
+          <button className={`nav-link ${view === 'status' ? 'active' : ''}`} onClick={() => setView('status')}>Status</button>
           <DarkModeToggle />
-          <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>📄 About</button>
+          <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>About</button>
           <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
         </div>
       </nav>
@@ -114,9 +114,10 @@ export default function App() {
         {view === 'alur' && <AlurView setView={setView} />}
         {view === 'ajukan' && <AjukanView serviceDown={healthStatus.network === 'down'} />}
         {view === 'bk' && <BKDashboard serviceDown={healthStatus.network === 'down'} />}
+        {view === 'status' && <StatusPage />}
       </main>
 
-      <footer style={{ textAlign: 'center', padding: '36px', color: 'rgba(220,215,255,.35)', fontSize: '.78rem', borderTop: '1px solid rgba(255,255,255,.05)' }}>
+      <footer style={{ textAlign: 'center', padding: '36px', color: 'var(--clr-text-muted)', fontSize: '.78rem', borderTop: '1px solid var(--clr-border)' }}>
         SafeSpace — Cloud Counseling System ITK © 2026
       </footer>
     </div>
@@ -129,14 +130,14 @@ function HomeView({ heroRef, heroVis, setView }) {
     <div ref={heroRef} className={`reveal ${heroVis ? 'is-visible' : ''}`}>
       <section className="hero-grid">
         <div>
-          <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
+          <div style={{ color: 'var(--clr-teal)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
             SAFE & PRIVATE COUNSELING
           </div>
           <h1 className="hero-h1">
             Tempat Aman untuk<br />
             <span className="gradient-text">Cerita Kamu.</span>
           </h1>
-          <p style={{ color: 'rgba(220,215,255,.7)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
+          <p style={{ color: 'var(--clr-text-2)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
             Privasi adalah prioritas kami. Konsultasikan masalahmu secara anonim dan aman
             dengan guru BK profesional — tanpa perlu membuat akun.
           </p>
@@ -150,18 +151,18 @@ function HomeView({ heroRef, heroVis, setView }) {
           </div>
         </div>
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <div style={{ width: '100%', height: '320px', background: 'rgba(124,58,237,.08)', borderRadius: '28px', border: '1px solid rgba(124,58,237,.18)', display: 'grid', placeItems: 'center' }}>
-            <span style={{ fontSize: '5rem' }}>🍃</span>
+          <div style={{ width: '100%', height: '320px', background: 'var(--clr-surface-2)', borderRadius: '28px', border: '1px solid var(--clr-border)', display: 'grid', placeItems: 'center' }}>
+            <span style={{ fontSize: '5rem' }}>👩🏻‍🏫</span>
           </div>
         </div>
       </section>
 
       <section style={{ marginTop: '90px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '8px', color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
+        <div style={{ textAlign: 'center', marginBottom: '8px', color: 'var(--clr-teal)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
         <h2 className="p-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: 0 }}>Tiga Fondasi Utama</h2>
         <div className="card-grid">
           <PrincipleCard icon="🔐" title="Privat" desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
-          <PrincipleCard icon="🌱" title="Mudah" desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
+          <PrincipleCard icon="✅" title="Mudah" desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
           <PrincipleCard icon="☁️" title="Fleksibel" desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
         </div>
       </section>
@@ -174,7 +175,7 @@ function AlurView({ setView }) {
   return (
     <div>
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
         <h1 className="hero-h1" style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', marginTop: '10px' }}>Bagaimana ini bekerja?</h1>
       </div>
       <div className="step-container">
@@ -197,20 +198,20 @@ function AjukanView({ serviceDown }) {
   return (
     <div className="form-page">
       <div className="form-sidebar">
-        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
         <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
         <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
         
         {/* Modul 13: Info degraded state */}
         {serviceDown && (
-          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
+          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#f59e0b', lineHeight: 1.5 }}>
             ⚠️ Layanan sedang dalam mode terbatas. Pengajuan mungkin tertunda hingga layanan pulih.
           </div>
         )}
         
         <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
-            <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
+            <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: 'var(--clr-teal)', fontSize: '.88rem', fontWeight: 500 }}>
               <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
               {text}
             </div>
@@ -266,7 +267,7 @@ function ConsultForm() {
   const [optsError, setOE] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(null)
-  const [submitError, setSubmitError] = useState(null) // Modul 13: inline error state
+  const [submitError, setSubmitError] = useState(null)
   const [f, setF] = useState({ nama: '', phone: '', classId: '', gender: '', counselorId: '', method: 'INDIVIDUAL', topicId: '', date: '', timeSlotId: '', placeId: '' })
   
   const set = (k, v) => setF(p => ({ ...p, [k]: v }))
@@ -324,7 +325,7 @@ function ConsultForm() {
       return
     }
     setLoading(true)
-    setSubmitError(null) // Reset error sebelum submit
+    setSubmitError(null)
     try {
       const res = await safeFetch(`${API_URL}/api/consultations`, {
         method: 'POST',
@@ -352,7 +353,6 @@ function ConsultForm() {
       }
       setDone(data)
     } catch (error) {
-      // Modul 13: Handle error tanpa alert, tampilkan inline
       if (error.type === 'service-down') {
         setSubmitError({ type: 'service-down', message: 'Layanan konsultasi sedang tidak tersedia. Silakan coba lagi dalam beberapa saat.' })
       } else if (error.type === 'network-error') {
@@ -386,7 +386,6 @@ function ConsultForm() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {optsError && <div className="alert alert-warn"><span className="alert-icon">⚠️</span>{optsError}</div>}
 
-      {/* Modul 13: Error Box dengan Retry Button */}
       {submitError && (
         <div className="error-box">
           <div className="error-box__header">
@@ -421,7 +420,7 @@ function ConsultForm() {
           <div style={{ display: 'flex', gap: '8px' }}>
             {[['MALE', '♂ Laki-laki'], ['FEMALE', '♀ Perempuan']].map(([val, label]) => (
               <button key={val} type="button" onClick={() => set('gender', val)}
-                style={{ flex: 1, padding: '12px 8px', borderRadius: '11px', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all .2s', background: f.gender === val ? 'rgba(124,58,237,.22)' : 'rgba(255,255,255,.05)', border: `1px solid ${f.gender === val ? 'rgba(124,58,237,.45)' : 'rgba(255,255,255,.1)'}`, color: f.gender === val ? '#c4b5fd' : 'rgba(220,215,255,.65)' }}>
+                style={{ flex: 1, padding: '12px 8px', borderRadius: '11px', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all .2s', background: f.gender === val ? 'rgba(124,58,237,.22)' : 'var(--clr-surface-2)', border: `1px solid ${f.gender === val ? 'rgba(124,58,237,.45)' : 'var(--clr-border)'}`, color: f.gender === val ? '#c4b5fd' : 'var(--clr-text-2)' }}>
                 {label}
               </button>
             ))}
@@ -511,7 +510,7 @@ function DonutChart({ stats }) {
 
   if (total === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'rgba(220,215,255,.4)', fontSize: '.85rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'var(--clr-text-muted)', fontSize: '.85rem' }}>
         Belum ada data
       </div>
     )
@@ -540,7 +539,7 @@ function DonutChart({ stats }) {
     <div className="donut-wrap">
       <div className="donut-chart-area">
         <svg width="160" height="160" viewBox="0 0 160 160">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={stroke} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--clr-border)" strokeWidth={stroke} />
           {arcs.map((arc, i) => (
             <circle key={i} cx={cx} cy={cy} r={r} fill="none"
               stroke={arc.color} strokeWidth={stroke}
@@ -550,8 +549,8 @@ function DonutChart({ stats }) {
               style={{ transition: 'stroke-dasharray .8s ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
             />
           ))}
-          <text x={cx} y={cy - 6} textAnchor="middle" fill="#f0eeff" fontSize="22" fontWeight="700" fontFamily="Playfair Display, serif">{total}</text>
-          <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(220,215,255,.5)" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">Total</text>
+          <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--clr-text)" fontSize="22" fontWeight="700" fontFamily="Playfair Display, serif">{total}</text>
+          <text x={cx} y={cy + 14} textAnchor="middle" fill="var(--clr-text-2)" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">Total</text>
         </svg>
       </div>
       <div className="donut-legend">
@@ -580,7 +579,7 @@ function BKDashboard({ serviceDown }) {
   const [password, setPassword] = useState('Counselor123')
   const [token, setTokenValue] = useState(sessionStorage.getItem('bkToken') || '')
   const [loginErr, setLoginErr] = useState('')
-  const [loginErrorType, setLoginErrorType] = useState(null) // Modul 13
+  const [loginErrorType, setLoginErrorType] = useState(null)
   const [loadingLogin, setLL] = useState(false)
   const [loadingData, setLD] = useState(false)
   const [stats, setStats] = useState(null)
@@ -648,7 +647,8 @@ function BKDashboard({ serviceDown }) {
     setLoginErrorType(null)
     setLL(true)
     try {
-      const res = await safeFetch(`${API_URL}/auth/counselor/login`, {
+      
+      const res = await safeFetch(`${API_URL}/api/bk/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
@@ -660,7 +660,6 @@ function BKDashboard({ serviceDown }) {
       await fetchDashboard(data.access_token)
     } catch (e) {
       setLoginErr(e.message)
-      // Modul 13: Deteksi tipe error untuk UI
       if (e.type === 'service-down') setLoginErrorType('service-down')
       else if (e.type === 'network-error') setLoginErrorType('network-error')
       else setLoginErrorType('api-error')
@@ -737,20 +736,19 @@ function BKDashboard({ serviceDown }) {
   return (
     <div className="form-page" style={{ alignItems: 'stretch' }}>
       <div className="form-sidebar">
-        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
         <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
         <p className="p-desc">Login atau daftar sebagai guru BK untuk mengakses dan mengelola pengajuan konseling siswa secara real-time.</p>
         
-        {/* Modul 13: Info degraded state */}
         {serviceDown && (
-          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
+          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#f59e0b', lineHeight: 1.5 }}>
             ⚠️ Layanan autentikasi sedang gangguan. Beberapa fitur dashboard mungkin tidak tersedia.
           </div>
         )}
         
         <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
           {[['✓', 'Protected JWT endpoint'], ['✓', 'Data isolated per counselor'], ['✓', 'Accept / Reject live action']].map(([i, t]) => (
-            <div key={t} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.87rem', fontWeight: 500 }}>
+            <div key={t} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: 'var(--clr-teal)', fontSize: '.87rem', fontWeight: 500 }}>
               <span style={{ background: 'rgba(45,212,191,.1)', border: '1px solid rgba(45,212,191,.22)', borderRadius: '50%', width: '20px', height: '20px', display: 'grid', placeItems: 'center', fontSize: '.68rem', flexShrink: 0 }}>{i}</span>
               {t}
             </div>
@@ -760,7 +758,7 @@ function BKDashboard({ serviceDown }) {
 
       <div className="form-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {!token ? (
-          <div style={{ background: 'rgba(10,14,26,.65)', border: '1px solid rgba(255,255,255,.07)', borderRadius: '18px', padding: '28px' }}>
+          <div style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-border)', borderRadius: '18px', padding: '28px' }}>
             <div className="auth-tab-bar">
               <button className={`auth-tab ${authTab === 'login' ? 'active' : ''}`} onClick={() => { setAuthTab('login'); setLoginErr('') }}>🔐 Login</button>
               <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
@@ -777,7 +775,6 @@ function BKDashboard({ serviceDown }) {
                   onSubmit={handleLogin} 
                   onSwitchToRegister={() => setAuthTab('register')} 
                 />
-                {/* Modul 13: Retry button saat login gagal */}
                 {loginErrorType && (
                   <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
                     <RetryButton 
@@ -981,7 +978,7 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
         ...(f.phone.trim() ? { phone: f.phone.trim() } : {}),
         ...(f.specialization.trim() ? { specialization: f.specialization.trim() } : {}),
       }
-      const res = await safeFetch(`${API_URL}/auth/counselors/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      const res = await safeFetch(`${API_URL}/api/bk/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       const data = await res.json()
       if (!res.ok) {
         if (typeof data.detail === 'string') { setError(data.detail); return }
@@ -1014,7 +1011,7 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
         <div className="success-ring">🎉</div>
         <div className="success-title">Akun Berhasil Dibuat!</div>
         <p className="success-sub">Selamat datang, <strong>{successData.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
-        <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,.07)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
+        <div style={{ width: '100%', height: '3px', background: 'var(--clr-surface-2)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
           <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
         </div>
         <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
@@ -1048,7 +1045,7 @@ function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
           <label>Password <Required /></label>
           <div style={{ position: 'relative' }}>
             <input className={`f-input ${fieldErrors.password ? 'is-error' : ''}`} type={showPw ? 'text' : 'password'} placeholder="Min. 8 karakter, ada huruf + angka" value={f.password} onChange={e => set('password', e.target.value)} style={{ paddingRight: '44px' }} />
-            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(180,175,220,.5)', display: 'flex', alignItems: 'center', padding: '4px' }}>
+            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-3)', display: 'flex', alignItems: 'center', padding: '4px' }}>
               {showPw
                 ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                 : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
@@ -1101,8 +1098,8 @@ function StatCard({ label, value, valueColor }) {
 
 /* ── Helper kecil ── */
 function Required() {
-  return <span style={{ color: '#a78bfa', marginLeft: '2px' }}>*</span>
+  return <span style={{ color: 'var(--clr-purple)', marginLeft: '2px' }}>*</span>
 }
 function Opt() {
-  return <span style={{ color: 'rgba(180,175,220,.4)', fontWeight: 400, marginLeft: '4px' }}>(opsional)</span>
+  return <span style={{ color: 'var(--clr-text-muted)', fontWeight: 400, marginLeft: '4px' }}>(opsional)</span>
 }
