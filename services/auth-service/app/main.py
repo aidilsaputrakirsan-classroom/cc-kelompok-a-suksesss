@@ -65,3 +65,5 @@ def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
         raise HTTPException(status_code=403, detail="Akun tidak aktif")
 
     return {"user_id": user.id, "email": user.email, "name": user.name, "role": user.role}
+
+

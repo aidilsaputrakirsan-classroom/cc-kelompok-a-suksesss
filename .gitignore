@@ -21,4 +21,7 @@ dist/
 *.db
 backend/test.db
 
+# Abaikan data state Grafana dan Prometheus
+/monitoring/grafana-data/
+
 2026-modul-praktikum-cloudcomputing

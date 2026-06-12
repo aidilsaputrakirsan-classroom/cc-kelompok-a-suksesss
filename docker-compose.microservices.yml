@@ -57,6 +57,7 @@ services:
       DATABASE_URL: "postgresql://postgres:${AUTH_DB_PASSWORD:-postgres}@auth-db:5432/auth_db"
       SECRET_KEY: change-me-in-production
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
     ports:
       - "8001:8001"
     depends_on:
@@ -68,6 +69,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
 
   item-service:
     build:
@@ -78,7 +89,7 @@ services:
     environment:
       DATABASE_URL: "postgresql://postgres:${ITEM_DB_PASSWORD:-postgres}@item-db:5432/item_db"
       AUTH_SERVICE_URL: http://auth-service:8001
-      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
     ports:
       - "8002:8002"
     depends_on:
@@ -92,10 +103,21 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
 
   gateway:
     image: nginx:alpine
     container_name: safespace-gateway
+    restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
@@ -117,6 +139,29 @@ services:
     depends_on:
       gateway:
         condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: safespace-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - auth-service
+      - item-service
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: safespace-grafana
+    ports:
+      - "3002:3000"  # Port default untuk membuka dashboard Grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Password default untuk login nanti
+    depends_on:
+      - prometheus
+    volumes:
+      - ./monitoring/grafana-data:/var/lib/grafana
 
 volumes:
   auth_pgdata:
