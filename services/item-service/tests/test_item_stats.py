@@ -91,3 +91,35 @@ def test_metrics_endpoint_reports_service_health(client):
     assert body["request_count"] >= start_count + 1
     assert body["error_count"] == 0
     assert "latency_ms" in body
+
+
+def test_public_master_data_and_counselors_endpoints(client, db_session):
+    from app.crud import seed_counselors, seed_master_data
+    from app.schemas import SeedCounselorItem
+
+    seed_master_data(db_session)
+    seed_counselors(
+        db_session,
+        [
+            SeedCounselorItem(
+                name="Bu Anita",
+                email="anita.bk@example.com",
+                password="Password123",
+                phone="+6281234567890",
+                specialization="Konseling Remaja",
+            )
+        ],
+    )
+
+    master_response = client.get("/api/public/master-data")
+    assert master_response.status_code == 200
+    master_body = master_response.json()
+    assert master_body["school_classes"]
+    assert master_body["topics"]
+    assert master_body["time_slots"]
+    assert master_body["places"]
+
+    counselors_response = client.get("/api/public/counselors")
+    assert counselors_response.status_code == 200
+    counselors_body = counselors_response.json()
+    assert counselors_body[0]["name"] == "Bu Anita"

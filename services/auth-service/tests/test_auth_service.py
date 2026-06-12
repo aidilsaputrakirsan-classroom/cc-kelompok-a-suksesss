@@ -30,6 +30,30 @@ def test_register_login_and_verify(client):
     assert verify_response.json()["email"] == "guru@example.com"
 
 
+def test_counselor_alias_login_route(client):
+    client.post(
+        "/counselor/register",
+        json={
+            "email": "counselor.alias@example.com",
+            "name": "Guru Alias",
+            "password": "Password123",
+            "phone": "+6281234567890",
+            "specialization": "Konseling Akademik",
+        },
+    )
+
+    login_response = client.post(
+        "/counselor/login",
+        json={
+            "email": "counselor.alias@example.com",
+            "password": "Password123",
+        },
+    )
+
+    assert login_response.status_code == 200
+    assert login_response.json()["user"]["email"] == "counselor.alias@example.com"
+
+
 def test_duplicate_register_returns_400(client):
     client.post(
         "/register",
@@ -64,3 +88,29 @@ def test_metrics_endpoint_reports_request_counts(client):
     assert body["request_count"] >= start_count + 1
     assert body["error_count"] == 0
     assert "latency_ms" in body
+
+
+def test_counselor_login_alias_works(client):
+    register_response = client.post(
+        "/counselor/register",
+        json={
+            "email": "counselor@example.com",
+            "name": "Counselor BK",
+            "password": "Password123",
+            "phone": "+6281234567890",
+            "specialization": "Konseling Remaja",
+        },
+    )
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/counselor/login",
+        json={
+            "email": "counselor@example.com",
+            "password": "Password123",
+        },
+    )
+    assert login_response.status_code == 200
+    body = login_response.json()
+    assert body["user"]["role"] == "COUNSELOR"
+    assert body["user"]["phone"] == "+6281234567890"
