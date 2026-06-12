@@ -15,7 +15,7 @@ RUN npm ci
 COPY . .
 
 # Set API URL (build-time)
-ARG VITE_API_URL=http://localhost:8000
+ARG VITE_API_URL=http://localhost:8080
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build React app
