@@ -1,7 +1,8 @@
-import { useState } from "react"
+// frontend/src/components/SearchBar.jsx
+import { useState } from 'react'
 
-function SearchBar({ onSearch }) {
-  const [query, setQuery] = useState("")
+export default function SearchBar({ onSearch }) {
+  const [query, setQuery] = useState('')
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -9,62 +10,22 @@ function SearchBar({ onSearch }) {
   }
 
   const handleClear = () => {
-    setQuery("")
-    onSearch("")
+    setQuery('')
+    onSearch('')
   }
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', flex: 1 }}>
       <input
         type="text"
-        placeholder="Cari pengajuan (nama siswa, topik)..."
+        placeholder="Cari nama siswa atau topik..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        style={styles.input}
+        className="f-input"
+        style={{ flex: 1 }}
       />
-      <button type="submit" style={styles.btnSearch}>
-        🔍 Cari
-      </button>
-      {query && (
-        <button type="button" onClick={handleClear} style={styles.btnClear}>
-          ✕ Clear
-        </button>
-      )}
+      <button type="submit" className="btn-ghost">🔍 Cari</button>
+      {query && <button type="button" onClick={handleClear} className="btn-ghost">✕</button>}
     </form>
   )
 }
-
-const styles = {
-  form: {
-    display: "flex",
-    gap: "0.5rem",
-    marginBottom: "1.5rem",
-  },
-  input: {
-    flex: 1,
-    padding: "0.75rem 1rem",
-    fontSize: "1rem",
-    border: "2px solid #ddd",
-    borderRadius: "8px",
-    outline: "none",
-  },
-  btnSearch: {
-    padding: "0.75rem 1.25rem",
-    backgroundColor: "#2E75B6",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-  },
-  btnClear: {
-    padding: "0.75rem 1rem",
-    backgroundColor: "#f0f0f0",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-  },
-}
-
-export default SearchBar

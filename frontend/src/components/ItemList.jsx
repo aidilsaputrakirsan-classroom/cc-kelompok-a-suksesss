@@ -1,67 +1,23 @@
-import ItemCard from "./ItemCard"
+// frontend/src/components/ItemList.jsx
+import ItemCard from './ItemCard'
 
-function ItemList({ items, onEdit, onDelete, loading }) {
-  if (loading) {
-    return <p style={styles.message}>⏳ Memuat daftar pengajuan...</p>
+export default function ItemList({ items, onAccept, onReject, onDelete, onWhatsApp, isDeletingId }) {
+  if (!items || items.length === 0) {
+    return <p className="bk-empty-text">Belum ada konsultasi untuk akun ini.</p>
   }
-
-  if (items.length === 0) {
-    return (
-      <div style={styles.empty}>
-        <p style={styles.emptyIcon}>📭</p>
-        <p style={styles.emptyText}>Belum ada pengajuan konseling.</p>
-        <p style={styles.emptyHint}>Akan muncul ketika siswa mengajukan konseling.</p>
-      </div>
-    )
-  }
-
   return (
-    <div style={styles.grid}>
-      {items.map((item) => (
+    <div style={{ display: 'grid', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
+      {items.map(item => (
         <ItemCard
           key={item.id}
           item={item}
-          onEdit={onEdit}
+          onAccept={onAccept}
+          onReject={onReject}
           onDelete={onDelete}
+          onWhatsApp={onWhatsApp}
+          isDeleting={isDeletingId === item.id}
         />
       ))}
     </div>
   )
 }
-
-const styles = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-    gap: "1rem",
-  },
-  message: {
-    textAlign: "center",
-    color: "#888",
-    padding: "2rem",
-    fontSize: "1.1rem",
-  },
-  empty: {
-    textAlign: "center",
-    padding: "3rem",
-    backgroundColor: "#f8f9fa",
-    borderRadius: "12px",
-    border: "2px dashed #ddd",
-  },
-  emptyIcon: {
-    fontSize: "3rem",
-    margin: "0 0 0.5rem 0",
-  },
-  emptyText: {
-    fontSize: "1.1rem",
-    color: "#555",
-    margin: "0 0 0.25rem 0",
-  },
-  emptyHint: {
-    fontSize: "0.9rem",
-    color: "#888",
-    margin: 0,
-  },
-}
-
-export default ItemList

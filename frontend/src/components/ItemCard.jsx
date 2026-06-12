@@ -1,48 +1,51 @@
-import React from 'react';
-
-function ItemCard({ item, onEdit, onDelete }) {
-  const formatRupiah = (num) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(num)
-  }
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "-"
-    return new Date(dateStr).toLocaleDateString("id-ID", {
-      day: "numeric", month: "short", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    })
+// frontend/src/components/ItemCard.jsx
+export default function ItemCard({ item, onAccept, onReject, onDelete, onWhatsApp, isDeleting }) {
+  const fmtDate = (d) => {
+    if (!d) return '—'
+    try {
+      return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+    } catch {
+      return d
+    }
   }
 
   return (
-    <div className="trio-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 className="trio-title" style={{ margin: 0 }}>{item.name}</h3>
-        <span style={{ color: '#2dd4bf', fontWeight: 'bold' }}>{formatRupiah(item.price)}</span>
+    <div className="consult-item">
+      <div className="consult-item-header">
+        <div>
+          <div className="consult-item-name">{item.student_name}</div>
+          <div className="consult-item-meta">{item.class} · {item.topic} · {item.method}</div>
+        </div>
+        <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
       </div>
-
-      {item.description && (
-        <p className="trio-desc" style={{ margin: 0 }}>{item.description}</p>
+      <div className="consult-item-details">
+        <span className="consult-detail-tag"><span className="detail-icon">📅</span>{fmtDate(item.date)}</span>
+        {item.time_slot && <span className="consult-detail-tag"><span className="detail-icon">⏰</span>{item.time_slot}</span>}
+        {item.place_name && <span className="consult-detail-tag"><span className="detail-icon">📍</span>{item.place_name}</span>}
+        {item.topic && <span className="consult-detail-tag"><span className="detail-icon">📝</span>{item.topic}</span>}
+      </div>
+      <div className="consult-item-code">{item.tracking_code}</div>
+      {item.status === 'PENDING' && (
+        <div className="consult-item-actions">
+          <button className="btn-accept" onClick={() => onAccept?.(item.id)} disabled={isDeleting}>✓ Terima</button>
+          <button className="btn-reject" onClick={() => onReject?.(item.id)} disabled={isDeleting}>✕ Tolak</button>
+        </div>
       )}
-
-      <div style={{ display: 'flex', gap: '15px', fontSize: '0.8rem', color: 'rgba(220,215,255,0.5)' }}>
-        <span>📦 Stok: {item.quantity}</span>
-        <span>🕐 {formatDate(item.created_at)}</span>
-      </div>
-
-      <div style={{ display: 'flex', gap: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
-        <button onClick={() => onEdit(item)} className="nav-link" style={{ background: 'rgba(124,58,237,0.2)', color: '#c4b5fd', borderRadius: '8px', flex: 1, padding: '8px' }}>
-          ✏️ Edit
-        </button>
-        <button onClick={() => onDelete(item.id)} className="nav-link" style={{ background: 'rgba(239,68,68,0.1)', color: '#fca5a5', borderRadius: '8px', flex: 1, padding: '8px' }}>
-          🗑️ Hapus
+      {item.status === 'ACCEPTED' && (
+        <div className="consult-item-actions">
+          <button className="btn-whatsapp" onClick={() => onWhatsApp?.(item)}>📱 Chat WhatsApp</button>
+        </div>
+      )}
+      {item.status === 'REJECTED' && (
+        <div className="consult-item-actions">
+          <button className="btn-wa-info" onClick={() => onWhatsApp?.(item)}>📱 Info Penolakan</button>
+        </div>
+      )}
+      <div className="consult-item-actions">
+        <button className="btn-delete" onClick={() => onDelete?.(item.id)} disabled={isDeleting}>
+          {isDeleting ? 'Menghapus...' : '🗑 Hapus'}
         </button>
       </div>
     </div>
   )
 }
-
-export default ItemCard;
