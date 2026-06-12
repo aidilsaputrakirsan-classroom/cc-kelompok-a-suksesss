@@ -1,463 +1,171 @@
+// frontend/src/components/LoginPage.jsx
 import { useState } from 'react'
+import RetryButton from './RetryButton'
 
-function LoginPage({ onLogin, onRegister }) {
-  const [isRegister, setIsRegister] = useState(false)
-  const [formData, setFormData] = useState({ email: '', password: '', name: '' })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-  const handleChange = (e) =>
-    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }))
+async function safeFetch(url, options = {}) {
+  try {
+    const response = await fetch(url, options)
+    if (response.status === 503) {
+      const error = new Error('Service temporarily unavailable')
+      error.type = 'service-down'
+      throw error
+    }
+    if (response.status === 401) {
+      sessionStorage.removeItem('bkToken')
+      const error = new Error('Session expired')
+      error.type = 'auth-error'
+      throw error
+    }
+    return response
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      const networkError = new Error('Cannot connect to backend server')
+      networkError.type = 'network-error'
+      throw networkError
+    }
+    throw error
+  }
+}
 
-  const handleSubmit = async (e) => {
+export default function LoginPage({ onLoginSuccess, onRegisterSuccess, serviceDown }) {
+  const [authTab, setAuthTab] = useState('login')
+  const [email, setEmail] = useState('anita.bk@safespace.sch.id')
+  const [password, setPassword] = useState('Counselor123')
+  const [loginErr, setLoginErr] = useState('')
+  const [loginErrorType, setLoginErrorType] = useState(null)
+  const [loadingLogin, setLL] = useState(false)
+  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', phone: '', specialization: '', showPw: false })
+  const [registerLoading, setRegisterLoading] = useState(false)
+  const [registerError, setRegisterError] = useState('')
+  const [registerFieldErrors, setRegisterFieldErrors] = useState({})
+  const [registerSuccess, setRegisterSuccess] = useState(null)
+
+  const handleLogin = async (e) => {
     e.preventDefault()
-    setError('')
-    setLoading(true)
+    setLoginErr('')
+    setLoginErrorType(null)
+    setLL(true)
     try {
-      if (isRegister) {
-        if (!formData.name.trim()) { setError('Nama wajib diisi'); setLoading(false); return }
-        if (formData.password.length < 8) { setError('Password minimal 8 karakter'); setLoading(false); return }
-        await onRegister(formData)
-      } else {
-        await onLogin(formData.email, formData.password)
-      }
-    } catch (err) {
-      setError(err.message === 'UNAUTHORIZED' ? 'Email atau password salah' : err.message)
+      const res = await safeFetch(`${API_URL}/api/bk/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Login gagal')
+      onLoginSuccess(data.access_token)
+    } catch (e) {
+      setLoginErr(e.message)
+      if (e.type === 'service-down') setLoginErrorType('service-down')
+      else if (e.type === 'network-error') setLoginErrorType('network-error')
+      else setLoginErrorType('api-error')
     } finally {
-      setLoading(false)
+      setLL(false)
     }
   }
 
-  return (
-    <>
-      <style>{loginStyles}</style>
-      <div className="lp-shell">
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    setRegisterError('')
+    setRegisterFieldErrors({})
+    const errors = {}
+    if (!registerData.name.trim() || registerData.name.trim().length < 2) errors.name = 'Nama minimal 2 karakter'
+    if (!registerData.email.trim()) errors.email = 'Email wajib diisi'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerData.email)) errors.email = 'Format email tidak valid'
+    if (!registerData.password) errors.password = 'Password wajib diisi'
+    else if (registerData.password.length < 8) errors.password = 'Minimal 8 karakter'
+    else if (!/[A-Za-z]/.test(registerData.password)) errors.password = 'Harus mengandung huruf'
+    else if (!/\d/.test(registerData.password)) errors.password = 'Harus mengandung angka'
+    if (registerData.phone && !/^\+62\d{8,13}$/.test(registerData.phone.trim())) errors.phone = 'Format: +62xxxxxxxxxx'
+    if (Object.keys(errors).length) { setRegisterFieldErrors(errors); return }
+    setRegisterLoading(true)
+    try {
+      const payload = {
+        name: registerData.name.trim(),
+        email: registerData.email.trim(),
+        password: registerData.password,
+        ...(registerData.phone.trim() ? { phone: registerData.phone.trim() } : {}),
+        ...(registerData.specialization.trim() ? { specialization: registerData.specialization.trim() } : {}),
+      }
+      const res = await safeFetch(`${API_URL}/api/bk/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (typeof data.detail === 'string') { setRegisterError(data.detail); return }
+        if (Array.isArray(data.detail)) {
+          const m = {}
+          data.detail.forEach(e => {
+            const k = e.loc?.[e.loc.length - 1]
+            if (k) m[k] = e.msg.replace('Value error, ', '')
+          })
+          setRegisterFieldErrors(m)
+          return
+        }
+        setRegisterError('Registrasi gagal. Coba lagi.')
+        return
+      }
+      setRegisterSuccess(data)
+      setTimeout(() => onRegisterSuccess(), 2400)
+    } catch {
+      setRegisterError('Tidak dapat terhubung ke server.')
+    } finally {
+      setRegisterLoading(false)
+    }
+  }
 
-        {/* Kiri: branding */}
-        <div className="lp-left">
-          <div className="lp-brand">
-            <div className="lp-logo">🌿</div>
-            <h1 className="lp-app-name">SafeSpace</h1>
-          </div>
-          <h2 className="lp-tagline">
-            Ruang konseling yang <span className="lp-highlight">privat</span>{' '}
-            dan <span className="lp-highlight">aman</span>.
-          </h2>
-          <p className="lp-tagline-sub">
-            Platform bimbingan konseling berbasis cloud untuk siswa
-            dan guru BK Institut Teknologi Kalimantan.
-          </p>
-
-          <div className="lp-features">
-            {[
-              { icon: '🔒', text: 'Data terisolasi per guru BK' },
-              { icon: '⚡', text: 'Akses cepat tanpa hambatan' },
-              { icon: '☁️', text: 'Cloud-native & selalu tersedia' },
-            ].map((f) => (
-              <div className="lp-feature" key={f.text}>
-                <span className="lp-feature-icon">{f.icon}</span>
-                <span>{f.text}</span>
-              </div>
-            ))}
-          </div>
+  if (registerSuccess) {
+    return (
+      <div className="register-success">
+        <div className="success-ring">🎉</div>
+        <div className="success-title">Akun Berhasil Dibuat!</div>
+        <p className="success-sub">Selamat datang, <strong>{registerSuccess.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
+        <div style={{ width: '100%', height: '3px', background: 'var(--clr-surface-2)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
+          <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
         </div>
-
-        {/* Kanan: form */}
-        <div className="lp-right">
-          <div className="lp-card">
-            <div className="lp-card-header">
-              <h2 className="lp-form-title">
-                {isRegister ? 'Buat akun baru' : 'Selamat datang kembali'}
-              </h2>
-              <p className="lp-form-sub">
-                {isRegister
-                  ? 'Daftar untuk mulai menggunakan SafeSpace'
-                  : 'Masuk ke akun SafeSpace Anda'}
-              </p>
-            </div>
-
-            {/* Tab */}
-            <div className="lp-tabs">
-              <button
-                className={`lp-tab ${!isRegister ? 'lp-tab-active' : ''}`}
-                onClick={() => { setIsRegister(false); setError('') }}
-              >Login</button>
-              <button
-                className={`lp-tab ${isRegister ? 'lp-tab-active' : ''}`}
-                onClick={() => { setIsRegister(true); setError('') }}
-              >Register</button>
-            </div>
-
-            {error && (
-              <div className="lp-error">
-                <span>⚠</span> {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="lp-form">
-              {isRegister && (
-                <div className="lp-field">
-                  <label className="lp-label">Nama Lengkap</label>
-                  <input
-                    className="lp-input"
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Nama lengkap Anda"
-                    autoComplete="name"
-                  />
-                </div>
-              )}
-
-              <div className="lp-field">
-                <label className="lp-label">Email</label>
-                <input
-                  className="lp-input"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="email@itk.ac.id"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-
-              <div className="lp-field">
-                <label className="lp-label">Password</label>
-                <div className="lp-pass-wrap">
-                  <input
-                    className="lp-input lp-pass-input"
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder={isRegister ? 'Minimal 8 karakter' : 'Password Anda'}
-                    required
-                    autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  />
-                  <button
-                    type="button"
-                    className="lp-eye"
-                    onClick={() => setShowPassword((p) => !p)}
-                    tabIndex={-1}
-                  >
-                    {showPassword ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <button className="lp-submit" type="submit" disabled={loading}>
-                {loading ? (
-                  <span className="lp-loading">
-                    <span className="lp-spinner"></span>
-                    Memproses...
-                  </span>
-                ) : (
-                  isRegister ? 'Buat Akun' : 'Masuk ke SafeSpace →'
-                )}
-              </button>
-            </form>
-
-            <p className="lp-footer-note">
-              Komputasi Awan · Sistem Informasi ITK
-            </p>
-          </div>
-        </div>
+        <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
       </div>
-    </>
+    )
+  }
+
+  return (
+    <div style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-border)', borderRadius: '18px', padding: '28px' }}>
+      <div className="auth-tab-bar">
+        <button className={`auth-tab ${authTab === 'login' ? 'active' : ''}`} onClick={() => { setAuthTab('login'); setLoginErr('') }}>🔐 Login</button>
+        <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
+      </div>
+      {authTab === 'login' && (
+        <div>
+          <div className="form-section-title">Masuk ke Dashboard</div>
+          <p className="form-section-sub">Belum punya akun? <button className="link-btn" onClick={() => setAuthTab('register')}>Daftar di sini →</button></p>
+          {loginErr && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{loginErr}</div>}
+          <form onSubmit={handleLogin} style={{ display: 'grid', gap: '15px' }}>
+            <div className="input-group"><label>Email</label><input className="f-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@sekolah.sch.id" required /></div>
+            <div className="input-group"><label>Password</label><input className="f-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password Anda" required /></div>
+            <button className="btn-form-submit" type="submit" disabled={loadingLogin}>{loadingLogin && <span className="btn-spinner" />}{loadingLogin ? 'Memproses...' : '🔐 Masuk Dashboard BK'}</button>
+          </form>
+          {loginErrorType && <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}><RetryButton onRetry={handleLogin} isLoading={loadingLogin} label={loginErrorType === 'service-down' ? 'Coba Login Lagi' : 'Refresh'} /></div>}
+        </div>
+      )}
+      {authTab === 'register' && (
+        <div>
+          <div className="form-section-title">Daftar Akun Guru BK</div>
+          <p className="form-section-sub">Sudah punya akun? <button className="link-btn" onClick={() => setAuthTab('login')}>Login di sini →</button></p>
+          {registerError && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{registerError}</div>}
+          <form onSubmit={handleRegister} style={{ display: 'grid', gap: '16px' }}>
+            <div className="input-group"><label>Nama Lengkap <span style={{ color: 'var(--clr-purple)' }}>*</span></label><input className={`f-input ${registerFieldErrors.name ? 'is-error' : ''}`} type="text" placeholder="Nama lengkap Anda" value={registerData.name} onChange={e => setRegisterData(p => ({ ...p, name: e.target.value }))} />{registerFieldErrors.name && <span className="field-error">⚠ {registerFieldErrors.name}</span>}</div>
+            <div className="input-group"><label>Email <span style={{ color: 'var(--clr-purple)' }}>*</span></label><input className={`f-input ${registerFieldErrors.email ? 'is-error' : ''}`} type="email" placeholder="email@sekolah.sch.id" value={registerData.email} onChange={e => setRegisterData(p => ({ ...p, email: e.target.value }))} />{registerFieldErrors.email && <span className="field-error">⚠ {registerFieldErrors.email}</span>}</div>
+            <div className="input-group"><label>Password <span style={{ color: 'var(--clr-purple)' }}>*</span></label><div style={{ position: 'relative' }}><input className={`f-input ${registerFieldErrors.password ? 'is-error' : ''}`} type={registerData.showPw ? 'text' : 'password'} placeholder="Min. 8 karakter, ada huruf + angka" value={registerData.password} onChange={e => setRegisterData(p => ({ ...p, password: e.target.value }))} style={{ paddingRight: '44px' }} /><button type="button" onClick={() => setRegisterData(p => ({ ...p, showPw: !p.showPw }))} style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}>{registerData.showPw ? '🙈' : '👁️'}</button></div>{registerFieldErrors.password && <span className="field-error">⚠ {registerFieldErrors.password}</span>}</div>
+            <div className="input-group"><label>Nomor WhatsApp <span style={{ color: 'var(--clr-text-muted)' }}>(opsional)</span></label><input className={`f-input ${registerFieldErrors.phone ? 'is-error' : ''}`} type="tel" placeholder="+628xxxxxxxxxx" value={registerData.phone} onChange={e => setRegisterData(p => ({ ...p, phone: e.target.value }))} /><span className="field-hint">Contoh: +6281234567890 (format +62 wajib)</span>{registerFieldErrors.phone && <span className="field-error">⚠ {registerFieldErrors.phone}</span>}</div>
+            <div className="input-group"><label>Bidang Spesialisasi <span style={{ color: 'var(--clr-text-muted)' }}>(opsional)</span></label><input className="f-input" type="text" placeholder="Contoh: Konseling Remaja, Karir, Keluarga" value={registerData.specialization} onChange={e => setRegisterData(p => ({ ...p, specialization: e.target.value }))} maxLength={120} /><span className="char-counter">{registerData.specialization.length}/120</span></div>
+            <button className="btn-form-submit" type="submit" disabled={registerLoading}>{registerLoading && <span className="btn-spinner" />}{registerLoading ? 'Mendaftarkan...' : '✍️ Daftar Akun Guru BK'}</button>
+          </form>
+        </div>
+      )}
+    </div>
   )
 }
-
-const loginStyles = `
-  .lp-shell {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  /* Left panel */
-  .lp-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(32px, 6vw, 80px);
-    background: linear-gradient(145deg, rgba(109,40,217,0.18) 0%, rgba(13,148,136,0.1) 100%);
-    border-right: 1px solid rgba(255,255,255,0.07);
-  }
-
-  .lp-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 40px;
-  }
-
-  .lp-logo {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, #7c3aed, #0d9488);
-    border-radius: 13px;
-    display: grid;
-    place-items: center;
-    font-size: 20px;
-    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
-  }
-
-  .lp-app-name {
-    font-family: 'Lora', Georgia, serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #f0eeff;
-    letter-spacing: -0.02em;
-  }
-
-  .lp-tagline {
-    font-family: 'Lora', Georgia, serif;
-    font-size: clamp(1.8rem, 3vw, 2.8rem);
-    font-weight: 700;
-    line-height: 1.2;
-    color: #f0eeff;
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
-
-  .lp-highlight {
-    background: linear-gradient(90deg, #c4b5fd, #2dd4bf);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .lp-tagline-sub {
-    font-size: 1rem;
-    color: rgba(220,215,255,0.7);
-    line-height: 1.7;
-    max-width: 44ch;
-    margin-bottom: 40px;
-  }
-
-  .lp-features {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .lp-feature {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.9rem;
-    color: rgba(220,215,255,0.75);
-  }
-
-  .lp-feature-icon {
-    width: 34px;
-    height: 34px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 9px;
-    display: grid;
-    place-items: center;
-    font-size: 15px;
-    flex-shrink: 0;
-  }
-
-  /* Right panel */
-  .lp-right {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(24px, 4vw, 56px);
-    background: rgba(6,8,15,0.5);
-  }
-
-  .lp-card {
-    width: 100%;
-    max-width: 420px;
-  }
-
-  .lp-card-header {
-    margin-bottom: 28px;
-  }
-
-  .lp-form-title {
-    font-family: 'Lora', Georgia, serif;
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: #f0eeff;
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
-  }
-
-  .lp-form-sub {
-    font-size: 0.9rem;
-    color: rgba(220,215,255,0.6);
-  }
-
-  .lp-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    margin-bottom: 24px;
-  }
-
-  .lp-tab {
-    flex: 1;
-    padding: 9px;
-    border: none;
-    background: transparent;
-    border-radius: 9px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: rgba(220,215,255,0.55);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .lp-tab-active {
-    background: rgba(124,58,237,0.3);
-    color: #c4b5fd;
-    box-shadow: 0 2px 10px rgba(124,58,237,0.2);
-  }
-
-  .lp-error {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    background: rgba(194,65,12,0.12);
-    border: 1px solid rgba(239,68,68,0.22);
-    border-radius: 10px;
-    color: #fca5a5;
-    font-size: 0.875rem;
-    margin-bottom: 16px;
-  }
-
-  .lp-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .lp-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .lp-label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: rgba(220,215,255,0.75);
-    letter-spacing: 0.01em;
-  }
-
-  .lp-input {
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 11px;
-    font-size: 0.95rem;
-    color: #f0eeff;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-    font-family: 'DM Sans', sans-serif;
-    width: 100%;
-  }
-  .lp-input::placeholder { color: rgba(180,175,220,0.4); }
-  .lp-input:focus {
-    border-color: rgba(124,58,237,0.5);
-    background: rgba(124,58,237,0.06);
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
-  }
-
-  .lp-pass-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .lp-pass-input { padding-right: 46px; }
-  .lp-eye {
-    position: absolute;
-    right: 14px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: rgba(180,175,220,0.5);
-    display: flex;
-    align-items: center;
-    padding: 4px;
-    transition: color 0.2s;
-  }
-  .lp-eye:hover { color: rgba(196,181,253,0.8); }
-
-  .lp-submit {
-    padding: 13px;
-    background: linear-gradient(135deg, #7c3aed, #5b21b6);
-    color: #fff;
-    border: none;
-    border-radius: 11px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 16px rgba(109,40,217,0.4);
-    margin-top: 4px;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .lp-submit:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 22px rgba(109,40,217,0.5);
-  }
-  .lp-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .lp-loading {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  @keyframes lp-spin { to { transform: rotate(360deg); } }
-  .lp-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: lp-spin 0.7s linear infinite;
-  }
-
-  
-  .lp-footer-note {
-    text-align: center;
-    font-size: 0.75rem;
-    color: rgba(180,175,220,0.4);
-    margin-top: 24px;
-  }
-
-  @media (max-width: 768px) {
-    .lp-shell { grid-template-columns: 1fr; }
-    .lp-left { display: none; }
-    .lp-right { padding: 24px; min-height: 100vh; }
-  }
-`
-
-export default LoginPage

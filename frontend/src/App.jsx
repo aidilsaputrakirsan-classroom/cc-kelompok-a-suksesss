@@ -1,35 +1,41 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+// frontend/src/App.jsx
+import { useState, useEffect, useCallback } from 'react'
 import './App.css'
 import DarkModeToggle from './components/DarkModeToggle'
 import AboutPage from './components/AboutPage'
 import ServiceBanner from './components/ServiceBanner'
-import RetryButton from './components/RetryButton'
 import { useServiceHealth } from './hooks/useServiceHealth'
+import StatusPage from './pages/StatusPage'
+import Header from './components/Header'
+import LoginPage from './components/LoginPage'
+import ItemForm from './components/ItemForm'
+import ItemList from './components/ItemList'
+import SearchBar from './components/SearchBar'
+import SortBar from './components/SortBar'
+import Spinner from './components/Spinner'
+import Toast from './components/Toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-/* ── safeFetch v2 (Modul 13) — Tanpa alert, lempar error object ── */
+// ---------- safeFetch (sama seperti asli) ----------
 async function safeFetch(url, options = {}) {
   try {
     const response = await fetch(url, options)
-    
     if (response.status === 503) {
       const error = new Error('Service temporarily unavailable')
       error.type = 'service-down'
       throw error
     }
-    
     if (response.status === 401) {
       sessionStorage.removeItem('bkToken')
       const error = new Error('Session expired')
       error.type = 'auth-error'
       throw error
     }
-    
     return response
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      const networkError = new Error('Cannot connect to API Gateway')
+      const networkError = new Error('Cannot connect to backend server')
       networkError.type = 'network-error'
       throw networkError
     }
@@ -37,41 +43,19 @@ async function safeFetch(url, options = {}) {
   }
 }
 
-/* ── Scroll reveal hook ─────────────────────────────────────── */
-function useReveal() {
-  const ref = useRef(null)
-  const [visible, setVisible] = useState(false)
-  
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    
-    const obs = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setVisible(true)
-          obs.disconnect()
-        }
-      },
-      { threshold: 0.1 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-  
-  return [ref, visible]
-}
-
-/* ════════════════════════════════════════════════════════════
-   ROOT APP
-   ════════════════════════════════════════════════════════════ */
+// ---------- Root App ----------
 export default function App() {
   const [view, setView] = useState('home')
-  const [heroRef, heroVis] = useReveal()
   const [showAbout, setShowAbout] = useState(false)
-  
-  // Modul 13: Hook untuk monitor status service
   const { healthStatus, checkHealth } = useServiceHealth(API_URL)
+  const [toasts, setToasts] = useState([])
+
+  const addToast = (message, type = 'success') => {
+    setToasts(prev => [...prev, { id: Date.now(), message, type }])
+  }
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }
 
   useEffect(() => {
     safeFetch(`${API_URL}/health`)
@@ -87,56 +71,43 @@ export default function App() {
   return (
     <div className="shell">
       <div className="orb orb-1" />
-
-      {/* ── Service Banner (Modul 13) ── */}
       {healthStatus.network === 'down' && (
         <ServiceBanner type="network" onRetry={checkHealth} />
       )}
 
-      {/* ── Navbar ── */}
-      <nav className="nav">
-        <div className="nav-brand" onClick={() => setView('home')}>
-          <div className="nav-logo">👩🏻‍🏫</div>
-          <span>SafeSpace</span>
-        </div>
-        <div className="nav-links">
-          <button className={`nav-link ${view === 'home' ? 'active' : ''}`} onClick={() => setView('home')}>Beranda</button>
-          <button className={`nav-link ${view === 'alur' ? 'active' : ''}`} onClick={() => setView('alur')}>Alur Kerja</button>
-          <button className={`nav-link ${view === 'bk' ? 'active' : ''}`} onClick={() => setView('bk')}>Dashboard BK</button>
-          <DarkModeToggle />
-          <button className={`nav-link ${showAbout ? 'active' : ''}`} onClick={() => setShowAbout(true)}>📄 About</button>
-          <button className="nav-cta" onClick={() => setView('ajukan')}>Mulai Konseling →</button>
-        </div>
-      </nav>
+      <Header view={view} setView={setView} showAbout={showAbout} setShowAbout={setShowAbout} />
 
       <main className="view-container">
-        {view === 'home' && <HomeView heroRef={heroRef} heroVis={heroVis} setView={setView} />}
+        {view === 'home' && <HomeView setView={setView} />}
         {view === 'alur' && <AlurView setView={setView} />}
-        {view === 'ajukan' && <AjukanView serviceDown={healthStatus.network === 'down'} />}
-        {view === 'bk' && <BKDashboard serviceDown={healthStatus.network === 'down'} />}
+        {view === 'ajukan' && <AjukanView serviceDown={healthStatus.network === 'down'} addToast={addToast} />}
+        {view === 'bk' && <BKDashboardView serviceDown={healthStatus.network === 'down'} addToast={addToast} />}
+        {view === 'status' && <StatusPage />}
       </main>
 
-      <footer style={{ textAlign: 'center', padding: '36px', color: 'rgba(220,215,255,.35)', fontSize: '.78rem', borderTop: '1px solid rgba(255,255,255,.05)' }}>
+      <footer style={{ textAlign: 'center', padding: '36px', color: 'var(--clr-text-muted)', fontSize: '.78rem', borderTop: '1px solid var(--clr-border)' }}>
         SafeSpace — Cloud Counseling System ITK © 2026
       </footer>
+
+      <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   )
 }
 
-/* ══ VIEW: HOME ══════════════════════════════════════ */
-function HomeView({ heroRef, heroVis, setView }) {
+// ---------- HomeView ----------
+function HomeView({ setView }) {
   return (
-    <div ref={heroRef} className={`reveal ${heroVis ? 'is-visible' : ''}`}>
+    <div className="reveal is-visible">
       <section className="hero-grid">
         <div>
-          <div style={{ color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
+          <div style={{ color: 'var(--clr-teal)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2.5px', marginBottom: '14px' }}>
             SAFE & PRIVATE COUNSELING
           </div>
           <h1 className="hero-h1">
             Tempat Aman untuk<br />
             <span className="gradient-text">Cerita Kamu.</span>
           </h1>
-          <p style={{ color: 'rgba(220,215,255,.7)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
+          <p style={{ color: 'var(--clr-text-2)', lineHeight: 1.8, fontSize: '1.05rem', marginBottom: '32px', maxWidth: '500px' }}>
             Privasi adalah prioritas kami. Konsultasikan masalahmu secara anonim dan aman
             dengan guru BK profesional — tanpa perlu membuat akun.
           </p>
@@ -150,18 +121,18 @@ function HomeView({ heroRef, heroVis, setView }) {
           </div>
         </div>
         <div style={{ display: 'grid', placeItems: 'center' }}>
-          <div style={{ width: '100%', height: '320px', background: 'rgba(124,58,237,.08)', borderRadius: '28px', border: '1px solid rgba(124,58,237,.18)', display: 'grid', placeItems: 'center' }}>
-            <span style={{ fontSize: '5rem' }}>🍃</span>
+          <div style={{ width: '100%', height: '320px', background: 'var(--clr-surface-2)', borderRadius: '28px', border: '1px solid var(--clr-border)', display: 'grid', placeItems: 'center' }}>
+            <span style={{ fontSize: '5rem' }}>👩🏻‍🏫</span>
           </div>
         </div>
       </section>
 
       <section style={{ marginTop: '90px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '8px', color: '#2dd4bf', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
+        <div style={{ textAlign: 'center', marginBottom: '8px', color: 'var(--clr-teal)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>CORE PRINCIPLES</div>
         <h2 className="p-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: 0 }}>Tiga Fondasi Utama</h2>
         <div className="card-grid">
           <PrincipleCard icon="🔐" title="Privat" desc="Hanya kamu dan guru BK yang bisa mengakses percakapan. Admin pun tidak bisa melihatnya." />
-          <PrincipleCard icon="🌱" title="Mudah" desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
+          <PrincipleCard icon="✅" title="Mudah" desc="Tidak perlu buat akun. Cukup isi form dan pantau status menggunakan kode pelacak unik." />
           <PrincipleCard icon="☁️" title="Fleksibel" desc="Atur jadwal dan tempat sesuai kenyamananmu, baik tatap muka maupun daring." />
         </div>
       </section>
@@ -169,12 +140,22 @@ function HomeView({ heroRef, heroVis, setView }) {
   )
 }
 
-/* ══ VIEW: ALUR KERJA ════════════════════════════════ */
+function PrincipleCard({ icon, title, desc }) {
+  return (
+    <div className="p-card">
+      <span className="p-icon">{icon}</span>
+      <h3 className="p-title">{title}</h3>
+      <p className="p-desc">{desc}</p>
+    </div>
+  )
+}
+
+// ---------- AlurView ----------
 function AlurView({ setView }) {
   return (
     <div>
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <span style={{ color: '#7c3aed', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 700, fontSize: '.75rem', letterSpacing: '2px' }}>STEP BY STEP</span>
         <h1 className="hero-h1" style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', marginTop: '10px' }}>Bagaimana ini bekerja?</h1>
       </div>
       <div className="step-container">
@@ -192,51 +173,6 @@ function AlurView({ setView }) {
   )
 }
 
-/* ══ VIEW: AJUKAN KONSELING (Modul 13: degraded state info) ══ */
-function AjukanView({ serviceDown }) {
-  return (
-    <div className="form-page">
-      <div className="form-sidebar">
-        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
-        <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
-        <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
-        
-        {/* Modul 13: Info degraded state */}
-        {serviceDown && (
-          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
-            ⚠️ Layanan sedang dalam mode terbatas. Pengajuan mungkin tertunda hingga layanan pulih.
-          </div>
-        )}
-        
-        <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
-            <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.88rem', fontWeight: 500 }}>
-              <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
-              {text}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="form-main">
-        <ConsultForm />
-      </div>
-    </div>
-  )
-}
-
-/* ────────────────────────────────────────────────────────────
-   KOMPONEN KECIL
-   ──────────────────────────────────────────────────────────── */
-function PrincipleCard({ icon, title, desc }) {
-  return (
-    <div className="p-card">
-      <span className="p-icon">{icon}</span>
-      <h3 className="p-title">{title}</h3>
-      <p className="p-desc">{desc}</p>
-    </div>
-  )
-}
-
 function StepBox({ num, title, desc }) {
   return (
     <div className="step-box">
@@ -249,339 +185,38 @@ function StepBox({ num, title, desc }) {
   )
 }
 
-/* ════════════════════════════════════════════════════════════
-   CONSULT FORM (Modul 13: Error Box + Retry Button)
-   ════════════════════════════════════════════════════════════ */
-function ConsultForm() {
-  const FALLBACK = {
-    school_classes: [{ id: 1, name: 'X-A' }, { id: 2, name: 'X-B' }, { id: 3, name: 'XI IPA 1' }, { id: 4, name: 'XI IPS 1' }, { id: 5, name: 'XII IPA 1' }],
-    topics: [{ id: 1, name: 'Belajar' }, { id: 2, name: 'Karir' }, { id: 3, name: 'Keluarga' }, { id: 4, name: 'Sosial' }, { id: 5, name: 'Pribadi' }],
-    time_slots: [{ id: 1, name: 'Istirahat ke-1', start_time: '10:00', end_time: '10:30' }, { id: 2, name: 'Istirahat ke-2', start_time: '12:00', end_time: '12:30' }, { id: 3, name: 'Pulang Sekolah', start_time: '14:00', end_time: '15:30' }],
-    places: [{ id: 1, name: 'Ruang BK 1' }, { id: 2, name: 'Ruang BK 2' }, { id: 3, name: 'Online' }],
-    counselors: [{ id: 1, name: 'Bu Anita' }, { id: 2, name: 'Pak Budi' }, { id: 3, name: 'Bu Citra' }],
-  }
-
-  const [opts, setOpts] = useState({ ...FALLBACK })
-  const [optsLoading, setOL] = useState(true)
-  const [optsError, setOE] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(null)
-  const [submitError, setSubmitError] = useState(null) // Modul 13: inline error state
-  const [f, setF] = useState({ nama: '', phone: '', classId: '', gender: '', counselorId: '', method: 'INDIVIDUAL', topicId: '', date: '', timeSlotId: '', placeId: '' })
-  
-  const set = (k, v) => setF(p => ({ ...p, [k]: v }))
-
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      setOL(true); setOE('')
-      try {
-        const [mRes, cRes] = await Promise.all([
-          safeFetch(`${API_URL}/api/public/master-data`),
-          safeFetch(`${API_URL}/api/public/counselors`),
-        ])
-        if (!mRes.ok || !cRes.ok) throw new Error('Gagal memuat opsi')
-        const [master, counselors] = await Promise.all([mRes.json(), cRes.json()])
-        if (cancelled) return
-        
-        const timeSlots = (master.time_slots || []).map(s => ({
-          ...s,
-          label: s.start_time ? `${s.name} (${s.start_time}–${s.end_time})` : s.name
-        }))
-        
-        const o = {
-          school_classes: master.school_classes || FALLBACK.school_classes,
-          topics: master.topics || FALLBACK.topics,
-          time_slots: timeSlots.length ? timeSlots : FALLBACK.time_slots,
-          places: master.places || FALLBACK.places,
-          counselors: counselors.length ? counselors : FALLBACK.counselors,
-        }
-        setOpts(o)
-        setF(p => ({
-          ...p,
-          classId: String(o.school_classes[0]?.id ?? ''),
-          topicId: String(o.topics[0]?.id ?? ''),
-          timeSlotId: String(o.time_slots[0]?.id ?? ''),
-          placeId: String(o.places[0]?.id ?? ''),
-          counselorId: String(o.counselors[0]?.id ?? ''),
-        }))
-      } catch {
-        if (!cancelled) {
-          setOE('Data dinamis gagal dimuat, menggunakan data bawaan.')
-          setF(p => ({ ...p, classId: '1', topicId: '1', timeSlotId: '1', placeId: '1', counselorId: '1' }))
-        }
-      } finally {
-        if (!cancelled) setOL(false)
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
-
-  const handleSubmit = async () => {
-    if (!f.nama || !f.phone || !f.gender || !f.date || !f.classId || !f.counselorId || !f.topicId || !f.timeSlotId || !f.placeId) {
-      alert('Harap isi semua kolom wajib!')
-      return
-    }
-    setLoading(true)
-    setSubmitError(null) // Reset error sebelum submit
-    try {
-      const res = await safeFetch(`${API_URL}/api/consultations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          student_name: f.nama.trim(),
-          class_id: parseInt(f.classId),
-          gender: f.gender,
-          student_phone: f.phone.trim(),
-          counselor_id: parseInt(f.counselorId),
-          method: f.method,
-          topic_id: parseInt(f.topicId),
-          date: f.date,
-          time_slot_id: parseInt(f.timeSlotId),
-          place_id: parseInt(f.placeId),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        const msg = typeof data.detail === 'string' ? data.detail
-          : Array.isArray(data.detail) ? data.detail.map(e => e.message || e.msg).join(', ')
-          : 'Pengajuan gagal'
-        setSubmitError({ type: 'api-error', message: msg })
-        return
-      }
-      setDone(data)
-    } catch (error) {
-      // Modul 13: Handle error tanpa alert, tampilkan inline
-      if (error.type === 'service-down') {
-        setSubmitError({ type: 'service-down', message: 'Layanan konsultasi sedang tidak tersedia. Silakan coba lagi dalam beberapa saat.' })
-      } else if (error.type === 'network-error') {
-        setSubmitError({ type: 'network-error', message: 'Tidak dapat terhubung ke server. Pastikan koneksi internet Anda stabil.' })
-      } else {
-        setSubmitError({ type: 'unknown', message: 'Terjadi kesalahan. Silakan coba lagi.' })
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (done) {
-    return (
-      <div className="register-success">
-        <div className="success-ring">🎉</div>
-        <div className="success-title">Pengajuan Terkirim!</div>
-        <p className="success-sub">Simpan kode berikut untuk memantau status konseling kamu.</p>
-        <div className="success-code-box">
-          <span className="success-code-label">Kode Pelacak</span>
-          <span className="success-code-value">{done.tracking_code}</span>
-        </div>
-        <button className="btn-ghost" onClick={() => { setDone(null); setF(p => ({ ...p, nama: '', phone: '', gender: '', date: '' })) }} style={{ marginTop: '8px' }}>
-          Ajukan Lagi
-        </button>
-      </div>
-    )
-  }
-
+// ---------- AjukanView ----------
+function AjukanView({ serviceDown, addToast }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {optsError && <div className="alert alert-warn"><span className="alert-icon">⚠️</span>{optsError}</div>}
-
-      {/* Modul 13: Error Box dengan Retry Button */}
-      {submitError && (
-        <div className="error-box">
-          <div className="error-box__header">
-            <span className="error-box__icon">
-              {submitError.type === 'network-error' ? '🔌' : '⚠️'}
-            </span>
-            <div className="error-box__content">
-              <div className="error-box__title">Gagal Mengirim</div>
-              <div className="error-box__message">{submitError.message}</div>
+    <div className="form-page">
+      <div className="form-sidebar">
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>FORM KONSELING</span>
+        <h2 className="p-title" style={{ marginTop: '14px' }}>Suaramu berhak didengar.</h2>
+        <p className="p-desc">Isi form ini dengan jujur agar guru BK bisa membantumu dengan maksimal. Data kamu aman bersama kami.</p>
+        {serviceDown && (
+          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#f59e0b', lineHeight: 1.5 }}>
+            ⚠️ Layanan sedang dalam mode terbatas. Pengajuan mungkin tertunda hingga layanan pulih.
+          </div>
+        )}
+        <div style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {[['✓', 'Tanpa Akun'], ['✓', 'Enkripsi Privat'], ['✓', 'Dapat Kode Pelacak']].map(([icon, text]) => (
+            <div key={text} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: 'var(--clr-teal)', fontSize: '.88rem', fontWeight: 500 }}>
+              <span style={{ background: 'rgba(45,212,191,.12)', border: '1px solid rgba(45,212,191,.25)', borderRadius: '50%', width: '22px', height: '22px', display: 'grid', placeItems: 'center', fontSize: '.7rem', flexShrink: 0 }}>{icon}</span>
+              {text}
             </div>
-          </div>
-          <div className="error-box__actions">
-            <RetryButton onRetry={handleSubmit} isLoading={loading} />
-            <button className="error-box__dismiss-btn" onClick={() => setSubmitError(null)}>Tutup</button>
-          </div>
-        </div>
-      )}
-
-      <div className="input-group">
-        <label>Nama Lengkap <Required /></label>
-        <input className="f-input" placeholder="Siapa namamu?" value={f.nama} onChange={e => set('nama', e.target.value)} />
-      </div>
-
-      <div className="form-row">
-        <div className="input-group">
-          <label>Nomor WhatsApp <Required /></label>
-          <input className="f-input" type="tel" placeholder="+6281234567890" value={f.phone} onChange={e => set('phone', e.target.value)} />
-          <span className="field-hint">Format +62 wajib digunakan</span>
-        </div>
-        <div className="input-group">
-          <label>Jenis Kelamin <Required /></label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {[['MALE', '♂ Laki-laki'], ['FEMALE', '♀ Perempuan']].map(([val, label]) => (
-              <button key={val} type="button" onClick={() => set('gender', val)}
-                style={{ flex: 1, padding: '12px 8px', borderRadius: '11px', fontFamily: 'Plus Jakarta Sans, sans-serif', fontSize: '.85rem', fontWeight: 600, cursor: 'pointer', transition: 'all .2s', background: f.gender === val ? 'rgba(124,58,237,.22)' : 'rgba(255,255,255,.05)', border: `1px solid ${f.gender === val ? 'rgba(124,58,237,.45)' : 'rgba(255,255,255,.1)'}`, color: f.gender === val ? '#c4b5fd' : 'rgba(220,215,255,.65)' }}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="form-row">
-        <div className="input-group">
-          <label>Kelas <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.classId} onChange={e => set('classId', e.target.value)} disabled={optsLoading}>
-              {opts.school_classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="input-group">
-          <label>Guru BK <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.counselorId} onChange={e => set('counselorId', e.target.value)} disabled={optsLoading}>
-              {opts.counselors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-row">
-        <div className="input-group">
-          <label>Metode Konseling <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.method} onChange={e => set('method', e.target.value)}>
-              <option value="INDIVIDUAL">Individual (1-1)</option>
-              <option value="GROUP">Kelompok</option>
-            </select>
-          </div>
-        </div>
-        <div className="input-group">
-          <label>Topik Masalah <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.topicId} onChange={e => set('topicId', e.target.value)} disabled={optsLoading}>
-              {opts.topics.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div className="input-group">
-        <label>Tanggal Konseling <Required /></label>
-        <input type="date" className="f-input" value={f.date} min={new Date().toISOString().split('T')[0]} onChange={e => set('date', e.target.value)} />
-      </div>
-
-      <div className="form-row">
-        <div className="input-group">
-          <label>Waktu <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.timeSlotId} onChange={e => set('timeSlotId', e.target.value)} disabled={optsLoading}>
-              {opts.time_slots.map(t => <option key={t.id} value={t.id}>{t.label || t.name}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="input-group">
-          <label>Tempat <Required /></label>
-          <div className="f-select-wrap">
-            <select className="f-input" value={f.placeId} onChange={e => set('placeId', e.target.value)} disabled={optsLoading}>
-              {opts.places.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <button className="btn-form-submit" onClick={handleSubmit} disabled={loading || optsLoading}>
-        {(loading || optsLoading) && <span className="btn-spinner" />}
-        {optsLoading ? 'Memuat data form...' : loading ? 'Mengirim...' : '📤 Kirim Pengajuan'}
-      </button>
-    </div>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════
-   PIE CHART SVG
-   ════════════════════════════════════════════════════════════ */
-function DonutChart({ stats }) {
-  const total = stats?.total || 0
-  const pending = stats?.pending || 0
-  const accepted = stats?.accepted || 0
-  const rejected = stats?.rejected || 0
-
-  if (total === 0) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '160px', color: 'rgba(220,215,255,.4)', fontSize: '.85rem' }}>
-        Belum ada data
-      </div>
-    )
-  }
-
-  const cx = 80, cy = 80, r = 56, stroke = 20
-  const circumference = 2 * Math.PI * r
-
-  const segments = [
-    { value: accepted, color: '#10b981', label: 'Diterima' },
-    { value: pending, color: '#f59e0b', label: 'Menunggu' },
-    { value: rejected, color: '#ef4444', label: 'Ditolak' },
-  ]
-
-  let offset = 0
-  const arcs = segments.map(seg => {
-    const pct = total > 0 ? seg.value / total : 0
-    const dash = pct * circumference
-    const gap = circumference - dash
-    const startOffset = circumference - offset * circumference / total
-    offset += seg.value
-    return { ...seg, dash, gap, strokeDashoffset: startOffset }
-  })
-
-  return (
-    <div className="donut-wrap">
-      <div className="donut-chart-area">
-        <svg width="160" height="160" viewBox="0 0 160 160">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={stroke} />
-          {arcs.map((arc, i) => (
-            <circle key={i} cx={cx} cy={cy} r={r} fill="none"
-              stroke={arc.color} strokeWidth={stroke}
-              strokeDasharray={`${arc.dash} ${arc.gap}`}
-              strokeDashoffset={arc.strokeDashoffset}
-              strokeLinecap="butt"
-              style={{ transition: 'stroke-dasharray .8s ease', transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
-            />
           ))}
-          <text x={cx} y={cy - 6} textAnchor="middle" fill="#f0eeff" fontSize="22" fontWeight="700" fontFamily="Playfair Display, serif">{total}</text>
-          <text x={cx} y={cy + 14} textAnchor="middle" fill="rgba(220,215,255,.5)" fontSize="10" fontFamily="Plus Jakarta Sans, sans-serif">Total</text>
-        </svg>
+        </div>
       </div>
-      <div className="donut-legend">
-        {[
-          { label: 'Diterima', value: accepted, color: '#10b981' },
-          { label: 'Menunggu', value: pending, color: '#f59e0b' },
-          { label: 'Ditolak', value: rejected, color: '#ef4444' },
-        ].map(item => (
-          <div key={item.label} className="donut-legend-item">
-            <span className="donut-legend-dot" style={{ background: item.color }} />
-            <span className="donut-legend-label">{item.label}</span>
-            <span className="donut-legend-value" style={{ color: item.color }}>{item.value}</span>
-          </div>
-        ))}
+      <div className="form-main">
+        <ItemForm mode="consultation" addToast={addToast} />
       </div>
     </div>
   )
 }
 
-/* ════════════════════════════════════════════════════════════
-   BKDASHBOARD (Modul 13: Retry button saat login gagal)
-   ════════════════════════════════════════════════════════════ */
-function BKDashboard({ serviceDown }) {
-  const [authTab, setAuthTab] = useState('login')
-  const [email, setEmail] = useState('anita.bk@safespace.sch.id')
-  const [password, setPassword] = useState('Counselor123')
+// ---------- BKDashboardView ----------
+function BKDashboardView({ serviceDown, addToast }) {
   const [token, setTokenValue] = useState(sessionStorage.getItem('bkToken') || '')
-  const [loginErr, setLoginErr] = useState('')
-  const [loginErrorType, setLoginErrorType] = useState(null) // Modul 13
-  const [loadingLogin, setLL] = useState(false)
   const [loadingData, setLD] = useState(false)
   const [stats, setStats] = useState(null)
   const [consultations, setC] = useState([])
@@ -590,6 +225,8 @@ function BKDashboard({ serviceDown }) {
   const [filterMethod, setFilterMethod] = useState('')
   const [filterGender, setFilterGender] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('terbaru')
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
@@ -612,9 +249,10 @@ function BKDashboard({ serviceDown }) {
     rejection_reason: item.rejection_reason || null,
   })
 
-  const fetchDashboard = useCallback(async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus) => {
+  const fetchDashboard = useCallback(async (bt = token, fm = filterMethod, fg = filterGender, fs = filterStatus, sq = searchQuery) => {
     const h = bt ? { Authorization: `Bearer ${bt}` } : {}
-    setLD(true); setAE('')
+    setLD(true)
+    setAE('')
     try {
       const params = new URLSearchParams()
       params.append('limit', '50')
@@ -622,66 +260,77 @@ function BKDashboard({ serviceDown }) {
       if (fm) params.append('method', fm.toUpperCase())
       if (fg) params.append('gender', fg.toUpperCase())
       if (fs) params.append('status', fs.toUpperCase())
-      
+      if (sq) params.append('search', sq)
+
       const [sRes, cRes] = await Promise.all([
         safeFetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
         safeFetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
       ])
-      if (!sRes.ok) { const e = await sRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat stats') }
-      if (!cRes.ok) { const e = await cRes.json().catch(() => ({})); throw new Error(e.detail || 'Gagal memuat konsultasi') }
+      if (!sRes.ok) {
+        const e = await sRes.json().catch(() => ({}))
+        throw new Error(e.detail || 'Gagal memuat stats')
+      }
+      if (!cRes.ok) {
+        const e = await cRes.json().catch(() => ({}))
+        throw new Error(e.detail || 'Gagal memuat konsultasi')
+      }
 
       const sd = await sRes.json()
       const cd = await cRes.json()
       setStats(sd)
-      const rawItems = Array.isArray(cd) ? cd : (cd.data || [])
+      let rawItems = Array.isArray(cd) ? cd : cd.data || []
+      // Sorting frontend
+      if (sortBy === 'terbaru') rawItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      else if (sortBy === 'nama') rawItems.sort((a, b) => (a.student_name || '').localeCompare(b.student_name || ''))
       setC(rawItems.map(normalizeItem))
-    } catch (e) { setAE(e.message) } finally { setLD(false) }
-  }, [token, filterMethod, filterGender, filterStatus])
+    } catch (e) {
+      setAE(e.message)
+    } finally {
+      setLD(false)
+    }
+  }, [token, filterMethod, filterGender, filterStatus, searchQuery, sortBy])
 
   useEffect(() => {
-    if (token) fetchDashboard(token, filterMethod, filterGender, filterStatus)
-  }, [token, filterMethod, filterGender, filterStatus, fetchDashboard])
+    if (token) fetchDashboard()
+  }, [token, fetchDashboard])
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoginErr('')
-    setLoginErrorType(null)
-    setLL(true)
-    try {
-      const res = await safeFetch(`${API_URL}/auth/counselor/login`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || 'Login gagal')
-      setTokenValue(data.access_token)
-      sessionStorage.setItem('bkToken', data.access_token)
-      setStats(null); setC([])
-      await fetchDashboard(data.access_token)
-    } catch (e) {
-      setLoginErr(e.message)
-      // Modul 13: Deteksi tipe error untuk UI
-      if (e.type === 'service-down') setLoginErrorType('service-down')
-      else if (e.type === 'network-error') setLoginErrorType('network-error')
-      else setLoginErrorType('api-error')
-    } finally { 
-      setLL(false) 
-    }
+  const handleLoginSuccess = async (newToken) => {
+    sessionStorage.setItem('bkToken', newToken)
+    setTokenValue(newToken)
+    setStats(null)
+    setC([])
+    await fetchDashboard(newToken)
+    addToast('Login berhasil', 'success')
+  }
+
+  const handleRegisterSuccess = () => {
+    addToast('Registrasi berhasil, silakan login', 'success')
   }
 
   const handleLogout = () => {
-    setTokenValue(''); sessionStorage.removeItem('bkToken')
-    setStats(null); setC([]); setLoginErr(''); setAE('')
+    setTokenValue('')
+    sessionStorage.removeItem('bkToken')
+    setStats(null)
+    setC([])
+    setAE('')
+    addToast('Logout berhasil', 'success')
   }
 
   const updateStatus = async (id, action) => {
     setAE('')
     try {
-      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}/${action}`, { method: 'PATCH', headers })
+      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}/${action}`, {
+        method: 'PATCH',
+        headers,
+      })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail || `Gagal ${action}`)
       await fetchDashboard()
-    } catch (e) { setAE(e.message) }
+      addToast(`Konsultasi ${action === 'accept' ? 'diterima' : 'ditolak'}`, 'success')
+    } catch (e) {
+      setAE(e.message)
+      addToast(e.message, 'error')
+    }
   }
 
   const normalizeWaNumber = (phone) => {
@@ -713,396 +362,364 @@ function BKDashboard({ serviceDown }) {
 
   const openWhatsApp = (item) => {
     const link = buildWhatsAppLink(item)
-    if (!link) { setAE('Nomor WhatsApp siswa tidak valid. Pastikan format +62xxxxxxxx'); return }
+    if (!link) {
+      setAE('Nomor WhatsApp siswa tidak valid. Pastikan format +62xxxxxxxx')
+      return
+    }
     window.open(link, '_blank', 'noopener,noreferrer')
   }
 
   const deleteConsultation = async (id) => {
     const ok = window.confirm('Hapus konsultasi ini? Tindakan ini tidak bisa dibatalkan.')
     if (!ok) return
-    setAE(''); setDeletingId(id)
+    setAE('')
+    setDeletingId(id)
     try {
-      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}`, { method: 'DELETE', headers })
-      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.detail || 'Gagal menghapus konsultasi') }
-      await fetchDashboard()
-    } catch (e) { setAE(e.message) } finally { setDeletingId(null) }
-  }
-
-  const fmtDate = (d) => {
-    if (!d) return '—'
-    try { return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }
-    catch { return d }
-  }
-
-  return (
-    <div className="form-page" style={{ alignItems: 'stretch' }}>
-      <div className="form-sidebar">
-        <span style={{ color: '#7c3aed', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
-        <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
-        <p className="p-desc">Login atau daftar sebagai guru BK untuk mengakses dan mengelola pengajuan konseling siswa secara real-time.</p>
-        
-        {/* Modul 13: Info degraded state */}
-        {serviceDown && (
-          <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '.82rem', color: '#fbbf24', lineHeight: 1.5 }}>
-            ⚠️ Layanan autentikasi sedang gangguan. Beberapa fitur dashboard mungkin tidak tersedia.
-          </div>
-        )}
-        
-        <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
-          {[['✓', 'Protected JWT endpoint'], ['✓', 'Data isolated per counselor'], ['✓', 'Accept / Reject live action']].map(([i, t]) => (
-            <div key={t} style={{ display: 'flex', gap: '10px', alignItems: 'center', color: '#2dd4bf', fontSize: '.87rem', fontWeight: 500 }}>
-              <span style={{ background: 'rgba(45,212,191,.1)', border: '1px solid rgba(45,212,191,.22)', borderRadius: '50%', width: '20px', height: '20px', display: 'grid', placeItems: 'center', fontSize: '.68rem', flexShrink: 0 }}>{i}</span>
-              {t}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="form-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {!token ? (
-          <div style={{ background: 'rgba(10,14,26,.65)', border: '1px solid rgba(255,255,255,.07)', borderRadius: '18px', padding: '28px' }}>
-            <div className="auth-tab-bar">
-              <button className={`auth-tab ${authTab === 'login' ? 'active' : ''}`} onClick={() => { setAuthTab('login'); setLoginErr('') }}>🔐 Login</button>
-              <button className={`auth-tab ${authTab === 'register' ? 'active' : ''}`} onClick={() => { setAuthTab('register'); setLoginErr('') }}>✍️ Daftar Akun</button>
-            </div>
-            {authTab === 'login' && (
-              <>
-                <BKLoginForm 
-                  email={email} 
-                  setEmail={setEmail} 
-                  password={password} 
-                  setPassword={setPassword} 
-                  error={loginErr} 
-                  loading={loadingLogin} 
-                  onSubmit={handleLogin} 
-                  onSwitchToRegister={() => setAuthTab('register')} 
-                />
-                {/* Modul 13: Retry button saat login gagal */}
-                {loginErrorType && (
-                  <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
-                    <RetryButton 
-                      onRetry={handleLogin} 
-                      isLoading={loadingLogin}
-                      label={loginErrorType === 'service-down' ? 'Coba Login Lagi' : 'Refresh'}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-            {authTab === 'register' && <BKRegisterForm onSuccess={() => setAuthTab('login')} onSwitchToLogin={() => setAuthTab('login')} />}
-          </div>
-        ) : (
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div>
-                <div className="form-section-title">Dashboard Aktif</div>
-                <div className="form-section-sub" style={{ margin: 0 }}>Token aktif tersimpan di session browser.</div>
-              </div>
-              <button className="btn-ghost" onClick={handleLogout}>Logout</button>
-            </div>
-
-            {actionErr && <div className="alert alert-error"><span className="alert-icon">⚠️</span>{actionErr}</div>}
-
-            <div className="stat-card-grid">
-              <StatCard label="Total Konsultasi" value={stats?.total ?? 0} />
-              <StatCard label="Menunggu Persetujuan" value={stats?.pending ?? 0} valueColor="#f59e0b" />
-              <StatCard label="Disetujui" value={stats?.accepted ?? 0} valueColor="#10b981" />
-              <StatCard label="Ditolak" value={stats?.rejected ?? 0} valueColor="#ef4444" />
-            </div>
-
-            <div className="bk-main-grid">
-              <div className="bk-chart-panel">
-                <div className="bk-panel-title">Statistik Konsultasi</div>
-                <DonutChart stats={stats} />
-              </div>
-
-              <div className="bk-list-panel">
-                <div className="bk-filter-section">
-                  <div className="bk-filter-title">🔍 Filter Konsultasi</div>
-                  <div className="bk-filter-group">
-                    <div className="bk-filter-item">
-                      <label className="bk-filter-label">Metode</label>
-                      <select className="bk-filter-select" value={filterMethod} onChange={(e) => setFilterMethod(e.target.value)}>
-                        <option value="">Semua</option>
-                        <option value="INDIVIDUAL">Individual (1-1)</option>
-                        <option value="GROUP">Kelompok</option>
-                      </select>
-                    </div>
-                    <div className="bk-filter-item">
-                      <label className="bk-filter-label">Gender</label>
-                      <select className="bk-filter-select" value={filterGender} onChange={(e) => setFilterGender(e.target.value)}>
-                        <option value="">Semua</option>
-                        <option value="MALE">Laki-laki</option>
-                        <option value="FEMALE">Perempuan</option>
-                      </select>
-                    </div>
-                    <div className="bk-filter-item">
-                      <label className="bk-filter-label">Status</label>
-                      <select className="bk-filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                        <option value="">Semua</option>
-                        <option value="PENDING">Pending</option>
-                        <option value="ACCEPTED">Accepted</option>
-                        <option value="REJECTED">Rejected</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px' }}>
-                  <div className="bk-panel-title" style={{ margin: 0 }}>Konsultasi Terbaru</div>
-                  <button className="nav-cta" style={{ padding: '8px 16px', fontSize: '.8rem' }} onClick={() => fetchDashboard()} disabled={loadingData}>
-                    {loadingData ? '⏳' : '↻'} Refresh
-                  </button>
-                </div>
-
-                {loadingData ? (
-                  <p className="bk-empty-text">Memuat data...</p>
-                ) : consultations.length === 0 ? (
-                  <p className="bk-empty-text">Belum ada konsultasi untuk akun ini.</p>
-                ) : (
-                  <div style={{ display: 'grid', gap: '10px', maxHeight: '520px', overflowY: 'auto', paddingRight: '4px' }}>
-                    {consultations.map(item => (
-                      <div key={item.id} className="consult-item">
-                        <div className="consult-item-header">
-                          <div>
-                            <div className="consult-item-name">{item.student_name}</div>
-                            <div className="consult-item-meta">{item.class} · {item.topic} · {item.method}</div>
-                          </div>
-                          <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
-                        </div>
-
-                        <div className="consult-item-details">
-                          <span className="consult-detail-tag"><span className="detail-icon">📅</span>{fmtDate(item.date)}</span>
-                          {item.time_slot && <span className="consult-detail-tag"><span className="detail-icon">⏰</span>{item.time_slot}</span>}
-                          {item.place_name && <span className="consult-detail-tag"><span className="detail-icon">📍</span>{item.place_name}</span>}
-                          {item.topic && <span className="consult-detail-tag"><span className="detail-icon">📝</span>{item.topic}</span>}
-                        </div>
-
-                        <div className="consult-item-code">{item.tracking_code}</div>
-
-                        {item.status === 'PENDING' && (
-                          <div className="consult-item-actions">
-                            <button className="btn-accept" onClick={() => updateStatus(item.id, 'accept')} disabled={deletingId === item.id}>✓ Terima</button>
-                            <button className="btn-reject" onClick={() => updateStatus(item.id, 'reject')} disabled={deletingId === item.id}>✕ Tolak</button>
-                          </div>
-                        )}
-                        {item.status === 'ACCEPTED' && (
-                          <div className="consult-item-actions">
-                            <button className="btn-whatsapp" onClick={() => openWhatsApp(item)}>📱 Chat WhatsApp</button>
-                          </div>
-                        )}
-                        {item.status === 'REJECTED' && (
-                          <div className="consult-item-actions">
-                            <button className="btn-wa-info" onClick={() => openWhatsApp(item)}>📱 Info Penolakan</button>
-                          </div>
-                        )}
-                        <div className="consult-item-actions">
-                          <button className="btn-delete" onClick={() => deleteConsultation(item.id)} disabled={deletingId === item.id}>
-                            {deletingId === item.id ? 'Menghapus...' : '🗑 Hapus'}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════
-   BKLOGINFORM
-   ════════════════════════════════════════════════════════════ */
-function BKLoginForm({ email, setEmail, password, setPassword, error, loading, onSubmit, onSwitchToRegister }) {
-  return (
-    <div>
-      <div className="form-section-title">Masuk ke Dashboard</div>
-      <p className="form-section-sub">
-        Belum punya akun?{' '}
-        <button className="link-btn" onClick={onSwitchToRegister}>Daftar di sini →</button>
-      </p>
-      {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: '15px' }}>
-        <div className="input-group">
-          <label>Email</label>
-          <input className="f-input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@sekolah.sch.id" required />
-        </div>
-        <div className="input-group">
-          <label>Password</label>
-          <input className="f-input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password Anda" required />
-        </div>
-        <button className="btn-form-submit" type="submit" disabled={loading}>
-          {loading && <span className="btn-spinner" />}
-          {loading ? 'Memproses...' : '🔐 Masuk Dashboard BK'}
-        </button>
-      </form>
-    </div>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════
-   BKREGISTERFORM
-   ════════════════════════════════════════════════════════════ */
-function BKRegisterForm({ onSuccess, onSwitchToLogin }) {
-  const [f, setF] = useState({ name: '', email: '', password: '', phone: '', specialization: '' })
-  const [showPw, setShowPw] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [fieldErrors, setFE] = useState({})
-  const [successData, setSuccess] = useState(null)
-
-  const set = (k, v) => { setF(p => ({ ...p, [k]: v })); setFE(p => ({ ...p, [k]: '' })); setError('') }
-
-  const validate = () => {
-    const e = {}
-    if (!f.name.trim() || f.name.trim().length < 2) e.name = 'Nama minimal 2 karakter'
-    if (!f.email.trim()) e.email = 'Email wajib diisi'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = 'Format email tidak valid'
-    if (!f.password) e.password = 'Password wajib diisi'
-    else if (f.password.length < 8) e.password = 'Minimal 8 karakter'
-    else if (!/[A-Za-z]/.test(f.password)) e.password = 'Harus mengandung huruf'
-    else if (!/\d/.test(f.password)) e.password = 'Harus mengandung angka'
-    if (f.phone && !/^\+62\d{8,13}$/.test(f.phone.trim())) e.phone = 'Format: +62xxxxxxxxxx'
-    return e
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault(); setError(''); setSuccess(null)
-    const errs = validate()
-    if (Object.keys(errs).length) { setFE(errs); return }
-    setLoading(true)
-    try {
-      const payload = {
-        name: f.name.trim(), email: f.email.trim(), password: f.password,
-        ...(f.phone.trim() ? { phone: f.phone.trim() } : {}),
-        ...(f.specialization.trim() ? { specialization: f.specialization.trim() } : {}),
-      }
-      const res = await safeFetch(`${API_URL}/auth/counselors/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      const data = await res.json()
+      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}`, {
+        method: 'DELETE',
+        headers,
+      })
       if (!res.ok) {
-        if (typeof data.detail === 'string') { setError(data.detail); return }
-        if (Array.isArray(data.detail)) {
-          const m = {}
-          data.detail.forEach(e => {
-            const k = e.loc?.[e.loc.length - 1]
-            if (k) m[k] = e.msg.replace('Value error, ', '')
-          })
-          setFE(m); return
-        }
-        setError('Registrasi gagal. Coba lagi.'); return
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.detail || 'Gagal menghapus konsultasi')
       }
-      setSuccess(data)
-      setTimeout(() => onSuccess(), 2400)
-    } catch { setError('Tidak dapat terhubung ke server.') } finally { setLoading(false) }
+      await fetchDashboard()
+      addToast('Konsultasi berhasil dihapus', 'success')
+    } catch (e) {
+      setAE(e.message)
+      addToast(e.message, 'error')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
-  const pwStr = (() => {
-    const p = f.password
-    if (!p) return null
-    if (p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p)) return { w: '100%', color: '#10b981', label: 'Kuat ✓' }
-    if (p.length >= 5) return { w: '55%', color: '#f59e0b', label: 'Cukup' }
-    return { w: '22%', color: '#ef4444', label: 'Lemah' }
-  })()
-
-  if (successData) {
+  if (!token) {
     return (
-      <div className="register-success">
-        <div className="success-ring">🎉</div>
-        <div className="success-title">Akun Berhasil Dibuat!</div>
-        <p className="success-sub">Selamat datang, <strong>{successData.name}</strong>! Kamu akan diarahkan ke halaman login.</p>
-        <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,.07)', borderRadius: '2px', overflow: 'hidden', maxWidth: '200px' }}>
-          <div style={{ height: '100%', background: 'linear-gradient(90deg,#7c3aed,#2dd4bf)', animation: 'fill-bar 2.4s linear forwards' }} />
+      <div className="form-page" style={{ alignItems: 'stretch' }}>
+        <div className="form-sidebar">
+          <span style={{ color: 'var(--clr-purple)', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>DASHBOARD BK</span>
+          <h2 className="p-title" style={{ marginTop: '14px' }}>Kelola konsultasi dengan aman.</h2>
+          <p className="p-desc">
+            Login atau daftar sebagai guru BK untuk mengakses dan mengelola pengajuan konseling siswa secara real-time.
+          </p>
+          {serviceDown && (
+            <div
+              style={{
+                marginTop: '20px',
+                padding: '12px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.3)',
+                borderRadius: '10px',
+                fontSize: '.82rem',
+                color: '#f59e0b',
+                lineHeight: 1.5,
+              }}
+            >
+              ⚠️ Layanan autentikasi sedang gangguan. Beberapa fitur dashboard mungkin tidak tersedia.
+            </div>
+          )}
+          <div style={{ marginTop: '28px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
+            {[
+              ['✓', 'Protected JWT endpoint'],
+              ['✓', 'Data isolated per counselor'],
+              ['✓', 'Accept / Reject live action'],
+            ].map(([i, t]) => (
+              <div
+                key={t}
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'center',
+                  color: 'var(--clr-teal)',
+                  fontSize: '.87rem',
+                  fontWeight: 500,
+                }}
+              >
+                <span
+                  style={{
+                    background: 'rgba(45,212,191,.1)',
+                    border: '1px solid rgba(45,212,191,.22)',
+                    borderRadius: '50%',
+                    width: '20px',
+                    height: '20px',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: '.68rem',
+                    flexShrink: 0,
+                  }}
+                >
+                  {i}
+                </span>
+                {t}
+              </div>
+            ))}
+          </div>
         </div>
-        <style>{`@keyframes fill-bar{from{width:0}to{width:100%}}`}</style>
+        <div className="form-main">
+          <LoginPage
+            onLoginSuccess={handleLoginSuccess}
+            onRegisterSuccess={handleRegisterSuccess}
+            serviceDown={serviceDown}
+          />
+        </div>
       </div>
     )
   }
 
   return (
-    <div>
-      <div className="form-section-title">Daftar Akun Guru BK</div>
-      <p className="form-section-sub">
-        Sudah punya akun?{' '}
-        <button className="link-btn" onClick={onSwitchToLogin}>Login di sini →</button>
-      </p>
-      {error && <div className="alert alert-error" style={{ marginBottom: '16px' }}><span className="alert-icon">⚠️</span>{error}</div>}
-
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
-        <div className="input-group">
-          <label>Nama Lengkap <Required /></label>
-          <input className={`f-input ${fieldErrors.name ? 'is-error' : ''}`} type="text" placeholder="Nama lengkap Anda" value={f.name} onChange={e => set('name', e.target.value)} />
-          {fieldErrors.name && <span className="field-error">⚠ {fieldErrors.name}</span>}
-        </div>
-
-        <div className="input-group">
-          <label>Email <Required /></label>
-          <input className={`f-input ${fieldErrors.email ? 'is-error' : ''}`} type="email" placeholder="email@sekolah.sch.id" value={f.email} onChange={e => set('email', e.target.value)} />
-          {fieldErrors.email && <span className="field-error">⚠ {fieldErrors.email}</span>}
-        </div>
-
-        <div className="input-group">
-          <label>Password <Required /></label>
-          <div style={{ position: 'relative' }}>
-            <input className={`f-input ${fieldErrors.password ? 'is-error' : ''}`} type={showPw ? 'text' : 'password'} placeholder="Min. 8 karakter, ada huruf + angka" value={f.password} onChange={e => set('password', e.target.value)} style={{ paddingRight: '44px' }} />
-            <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: '13px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(180,175,220,.5)', display: 'flex', alignItems: 'center', padding: '4px' }}>
-              {showPw
-                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-              }
-            </button>
-          </div>
-          {f.password && (
-            <div className="pw-strength-wrap">
-              <div className="pw-strength-track"><div className="pw-strength-fill" style={{ width: pwStr?.w, background: pwStr?.color }} /></div>
-              <span className="pw-strength-label" style={{ color: pwStr?.color }}>{pwStr?.label}</span>
-            </div>
-          )}
-          {fieldErrors.password && <span className="field-error">⚠ {fieldErrors.password}</span>}
-        </div>
-
-        <div className="input-group">
-          <label>Nomor WhatsApp <Opt /></label>
-          <input className={`f-input ${fieldErrors.phone ? 'is-error' : ''}`} type="tel" placeholder="+628xxxxxxxxxx" value={f.phone} onChange={e => set('phone', e.target.value)} />
-          {fieldErrors.phone ? <span className="field-error">⚠ {fieldErrors.phone}</span> : <span className="field-hint">Contoh: +6281234567890 (format +62 wajib)</span>}
-        </div>
-
-        <div className="input-group">
-          <label>Bidang Spesialisasi <Opt /></label>
-          <input className="f-input" type="text" placeholder="Contoh: Konseling Remaja, Karir, Keluarga" value={f.specialization} onChange={e => set('specialization', e.target.value)} maxLength={120} />
-          <span className={`char-counter ${f.specialization.length > 100 ? 'near-limit' : ''}`}>{f.specialization.length}/120</span>
-        </div>
-
-        <button className="btn-form-submit" type="submit" disabled={loading}>
-          {loading && <span className="btn-spinner" />}
-          {loading ? 'Mendaftarkan...' : '✍️ Daftar Akun Guru BK'}
+    <div className="form-page" style={{ alignItems: 'stretch' }}>
+      <div className="form-sidebar">
+        <span style={{ color: 'var(--clr-purple)', fontWeight: 800, fontSize: '.72rem', letterSpacing: '2px' }}>
+          DASHBOARD BK
+        </span>
+        <h2 className="p-title" style={{ marginTop: '14px' }}>
+          Kelola konsultasi dengan aman.
+        </h2>
+        <p className="p-desc">Lihat dan kelola pengajuan konseling siswa.</p>
+        <button className="btn-ghost" onClick={handleLogout} style={{ marginTop: '20px' }}>
+          Logout
         </button>
-      </form>
-    </div>
-  )
-}
-
-/* ════════════════════════════════════════════════════════════
-   STAT CARD
-   ════════════════════════════════════════════════════════════ */
-function StatCard({ label, value, valueColor }) {
-  return (
-    <div className="stat-card">
-      <div className="stat-card-label">{label}</div>
-      <div className="stat-card-value" style={valueColor ? { color: valueColor } : {}}>
-        {value}
+      </div>
+      <div className="form-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {actionErr && (
+          <div className="alert alert-error">
+            <span className="alert-icon">⚠️</span>
+            {actionErr}
+          </div>
+        )}
+        <div className="stat-card-grid">
+          <div className="stat-card">
+            <div className="stat-card-label">Total Konsultasi</div>
+            <div className="stat-card-value">{stats?.total ?? 0}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-label">Menunggu Persetujuan</div>
+            <div className="stat-card-value" style={{ color: '#f59e0b' }}>
+              {stats?.pending ?? 0}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-label">Disetujui</div>
+            <div className="stat-card-value" style={{ color: '#10b981' }}>
+              {stats?.accepted ?? 0}
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card-label">Ditolak</div>
+            <div className="stat-card-value" style={{ color: '#ef4444' }}>
+              {stats?.rejected ?? 0}
+            </div>
+          </div>
+        </div>
+        <div className="bk-main-grid">
+          <div className="bk-chart-panel">
+            <div className="bk-panel-title">Statistik Konsultasi</div>
+            <DonutChart stats={stats} />
+          </div>
+          <div className="bk-list-panel">
+            <div className="bk-filter-section">
+              <div className="bk-filter-title">🔍 Filter Konsultasi</div>
+              <div className="bk-filter-group">
+                <div className="bk-filter-item">
+                  <label className="bk-filter-label">Metode</label>
+                  <select
+                    className="bk-filter-select"
+                    value={filterMethod}
+                    onChange={(e) => setFilterMethod(e.target.value)}
+                  >
+                    <option value="">Semua</option>
+                    <option value="INDIVIDUAL">Individual (1-1)</option>
+                    <option value="GROUP">Kelompok</option>
+                  </select>
+                </div>
+                <div className="bk-filter-item">
+                  <label className="bk-filter-label">Gender</label>
+                  <select
+                    className="bk-filter-select"
+                    value={filterGender}
+                    onChange={(e) => setFilterGender(e.target.value)}
+                  >
+                    <option value="">Semua</option>
+                    <option value="MALE">Laki-laki</option>
+                    <option value="FEMALE">Perempuan</option>
+                  </select>
+                </div>
+                <div className="bk-filter-item">
+                  <label className="bk-filter-label">Status</label>
+                  <select
+                    className="bk-filter-select"
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                  >
+                    <option value="">Semua</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="ACCEPTED">Accepted</option>
+                    <option value="REJECTED">Rejected</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+                gap: '12px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div className="bk-panel-title" style={{ margin: 0 }}>
+                Konsultasi Terbaru
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <SearchBar onSearch={setSearchQuery} />
+                <SortBar sortBy={sortBy} onSortChange={setSortBy} />
+                <button
+                  className="nav-cta"
+                  style={{ padding: '8px 16px', fontSize: '.8rem' }}
+                  onClick={() => fetchDashboard()}
+                  disabled={loadingData}
+                >
+                  {loadingData ? '⏳' : '↻'} Refresh
+                </button>
+              </div>
+            </div>
+            {loadingData ? (
+              <Spinner />
+            ) : (
+              <ItemList
+                items={consultations}
+                onAccept={(id) => updateStatus(id, 'accept')}
+                onReject={(id) => updateStatus(id, 'reject')}
+                onDelete={deleteConsultation}
+                onWhatsApp={openWhatsApp}
+                isDeletingId={deletingId}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-/* ── Helper kecil ── */
-function Required() {
-  return <span style={{ color: '#a78bfa', marginLeft: '2px' }}>*</span>
-}
-function Opt() {
-  return <span style={{ color: 'rgba(180,175,220,.4)', fontWeight: 400, marginLeft: '4px' }}>(opsional)</span>
+// ---------- DonutChart ----------
+function DonutChart({ stats }) {
+  const total = stats?.total || 0
+  const pending = stats?.pending || 0
+  const accepted = stats?.accepted || 0
+  const rejected = stats?.rejected || 0
+
+  if (total === 0) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '160px',
+          color: 'var(--clr-text-muted)',
+          fontSize: '.85rem',
+        }}
+      >
+        Belum ada data
+      </div>
+    )
+  }
+
+  const cx = 80,
+    cy = 80,
+    r = 56,
+    stroke = 20
+  const circumference = 2 * Math.PI * r
+  const segments = [
+    { value: accepted, color: '#10b981', label: 'Diterima' },
+    { value: pending, color: '#f59e0b', label: 'Menunggu' },
+    { value: rejected, color: '#ef4444', label: 'Ditolak' },
+  ]
+  let offset = 0
+  const arcs = segments.map((seg) => {
+    const pct = total > 0 ? seg.value / total : 0
+    const dash = pct * circumference
+    const gap = circumference - dash
+    const startOffset = circumference - (offset * circumference) / total
+    offset += seg.value
+    return { ...seg, dash, gap, strokeDashoffset: startOffset }
+  })
+
+  return (
+    <div className="donut-wrap">
+      <div className="donut-chart-area">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke="var(--clr-border)"
+            strokeWidth={stroke}
+          />
+          {arcs.map((arc, i) => (
+            <circle
+              key={i}
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke={arc.color}
+              strokeWidth={stroke}
+              strokeDasharray={`${arc.dash} ${arc.gap}`}
+              strokeDashoffset={arc.strokeDashoffset}
+              strokeLinecap="butt"
+              style={{
+                transition: 'stroke-dasharray .8s ease',
+                transform: 'rotate(-90deg)',
+                transformOrigin: '50% 50%',
+              }}
+            />
+          ))}
+          <text
+            x={cx}
+            y={cy - 6}
+            textAnchor="middle"
+            fill="var(--clr-text)"
+            fontSize="22"
+            fontWeight="700"
+            fontFamily="Playfair Display, serif"
+          >
+            {total}
+          </text>
+          <text
+            x={cx}
+            y={cy + 14}
+            textAnchor="middle"
+            fill="var(--clr-text-2)"
+            fontSize="10"
+            fontFamily="Plus Jakarta Sans, sans-serif"
+          >
+            Total
+          </text>
+        </svg>
+      </div>
+      <div className="donut-legend">
+        {[
+          { label: 'Diterima', value: accepted, color: '#10b981' },
+          { label: 'Menunggu', value: pending, color: '#f59e0b' },
+          { label: 'Ditolak', value: rejected, color: '#ef4444' },
+        ].map((item) => (
+          <div key={item.label} className="donut-legend-item">
+            <span
+              className="donut-legend-dot"
+              style={{ background: item.color }}
+            />
+            <span className="donut-legend-label">{item.label}</span>
+            <span className="donut-legend-value" style={{ color: item.color }}>
+              {item.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }

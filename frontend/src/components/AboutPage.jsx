@@ -1,7 +1,7 @@
 function AboutPage({ onBack }) {
   const team = [
     { name: "Rendy Rifandi Kurnia", nim: "10231081", role: "Lead Backend" },
-    { name: "Riska Fadiun Khairiyah Purba", nim: "10231083", role: "Lead Frontend" },
+    { name: "Riska Fadlun Khairiyah Purba", nim: "10231083", role: "Lead Frontend" },
     { name: "Rizki Abdul Aziz", nim: "10231085", role: "Lead DevOps" },
     { name: "Siti Nur Azizah Putri Awni", nim: "10231087", role: "Lead QA & Docs" },
   ]
