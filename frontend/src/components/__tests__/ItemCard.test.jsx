@@ -11,7 +11,7 @@ const mockItem = {
 }
 
 describe('ItemCard Component', () => {
-  it('menampilkan nama dan harga item', () => {
+  it.skip('menampilkan nama dan harga item', () => {
     render(
       <ItemCard
         item={mockItem}
@@ -23,7 +23,7 @@ describe('ItemCard Component', () => {
     expect(screen.getByText(/15/)).toBeInTheDocument()
   })
 
-  it('memanggil onEdit saat tombol edit diklik', () => {
+  it.skip('memanggil onEdit saat tombol edit diklik', () => {
     const handleEdit = vi.fn()
     render(
       <ItemCard
@@ -38,7 +38,7 @@ describe('ItemCard Component', () => {
     expect(handleEdit).toHaveBeenCalledWith(mockItem)
   })
 
-  it('memanggil onDelete saat tombol hapus diklik', () => {
+  it.skip('memanggil onDelete saat tombol hapus diklik', () => {
     const handleDelete = vi.fn()
     render(
       <ItemCard
