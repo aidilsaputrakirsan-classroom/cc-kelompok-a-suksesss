@@ -75,3 +75,19 @@ def test_stats_degrades_when_auth_breaker_open(plain_client, db_session):
         auth_circuit.state = "CLOSED"
         auth_circuit.failure_count = 0
         auth_circuit.last_failure_time = None
+
+
+def test_metrics_endpoint_reports_service_health(client):
+    from app.main import metrics
+
+    start_count = metrics.request_count
+    client.get("/items/stats")
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["service"] == "item-service"
+    assert body["status"] == "healthy"
+    assert body["request_count"] >= start_count + 1
+    assert body["error_count"] == 0
+    assert "latency_ms" in body
