@@ -315,8 +315,8 @@ def public_items(db: Session = Depends(get_db)):
 
 
 @app.get("/items/{item_id}", response_model=ItemResponse)
-def get_item(item_id: int, db: Session = Depends(get_db)):
-    item = crud.get_item(db=db, item_id=item_id)
+def get_item(item_id: int, user: dict = Depends(verify_token_with_auth_service), db: Session = Depends(get_db)):
+    item = crud.get_item(db=db, item_id=item_id, owner_id=int(user["user_id"]))
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
