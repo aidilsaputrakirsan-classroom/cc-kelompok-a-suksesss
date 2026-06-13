@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from urllib.parse import quote
 
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import selectinload
 
 from app.models import (
     Consultation,
@@ -307,8 +308,18 @@ def get_consultations_paginated(
     gender: str | None = None,
     status_filter: ConsultationStatus | None = None,
 ) -> dict:
-    base_query = db.query(Consultation).filter(Consultation.counselor_id == counselor_id).order_by(Consultation.created_at.desc())
-
+    base_query = (
+        db.query(Consultation)
+        .options(
+            selectinload(Consultation.student),
+            selectinload(Consultation.school_class),
+            selectinload(Consultation.topic),
+            selectinload(Consultation.time_slot)
+        )
+        .filter(Consultation.counselor_id == counselor_id)
+        .order_by(Consultation.created_at.desc())
+    )
+    
     if method is not None:
         try:
             method_enum = ConsultationMethod[method.upper()]
