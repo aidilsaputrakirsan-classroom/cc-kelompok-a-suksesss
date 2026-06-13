@@ -18,7 +18,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.COUNSELOR)
+    role = Column(Enum(UserRole), nullable=False, default=UserRole.USER)
     phone = Column(String(20), nullable=True)
     specialization = Column(String(120), nullable=True)
     photo = Column(String(255), nullable=True)
