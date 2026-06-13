@@ -42,7 +42,14 @@ def get_user_by_id(db: Session, user_id: int) -> User | None:
 
 
 def issue_access_token(user: User) -> str:
-    return create_access_token(data={"sub": str(user.id), "email": user.email, "role": user.role.value})
+    return create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "role": user.role.value,
+        }
+    )
 
 
 # Backwards-compatible aliases.

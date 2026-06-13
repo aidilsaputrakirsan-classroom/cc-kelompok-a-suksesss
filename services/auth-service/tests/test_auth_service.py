@@ -114,3 +114,31 @@ def test_counselor_login_alias_works(client):
     body = login_response.json()
     assert body["user"]["role"] == "COUNSELOR"
     assert body["user"]["phone"] == "+6281234567890"
+
+
+def test_jwt_payload_includes_counselor_name(client):
+    from app.auth import decode_token
+
+    client.post(
+        "/counselor/register",
+        json={
+            "email": "payload.name@example.com",
+            "name": "Payload Nama",
+            "password": "Password123",
+            "phone": "+6281234567890",
+            "specialization": "Konseling Akademik",
+        },
+    )
+
+    login_response = client.post(
+        "/counselor/login",
+        json={
+            "email": "payload.name@example.com",
+            "password": "Password123",
+        },
+    )
+    token = login_response.json()["access_token"]
+    payload = decode_token(token)
+
+    assert payload["name"] == "Payload Nama"
+    assert payload["sub"].isdigit()

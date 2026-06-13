@@ -300,6 +300,7 @@ def get_dashboard_stats(db: Session, counselor_id: int) -> dict:
 def get_consultations_paginated(
     db: Session,
     counselor_id: int,
+    current_counselor_name: str,
     limit: int,
     offset: int,
     method: str | None = None,
@@ -336,7 +337,7 @@ def get_consultations_paginated(
             "tracking_code": consultation.tracking_code,
             "student_name": consultation.student.name,
             "student_phone": consultation.student.phone,
-            "counselor_name": consultation.counselor.name,
+            "counselor_name": current_counselor_name,
             "class": consultation.school_class.name,
             "topic": consultation.topic.name,
             "status": consultation.status,
@@ -346,7 +347,7 @@ def get_consultations_paginated(
             "whatsapp_link": _build_whatsapp_link(
                 phone=consultation.student.phone,
                 student_name=consultation.student.name,
-                counselor_name=consultation.counselor.name,
+                counselor_name=current_counselor_name,
                 status=consultation.status,
                 rejection_reason=rejection_reason,
             ),
@@ -357,7 +358,12 @@ def get_consultations_paginated(
     return {"data": data, "total": total, "page": page, "limit": limit}
 
 
-def get_consultation_detail_for_counselor(db: Session, consultation_id: int, counselor_id: int) -> dict | None:
+def get_consultation_detail_for_counselor(
+    db: Session,
+    consultation_id: int,
+    counselor_id: int,
+    current_counselor_name: str,
+) -> dict | None:
     consultation = (
         db.query(Consultation)
         .filter(Consultation.id == consultation_id, Consultation.counselor_id == counselor_id)
@@ -372,7 +378,7 @@ def get_consultation_detail_for_counselor(db: Session, consultation_id: int, cou
         "tracking_code": consultation.tracking_code,
         "student_name": consultation.student.name,
         "student_phone": consultation.student.phone,
-        "counselor_name": consultation.counselor.name,
+        "counselor_name": current_counselor_name,
         "class": consultation.school_class.name,
         "topic": consultation.topic.name,
         "status": consultation.status,
@@ -383,7 +389,7 @@ def get_consultation_detail_for_counselor(db: Session, consultation_id: int, cou
         "whatsapp_link": _build_whatsapp_link(
             phone=consultation.student.phone,
             student_name=consultation.student.name,
-            counselor_name=consultation.counselor.name,
+            counselor_name=current_counselor_name,
             status=consultation.status,
             rejection_reason=rejection_reason,
         ),

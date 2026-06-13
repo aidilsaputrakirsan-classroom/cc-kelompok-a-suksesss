@@ -199,6 +199,7 @@ def list_consultations_paginated(
     return crud.get_consultations_paginated(
         db=db,
         counselor_id=int(current_user["user_id"]),
+        current_counselor_name=str(current_user.get("name", "Guru BK")),
         limit=limit,
         offset=offset,
         method=method,
@@ -220,6 +221,7 @@ def get_consultation_detail(
         db=db,
         consultation_id=consultation_id,
         counselor_id=int(current_user["user_id"]),
+        current_counselor_name=str(current_user.get("name", "Guru BK")),
     )
     if consultation is None:
         raise HTTPException(status_code=404, detail="Data konsultasi tidak ditemukan")
