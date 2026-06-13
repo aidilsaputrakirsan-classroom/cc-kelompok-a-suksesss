@@ -292,8 +292,8 @@ def delete_consultation(
 
 
 @app.get("/items", response_model=ItemListResponse)
-def list_items(db: Session = Depends(get_db)):
-    items = crud.list_items(db=db)
+def list_items(user: dict = Depends(verify_token_with_auth_service), db: Session = Depends(get_db)):
+    items = crud.list_items(db=db, owner_id=int(user["user_id"]))
     return {"total": len(items), "items": items}
 
 
