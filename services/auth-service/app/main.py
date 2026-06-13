@@ -5,16 +5,39 @@ from collections import deque
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.auth import decode_token
-from app.database import Base, engine, get_db
+from app.database import Base, SessionLocal, engine, get_db
 from app.models import User
-from app.schemas import TokenResponse, TokenVerifyResponse, UserCreate, UserLogin, UserResponse
+from app.schemas import CounselorLoginRequest, CounselorRegisterRequest, TokenResponse, TokenVerifyResponse, UserResponse
 
 Base.metadata.create_all(bind=engine)
+
+DEFAULT_COUNSELORS = [
+    CounselorRegisterRequest(
+        name="Bu Anita",
+        email="anita.bk@safespace.sch.id",
+        password="Counselor123",
+        phone="+6281234567801",
+        specialization="Konseling Akademik",
+    ),
+    CounselorRegisterRequest(
+        name="Pak Budi",
+        email="budi.bk@safespace.sch.id",
+        password="Counselor123",
+        phone="+6281234567802",
+        specialization="Konseling Karir",
+    ),
+    CounselorRegisterRequest(
+        name="Bu Citra",
+        email="citra.bk@safespace.sch.id",
+        password="Counselor123",
+        phone="+6281234567803",
+        specialization="Konseling Pribadi dan Sosial",
+    ),
+]
 
 app = FastAPI(
     title="Auth Service",
@@ -78,6 +101,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+def seed_default_counselors() -> None:
+    db = SessionLocal()
+    try:
+        for counselor in DEFAULT_COUNSELORS:
+            crud.create_counselor(db=db, payload=counselor)
+    finally:
+        db.close()
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
@@ -100,20 +133,33 @@ def service_metrics() -> dict:
     return metrics.snapshot()
 
 
-@app.post("/register", response_model=UserResponse, status_code=201)
-def register_user(payload: UserCreate, db: Session = Depends(get_db)):
+def _register_counselor(payload: CounselorRegisterRequest, db: Session = Depends(get_db)):
     user = crud.create_user(db=db, payload=payload)
     if user is None:
         raise HTTPException(status_code=400, detail="Email sudah terdaftar")
     return user
 
 
-@app.post("/login", response_model=TokenResponse)
-def login_user(payload: UserLogin, db: Session = Depends(get_db)):
-    user = crud.authenticate_user(db=db, email=payload.email, password=payload.password)
+@app.post("/register", response_model=UserResponse, status_code=201)
+@app.post("/counselor/register", response_model=UserResponse, status_code=201)
+@app.post("/api/bk/register", response_model=UserResponse, status_code=201)
+def register_counselor(payload: CounselorRegisterRequest, db: Session = Depends(get_db)):
+    return _register_counselor(payload=payload, db=db)
+
+
+def _login_counselor(payload: CounselorLoginRequest, db: Session = Depends(get_db)):
+    user = crud.authenticate_counselor(db=db, email=payload.email, password=payload.password)
     if user is None:
         raise HTTPException(status_code=401, detail="Email atau password salah")
     return {"access_token": crud.issue_access_token(user), "token_type": "bearer", "user": user}
+
+
+@app.post("/login", response_model=TokenResponse)
+@app.post("/counselor/login", response_model=TokenResponse)
+@app.post("/auth/counselor/login", response_model=TokenResponse)
+@app.post("/api/bk/login", response_model=TokenResponse)
+def login_counselor(payload: CounselorLoginRequest, db: Session = Depends(get_db)):
+    return _login_counselor(payload=payload, db=db)
 
 
 @app.get("/verify", response_model=TokenVerifyResponse)
@@ -129,6 +175,11 @@ def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Akun tidak aktif")
 
-    return {"user_id": user.id, "email": user.email, "name": user.name, "role": user.role}
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "name": payload.get("name", user.name),
+        "role": user.role.value,
+    }
 
 
