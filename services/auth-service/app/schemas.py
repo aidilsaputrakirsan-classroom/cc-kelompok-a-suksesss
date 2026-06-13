@@ -26,7 +26,8 @@ class CounselorRegisterRequest(BaseModel):
         if value is None:
             return None
         value = value.strip()
-        if not __import__("re").match(PHONE_ID_REGEX, value):
+        import re
+        if not re.match(PHONE_ID_REGEX, value):
             raise ValueError("Nomor telepon harus format +62xxxxxxxx")
         return value
 
