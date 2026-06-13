@@ -331,8 +331,8 @@ def update_item(item_id: int, payload: ItemUpdate, user: dict = Depends(verify_t
 
 
 @app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_item(item_id: int, db: Session = Depends(get_db)):
-    item = crud.get_item(db=db, item_id=item_id)
+def delete_item(item_id: int, user: dict = Depends(verify_token_with_auth_service), db: Session = Depends(get_db)):
+    item = crud.get_item(db=db, item_id=item_id, owner_id=int(user["user_id"]))
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     crud.delete_item(db=db, item=item)
