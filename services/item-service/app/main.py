@@ -323,8 +323,8 @@ def get_item(item_id: int, user: dict = Depends(verify_token_with_auth_service),
 
 
 @app.put("/items/{item_id}", response_model=ItemResponse)
-def update_item(item_id: int, payload: ItemUpdate, db: Session = Depends(get_db)):
-    item = crud.get_item(db=db, item_id=item_id)
+def update_item(item_id: int, payload: ItemUpdate, user: dict = Depends(verify_token_with_auth_service), db: Session = Depends(get_db)):
+    item = crud.get_item(db=db, item_id=item_id, owner_id=int(user["user_id"]))
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return crud.update_item(db=db, item=item, payload=payload)
