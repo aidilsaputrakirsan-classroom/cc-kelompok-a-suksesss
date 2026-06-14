@@ -1,4 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001';
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002';
 
 // ==================== TOKEN MANAGEMENT ====================
 
@@ -60,7 +61,7 @@ async function handleResponse(response) {
 // ==================== AUTH API ====================
 
 export async function register(userData) {
-  const response = await fetch(`${API_URL}/auth/register`, {
+  const response = await fetch(`${AUTH_API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
@@ -69,7 +70,7 @@ export async function register(userData) {
 }
 
 export async function login(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${AUTH_API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -80,7 +81,7 @@ export async function login(email, password) {
 }
 
 export async function getMe() {
-  const response = await fetch(`${API_URL}/auth/me`, {
+  const response = await fetch(`${AUTH_API_URL}/auth/me`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
@@ -94,14 +95,14 @@ export async function fetchItems(search = "", skip = 0, limit = 20) {
   params.append("skip", skip)
   params.append("limit", limit)
 
-  const response = await fetch(`${API_URL}/items?${params}`, {
+  const response = await fetch(`${ITEM_API_URL}/items?${params}`, {
     headers: authHeaders(),
   })
   return handleResponse(response)
 }
 
 export async function createItem(itemData) {
-  const response = await fetch(`${API_URL}/items`, {
+  const response = await fetch(`${ITEM_API_URL}/items`, {
     method: "POST",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
@@ -110,7 +111,7 @@ export async function createItem(itemData) {
 }
 
 export async function updateItem(id, itemData) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
+  const response = await fetch(`${ITEM_API_URL}/items/${id}`, {
     method: "PUT",
     headers: { ...authHeaders(), "Content-Type": "application/json" },
     body: JSON.stringify(itemData),
@@ -119,7 +120,7 @@ export async function updateItem(id, itemData) {
 }
 
 export async function deleteItem(id) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
+  const response = await fetch(`${ITEM_API_URL}/items/${id}`, {
     method: "DELETE",
     headers: authHeaders(),
   })
@@ -128,7 +129,7 @@ export async function deleteItem(id) {
 
 export async function checkHealth() {
   try {
-    const response = await fetch(`${API_URL}/health`)
+    const response = await fetch(`${ITEM_API_URL}/health`)
     const data = await response.json()
     return data.status === "healthy"
   } catch {
