@@ -54,6 +54,7 @@ class ServiceMetrics:
         self.request_count = 0
         self.error_count = 0
         self.latencies_ms = deque(maxlen=1000)
+        self.start_time = time.time()
 
     def record(self, status_code: int, duration_ms: float) -> None:
         self.request_count += 1
@@ -78,12 +79,17 @@ class ServiceMetrics:
             p99 = percentile(sorted_latencies, 0.99)
 
         error_rate = self.error_count / self.request_count if self.request_count else 0.0
+
+        uptime_seconds = time.time() - self.start_time
+        uptime_minutes = int(uptime_seconds // 60)
+
         return {
             "service": self.service_name,
             "status": "healthy",
             "request_count": self.request_count,
             "error_count": self.error_count,
             "error_rate": error_rate,
+            "uptime": f"{uptime_minutes}m",
             "latency_ms": {
                 "p50": p50,
                 "p95": p95,
