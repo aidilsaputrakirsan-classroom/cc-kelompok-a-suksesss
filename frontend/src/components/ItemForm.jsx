@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import RetryButton from './RetryButton'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001'
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002'
 
 async function safeFetch(url, options = {}) {
   try {
@@ -59,8 +60,8 @@ export default function ItemForm({ mode = 'consultation', addToast, editingItem,
       setOE('')
       try {
         const [mRes, cRes] = await Promise.all([
-          safeFetch(`${API_URL}/api/public/master-data`),
-          safeFetch(`${API_URL}/api/public/counselors`),
+          safeFetch(`${ITEM_API_URL}/api/public/master-data`),
+          safeFetch(`${ITEM_API_URL}/api/public/counselors`),
         ])
         if (!mRes.ok || !cRes.ok) throw new Error('Gagal memuat opsi')
         const [master, counselors] = await Promise.all([mRes.json(), cRes.json()])
@@ -108,7 +109,7 @@ export default function ItemForm({ mode = 'consultation', addToast, editingItem,
     setLoading(true)
     setSubmitError(null)
     try {
-      const res = await safeFetch(`${API_URL}/api/consultations`, {
+      const res = await safeFetch(`${ITEM_API_URL}/api/consultations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
