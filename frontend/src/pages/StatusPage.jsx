@@ -152,12 +152,41 @@ export default function StatusPage() {
           healthUrl={`${ITEM_API_URL}/health`}
           metricsUrl={`${ITEM_API_URL}/custom-metrics`}
         />
-        <ServiceCard
-          name="Frontend"
-          icon="🎨"
-          healthUrl={window.location.origin}
-          metricsUrl={null}
-        />
+        {/* Frontend*/}
+        <div className="status-card">
+          <div className="status-card-header">
+            <h3 className="status-card-title">🎨 Frontend</h3>
+            <span 
+              className="status-badge" 
+              style={{ 
+                background: '#10b98120', 
+                color: '#10b981',
+                border: '1px solid #10b98140'
+              }}
+            >
+              LIVE
+            </span>
+          </div>
+          
+          <div className="status-metrics" style={{ marginTop: 'auto' }}>
+            <div className="metric-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div className="metric-item">
+                <span className="metric-label">Environment</span>
+                <span className="metric-value" style={{ fontSize: '1rem' }}>Production</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Framework</span>
+                <span className="metric-value" style={{ fontSize: '1rem' }}>React + Vite</span>
+              </div>
+              <div className="metric-item" style={{ gridColumn: 'span 2' }}>
+                <span className="metric-label">Client Status</span>
+                <span className="metric-value" style={{ fontSize: '0.975rem', color: '#3b82f6' }}>
+                  Terhubung dan Aktif (✓ )
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
