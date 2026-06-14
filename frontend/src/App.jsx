@@ -15,7 +15,8 @@ import SortBar from './components/SortBar'
 import Spinner from './components/Spinner'
 import Toast from './components/Toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001'
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002'
 
 // ---------- safeFetch (sama seperti asli) ----------
 async function safeFetch(url, options = {}) {
