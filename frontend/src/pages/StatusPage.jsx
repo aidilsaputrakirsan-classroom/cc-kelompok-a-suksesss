@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001';
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002';
 
 function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
   const [health, setHealth] = useState(null);
@@ -142,14 +143,14 @@ export default function StatusPage() {
         <ServiceCard
           name="Backend API"
           icon="⚙️"
-          healthUrl={`${API_URL}/health`}
-          metricsUrl={`${API_URL}/metrics`}
+          healthUrl={`${AUTH_API_URL}/health`}
+          metricsUrl={`${AUTH_API_URL}/custom-metrics`}
         />
         <ServiceCard
           name="Database"
           icon="🗄️"
-          healthUrl={`${API_URL}/health`}
-          metricsUrl={null}
+          healthUrl={`${ITEM_API_URL}/health`}
+          metricsUrl={`${ITEM_API_URL}/custom-metrics`}
         />
         <ServiceCard
           name="Frontend"

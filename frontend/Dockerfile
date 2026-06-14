@@ -14,9 +14,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set API URL (build-time)
-ARG VITE_API_URL=http://localhost:8080
-ENV VITE_API_URL=$VITE_API_URL
+# Set API URL for microservices (gunakan ARG untuk build-time variables)
+ARG VITE_AUTH_API_URL
+ARG VITE_ITEM_API_URL
+ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
+ENV VITE_ITEM_API_URL=$VITE_ITEM_API_URL
 
 # Build React app
 RUN npm run build
