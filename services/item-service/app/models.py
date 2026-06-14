@@ -9,6 +9,7 @@ from app.database import Base
 
 class Item(Base):
     __tablename__ = "items"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, index=True)
@@ -23,6 +24,7 @@ class Item(Base):
 
 class Counselor(Base):
     __tablename__ = "counselors"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False)
@@ -36,6 +38,7 @@ class Counselor(Base):
 
 class SchoolClass(Base):
     __tablename__ = "school_classes"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(64), nullable=False, unique=True)
@@ -44,6 +47,7 @@ class SchoolClass(Base):
 
 class Topic(Base):
     __tablename__ = "topics"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -54,6 +58,7 @@ class Topic(Base):
 
 class TimeSlot(Base):
     __tablename__ = "time_slots"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -64,6 +69,7 @@ class TimeSlot(Base):
 
 class Place(Base):
     __tablename__ = "places"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -88,7 +94,7 @@ class ConsultationStatus(str, enum.Enum):
 
 class Student(Base):
     __tablename__ = "students"
-
+    __table_args__ = {'schema': 'item_service'}
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     school_class = Column(String(64), nullable=False)
@@ -99,17 +105,20 @@ class Student(Base):
 
 class Consultation(Base):
     __tablename__ = "consultations"
+    __table_args__ = {'schema': 'item_service'}
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     tracking_code = Column(String(20), nullable=False, unique=True, index=True)
-    student_id = Column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False, index=True)
-    counselor_id = Column(Integer, ForeignKey("counselors.id", ondelete="CASCADE"), nullable=False, index=True)
-    class_id = Column(Integer, ForeignKey("school_classes.id"), nullable=False)
+
+    student_id = Column(Integer, ForeignKey("item_service.students.id", ondelete="CASCADE"), nullable=False, index=True)
+    counselor_id = Column(Integer, ForeignKey("item_service.counselors.id", ondelete="CASCADE"), nullable=False, index=True)
+    class_id = Column(Integer, ForeignKey("item_service.school_classes.id"), nullable=False)
     method = Column(Enum(ConsultationMethod), nullable=False)
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=False)
+    topic_id = Column(Integer, ForeignKey("item_service.topics.id"), nullable=False)
     date = Column(Date, nullable=False)
-    time_slot_id = Column(Integer, ForeignKey("time_slots.id"), nullable=False)
-    place_id = Column(Integer, ForeignKey("places.id"), nullable=False)
+    time_slot_id = Column(Integer, ForeignKey("item_service.time_slots.id"), nullable=False)
+    place_id = Column(Integer, ForeignKey("item_service.places.id"), nullable=False)
+
     status = Column(Enum(ConsultationStatus), nullable=False, default=ConsultationStatus.PENDING)
     notes = Column(Text, nullable=True)
     accepted_at = Column(DateTime(timezone=True), nullable=True)

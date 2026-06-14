@@ -1,51 +1,7 @@
 # ============================================================
-# Docker Compose — SafeSpace Microservices Scaffold
-# Modul 12/13: Auth Service + Item Service
+# Docker Compose — SafeSpace Microservices (Supabase Version)
 # ============================================================
-# Usage:
-#   docker compose -f docker-compose.microservices.yml up -d --build
-#   docker compose -f docker-compose.microservices.yml ps
-#   docker compose -f docker-compose.microservices.yml down
-# ============================================================
-
 services:
-  auth-db:
-    image: postgres:16-alpine
-    container_name: safespace-auth-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-postgres}
-      POSTGRES_DB: auth_db
-    ports:
-      - "5434:5432"
-    volumes:
-      - auth_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  item-db:
-    image: postgres:16-alpine
-    container_name: safespace-item-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${ITEM_DB_PASSWORD:-postgres}
-      POSTGRES_DB: item_db
-    ports:
-      - "5435:5432"
-    volumes:
-      - item_pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d item_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
 
   auth-service:
     build:
@@ -54,31 +10,23 @@ services:
     container_name: safespace-auth-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: "postgresql://postgres:${AUTH_DB_PASSWORD:-postgres}@auth-db:5432/auth_db"
-      SECRET_KEY: change-me-in-production
+      # Mengambil dari .env root
+      DATABASE_URL: ${AUTH_DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
       ACCESS_TOKEN_EXPIRE_MINUTES: 60
-      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
+      CORS_ORIGINS: ${CORS_ORIGINS}
     ports:
       - "8001:8001"
-    depends_on:
-      auth-db:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 20s
       timeout: 10s
       retries: 3
-      start_period: 15s
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 256M
 
   item-service:
     build:
@@ -87,32 +35,26 @@ services:
     container_name: safespace-item-service
     restart: unless-stopped
     environment:
-      DATABASE_URL: "postgresql://postgres:${ITEM_DB_PASSWORD:-postgres}@item-db:5432/item_db"
+      # Mengambil dari .env root
+      DATABASE_URL: ${ITEM_DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
       AUTH_SERVICE_URL: http://auth-service:8001
-      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:5173
+      CORS_ORIGINS: ${CORS_ORIGINS}
     ports:
       - "8002:8002"
     depends_on:
       auth-service:
-        condition: service_healthy
-      item-db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
       interval: 20s
       timeout: 10s
       retries: 3
-      start_period: 15s
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 256M
 
   gateway:
     image: nginx:alpine
@@ -162,9 +104,3 @@ services:
       - prometheus
     volumes:
       - ./monitoring/grafana-data:/var/lib/grafana
-
-volumes:
-  auth_pgdata:
-    name: safespace-auth-pgdata
-  item_pgdata:
-    name: safespace-item-pgdata
