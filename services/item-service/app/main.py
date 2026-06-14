@@ -4,6 +4,7 @@ from collections import deque
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -31,6 +32,7 @@ app = FastAPI(
     version="1.0.0",
 )
 
+Instrumentator().instrument(app).expose(app)
 
 class ServiceMetrics:
     def __init__(self, service_name: str):
@@ -144,7 +146,7 @@ def health_check() -> dict:
     }
 
 
-@app.get("/metrics")
+@app.get("/custom-metrics")
 def service_metrics() -> dict:
     return metrics.snapshot()
 
