@@ -79,19 +79,19 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
           <div className="metric-grid">
             <div className="metric-item">
               <span className="metric-label">Total Requests</span>
-              <span className="metric-value">{metrics.total_requests}</span>
+              <span className="metric-value">{metrics.request_count || 0}</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Errors</span>
-              <span className="metric-value">{metrics.total_errors}</span>
+              <span className="metric-value">{metrics.error_count || 0}</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Error Rate</span>
-              <span className="metric-value">{metrics.error_rate_percent}%</span>
+              <span className="metric-value">{(metrics.error_rate * 100).toFixed(1)}%</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Uptime</span>
-              <span className="metric-value">{Math.round((metrics.uptime_seconds || 0) / 60)}m</span>
+              <span className="metric-value">{metrics.uptime || '0m'}</span>
             </div>
           </div>
         </div>
