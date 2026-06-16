@@ -5,6 +5,7 @@ from app.models import User
 from app.models import UserRole
 from app.schemas import CounselorRegisterRequest, CounselorLoginRequest, UserCreate, UserLogin
 
+import requests
 
 def create_counselor(db: Session, payload: CounselorRegisterRequest) -> User | None:
     existing = db.query(User).filter(User.email == payload.email.lower()).first()
@@ -23,6 +24,27 @@ def create_counselor(db: Session, payload: CounselorRegisterRequest) -> User | N
     db.add(user)
     db.commit()
     db.refresh(user)
+    
+    try:
+        # Gunakan nama service yang ada di docker-compose sebagai URL
+        item_service_url = "http://item-service:8002/api/counselors/sync" 
+        
+        sync_payload = {
+            "name": user.name,
+            "email": user.email,
+            "phone": user.phone,
+            "specialization": user.specialization,
+            "photo": user.photo,
+            "is_active": user.is_active,
+            "created_at": user.created_at.isoformat(),
+        }
+        
+        # auth-service "menelepon" item-service
+        requests.post(item_service_url, json=sync_payload, timeout=5)
+    except Exception as e:
+        print(f"Peringatan: Gagal mengirim data ke item-service: {e}")
+    # ========================================================
+
     return user
 
 
