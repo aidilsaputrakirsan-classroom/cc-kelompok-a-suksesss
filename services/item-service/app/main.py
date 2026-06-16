@@ -1,7 +1,7 @@
 import os
 import time
 from collections import deque
-
+from pydantic import BaseModel
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -83,6 +83,14 @@ class ServiceMetrics:
             },
         }
 
+class CounselorSyncPayload(BaseModel):
+    name: str
+    email: str
+    phone: str | None = None
+    specialization: str | None = None
+    photo: str | None = None
+    is_active: bool
+    created_at: str
 
 metrics = ServiceMetrics("item-service")
 
@@ -173,6 +181,25 @@ def create_guest_consultation(payload: ConsultationGuestCreate, db: Session = De
         return crud.create_guest_consultation(db=db, payload=payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/counselors/sync", status_code=status.HTTP_201_CREATED)
+def sync_counselor_from_auth(payload: CounselorSyncPayload, db: Session = Depends(get_db)):
+    # 1. Cek apakah email sudah ada agar tidak terjadi duplikat data
+    existing = db.query(Counselor).filter(Counselor.email == payload.email).first()
+    if existing:
+        return {"message": "Data sudah ada, lewati sinkronisasi."}
+        
+    # 2. Masukkan data ke database item-service
+    new_counselor = Counselor(
+        name=payload.name,
+        email=payload.email,
+        phone=payload.phone,
+        specialization=payload.specialization
+    )
+    db.add(new_counselor)
+    db.commit()
+    return {"message": "Data Counselor berhasil disinkronisasi ke item-service"}
 
 
 @app.get("/api/bk/dashboard/stats")
