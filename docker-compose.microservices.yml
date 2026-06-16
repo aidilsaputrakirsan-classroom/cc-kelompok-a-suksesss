@@ -75,8 +75,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_AUTH_API_URL: http://localhost:8001
-        VITE_ITEM_API_URL: http://localhost:8002
+        VITE_AUTH_API_URL: http://localhost:8080/auth
+        VITE_ITEM_API_URL: http://localhost:8080/items
     container_name: safespace-frontend
     restart: unless-stopped
     depends_on:
