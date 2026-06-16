@@ -24,10 +24,10 @@ def create_counselor(db: Session, payload: CounselorRegisterRequest) -> User | N
     db.add(user)
     db.commit()
     db.refresh(user)
-    
+
     try:
         # Gunakan nama service yang ada di docker-compose sebagai URL
-        item_service_url = "http://item-service:8002/api/counselors/sync" 
+        item_service_url = "https://safespace-item-service.onrender.com/api/counselors/sync" 
         
         sync_payload = {
             "name": user.name,
@@ -39,11 +39,15 @@ def create_counselor(db: Session, payload: CounselorRegisterRequest) -> User | N
             "created_at": user.created_at.isoformat(),
         }
         
-        # auth-service "menelepon" item-service
-        requests.post(item_service_url, json=sync_payload, timeout=5)
+        # Tambah timeout menjadi 10 detik untuk mengantisipasi cold start di server gratis Render
+        response = requests.post(item_service_url, json=sync_payload, timeout=10)
+        
+        # BARIS INI WAJIB ADA AGAR HASILNYA TERCETAK DI LOG RENDER
+        print(f"[SYNC LOG] Status: {response.status_code}, Response: {response.text}")
+        
     except Exception as e:
-        print(f"Peringatan: Gagal mengirim data ke item-service: {e}")
-    # ========================================================
+        # Menangkap error jaringan secara spesifik dan menampilkannya
+        print(f"[SYNC ERROR] Gagal mengirim data ke item-service. Detail error: {str(e)}")
 
     return user
 
