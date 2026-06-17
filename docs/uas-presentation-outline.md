@@ -487,9 +487,3 @@ Menampilkan:
 * Badge CI/CD
 
 ---
-
-# ✅ Penutup
-
-SafeSpace berhasil berkembang dari aplikasi monolith sederhana menjadi platform **Cloud Native Counseling Platform** berbasis **Microservices**, **Docker**, **CI/CD**, **Monitoring**, dan **Cloud Deployment**, sesuai implementasi konsep Komputasi Awan modern.
-
-Terima kasih.

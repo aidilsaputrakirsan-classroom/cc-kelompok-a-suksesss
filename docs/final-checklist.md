@@ -217,18 +217,6 @@ Password : admin
 
 ---
 
-# 🎤 PRESENTASI
-
-* [ ] Slide presentasi final selesai
-* [ ] Diagram arsitektur terbaru tersedia
-* [ ] Journey Monolith → Docker → CI/CD → Microservices tersedia
-* [ ] Demo script telah disiapkan
-* [ ] Backup video demo tersedia
-* [ ] Semua anggota memahami arsitektur sistem
-* [ ] Semua anggota mengetahui pembagian tugas presentasi
-
----
-
 # 👥 TEAM CONTRIBUTION
 
 * [ ] Backend (FastAPI)

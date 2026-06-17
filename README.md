@@ -1,813 +1,608 @@
-# ☁️ SafeSpace — Platform Konseling Aman & Privat
-
+# ☁️ SafeSpace Cloud Application
 ![CI Pipeline](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-suksesss/actions/workflows/ci.yml/badge.svg)
 
-> **SafeSpace** merupakan aplikasi cloud-native berbasis web untuk layanan bimbingan konseling yang memungkinkan siswa melakukan konsultasi secara aman, privat, dan fleksibel tanpa harus memiliki akun. Aplikasi ini dibangun menggunakan arsitektur **microservices**, containerization menggunakan **Docker**, serta didukung **CI/CD Pipeline**, **API Gateway**, dan **Monitoring System** menggunakan **Prometheus** dan **Grafana** sebagai proyek Mata Kuliah **Komputasi Awan – Institut Teknologi Kalimantan**.
+> Aplikasi cloud-native berbasis **microservices** untuk layanan konsultasi dan manajemen data bimbingan konseling yang dikembangkan sebagai proyek mata kuliah **Komputasi Awan – Institut Teknologi Kalimantan (ITK)**.
+---
+
+# Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Deployment](#deployment)
+3. [Architecture](#architecture)
+4. [Architecture Evolution](#architecture-evolution)
+5. [Technology Stack](#technology-stack)
+6. [Repository Structure](#repository-structure)
+7. [Quick Start](#-quick-start)
+8. [Running Without Docker](#-running-without-docker)
+9. [API Documentation](#-api-documentation)
+10. [Monitoring & Observability](#-monitoring--observability)
+11. [Security](#-security)
+12. [CI/CD Pipeline](#-cicd-pipeline)
+13. [Environment Variables](#️-environment-variables)
+14. [Project Documentation](#-project-documentation)
+15. [Development Roadmap](#development-roadmap)
+16. [Team Members](#team-members)
 
 ---
 
-# 📚 Table of Contents
+# Project Overview
 
-1. Overview
-2. Live Demo
-3. About SafeSpace
-4. Core Features
-5. User Roles
-6. System Architecture
-7. Architecture Evolution
-8. Technology Stack
+SafeSpace merupakan aplikasi berbasis web yang digunakan untuk membantu proses konsultasi antara siswa dan Guru Bimbingan Konseling (BK). Sistem dikembangkan menggunakan arsitektur **cloud-native microservices** dengan pemisahan service autentikasi dan service konsultasi sehingga lebih mudah dikembangkan, dipelihara, dan di-deploy.
 
----
+Project ini juga mengimplementasikan konsep:
 
-# 🌐 Live Demo
-
-| Service               | URL                                    |
-| --------------------- | -------------------------------------- |
-| Frontend              | https://safespace-itk.onrender.com     |
-| Backend API           | https://safespace-db.onrender.com      |
-| Swagger Documentation | https://safespace-db.onrender.com/docs |
+* REST API
+* JWT Authentication
+* Docker Containerization
+* Docker Compose
+* API Gateway
+* Microservices Architecture
+* Monitoring menggunakan Prometheus dan Grafana
+* CI Pipeline menggunakan GitHub Actions
 
 ---
 
-# 🧩 About SafeSpace
+# Deployment
 
-SafeSpace merupakan platform digital layanan bimbingan konseling yang dikembangkan untuk membantu proses konsultasi antara siswa dan Guru BK secara lebih modern, aman, serta menjaga privasi pengguna.
+SafeSpace telah di-deploy pada platform cloud sehingga aplikasi dapat diakses secara online tanpa perlu melakukan instalasi atau konfigurasi lokal.
 
-Pada sistem konvensional, proses konsultasi sering dilakukan secara langsung sehingga siswa merasa kurang nyaman untuk menyampaikan permasalahan pribadi. SafeSpace hadir sebagai solusi digital yang memungkinkan siswa mengajukan konsultasi secara anonim melalui sistem berbasis web.
+### Deployment URLs
 
-Selain memberikan kemudahan bagi siswa, SafeSpace juga menyediakan dashboard khusus Guru BK untuk mengelola seluruh pengajuan konsultasi secara terstruktur dengan sistem autentikasi JWT sehingga keamanan data tetap terjaga.
+| Service | URL |
+|----------|-----|
+| Frontend | https://safespace-itk.onrender.com |
+| Backend API | https://safespace-db.onrender.com |
+| Swagger API Docs | https://safespace-db.onrender.com/docs |
 
-Pengembangan aplikasi dilakukan menggunakan pendekatan cloud-native dengan pemisahan layanan menjadi beberapa microservices sehingga lebih mudah dikembangkan, dipelihara, serta di-deploy pada lingkungan cloud.
+### Deployment Infrastructure
 
----
+Implementasi deployment menggunakan beberapa komponen cloud sebagai berikut:
 
-# 🎯 Objectives
+- **Render** sebagai platform cloud deployment
+- **Docker** untuk containerization aplikasi
+- **PostgreSQL** sebagai database service
+- **GitHub Actions** untuk proses Continuous Integration (CI)
 
-SafeSpace dikembangkan dengan tujuan:
-
-* Menyediakan platform konsultasi digital yang aman dan mudah diakses.
-* Menjaga privasi siswa melalui sistem konsultasi tanpa akun.
-* Membantu Guru BK mengelola konsultasi secara lebih efektif.
-* Mengimplementasikan arsitektur cloud-native menggunakan Docker dan Microservices.
-* Mengimplementasikan konsep CI/CD Pipeline serta monitoring service menggunakan Prometheus dan Grafana.
-
----
-
-# ✨ Core Features
-
-## 👤 Anonymous Consultation
-
-Siswa dapat mengirim konsultasi tanpa perlu membuat akun sehingga identitas tetap lebih terjaga.
+Aplikasi yang diakses melalui URL di atas merupakan versi deployment yang digunakan untuk demonstrasi dan pengujian sistem pada lingkungan cloud.
 
 ---
 
-## 🔐 JWT Authentication
-
-Dashboard Guru BK dilindungi menggunakan JSON Web Token (JWT) sehingga hanya pengguna yang telah login yang dapat mengakses data konsultasi.
-
----
-
-## 📊 Dashboard BK
-
-Guru BK dapat melihat seluruh daftar konsultasi yang ditujukan kepadanya beserta status dan statistik konsultasi.
-
----
-
-## ✅ Accept & Reject Consultation
-
-Guru BK dapat menerima maupun menolak pengajuan konsultasi secara langsung melalui dashboard.
-
----
-
-## 📱 WhatsApp Integration
-
-Setelah konsultasi diterima, Guru BK dapat langsung menghubungi siswa melalui tautan WhatsApp yang tersedia pada dashboard.
-
----
-
-## 🔒 Data Isolation
-
-Setiap Guru BK hanya dapat melihat data konsultasi yang menjadi tanggung jawabnya sehingga privasi antar konselor tetap terjaga.
-
----
-
-## 📈 Dashboard Statistics
-
-Dashboard menyediakan ringkasan statistik jumlah konsultasi berdasarkan status sehingga memudahkan monitoring aktivitas layanan.
-
----
-
-## 🐳 Dockerized Deployment
-
-Seluruh komponen aplikasi dapat dijalankan menggunakan Docker Compose maupun arsitektur Microservices berbasis container.
-
----
-
-# 👥 User Roles
-
-## 👨‍🎓 Student (Guest User)
-
-Fitur yang tersedia:
-
-* Mengisi formulir konsultasi
-* Memilih Guru BK
-* Mengirim konsultasi tanpa akun
-* Mendapatkan tracking code
-* Menjaga privasi identitas
-
----
-
-## 👩‍🏫 Guidance Counselor (Guru BK)
-
-Fitur yang tersedia:
-
-* Register akun
-* Login menggunakan JWT Authentication
-* Melihat seluruh konsultasi
-* Menerima konsultasi
-* Menolak konsultasi
-* Menghapus konsultasi
-* Melihat statistik dashboard
-* Menghubungi siswa melalui WhatsApp
-
----
-
-# 🏗️ System Architecture
+# Architecture
 
 ```mermaid
 flowchart TD
 
-USER["👨‍🎓 Student"]
+USER["User"]
 
-BK["👩‍🏫 Guru BK"]
+USER --> FE["Frontend (React + Vite)"]
 
-GW["🚪 API Gateway (Nginx)"]
+FE --> GW["API Gateway (Nginx)"]
 
-AUTH["🔐 Auth Service"]
+GW --> AUTH["Auth Service (FastAPI)"]
+GW --> ITEM["Consultation Service (FastAPI)"]
 
-ITEM["📦 Consultation Service"]
-
-ADB[("PostgreSQL Auth DB")]
-
-IDB[("PostgreSQL Consultation DB")]
-
-PROM["📊 Prometheus"]
-
-GRAF["📈 Grafana"]
-
-USER --> GW
-
-BK --> GW
-
-GW --> AUTH
-
-GW --> ITEM
-
-AUTH --> ADB
-
-ITEM --> IDB
+AUTH --> AUTHDB[("auth_db PostgreSQL")]
+ITEM --> ITEMDB[("item_db PostgreSQL")]
 
 ITEM -. Verify Token .-> AUTH
 
-PROM --> AUTH
+AUTH --> PROM["Prometheus"]
+ITEM --> PROM
 
-PROM --> ITEM
-
-GRAF --> PROM
+PROM --> GRAF["Grafana Dashboard"]
 ```
 
 ---
 
-# 🏛️ Architecture Components
+# Architecture Evolution
 
-## Frontend
-
-Frontend dibangun menggunakan React + Vite sebagai Single Page Application (SPA) yang menyediakan antarmuka bagi siswa maupun Guru BK.
-
----
-
-## API Gateway
-
-Gateway menggunakan Nginx yang berfungsi sebagai reverse proxy untuk mengatur seluruh request menuju service yang sesuai.
-
-Gateway juga mempermudah routing endpoint serta meningkatkan keamanan komunikasi antar service.
+| Phase            | Weeks      | Architecture                                     |
+| ---------------- | ---------- | ------------------------------------------------ |
+| Foundation       | Week 1-4   | Monolithic Fullstack Application                 |
+| Containerization | Week 5-7   | Docker Compose                                   |
+| CI/CD            | Week 9-11  | GitHub Actions Pipeline                          |
+| Microservices    | Week 12-14 | Auth Service + Consultation Service + Gateway    |
+| Final            | Week 15-16 | Monitoring, Security Hardening, Production Ready |
 
 ---
 
-## Auth Service
+# Technology Stack
 
-Service autentikasi bertanggung jawab terhadap:
-
-* Register Guru BK
-* Login
-* Generate JWT
-* Validasi Token
-* Informasi User
-
----
-
-## Consultation Service
-
-Service konsultasi bertanggung jawab terhadap:
-
-* Create Consultation
-* Dashboard BK
-* Accept Consultation
-* Reject Consultation
-* Public Master Data
-* Counselor List
-
----
-
-## Database
-
-Setiap service memiliki database sendiri sehingga implementasi mengikuti prinsip **Database per Service** pada arsitektur microservices.
+| Layer             | Technology     | Purpose                     |
+| ----------------- | -------------- | --------------------------- |
+| Frontend          | React 18       | User Interface              |
+| Frontend Build    | Vite           | Frontend Development Server |
+| Backend Framework | FastAPI        | REST API Development        |
+| Language          | Python 3.12    | Backend Programming         |
+| Database          | PostgreSQL 16  | Data Storage                |
+| ORM               | SQLAlchemy     | Database ORM                |
+| Validation        | Pydantic       | Request Validation          |
+| Authentication    | JWT + OAuth2   | User Authentication         |
+| Password Security | bcrypt         | Password Hashing            |
+| Gateway           | Nginx          | Reverse Proxy               |
+| Containerization  | Docker         | Service Isolation           |
+| Orchestration     | Docker Compose | Multi-container Deployment  |
+| Monitoring        | Prometheus     | Metrics Collection          |
+| Dashboard         | Grafana        | Visualization Dashboard     |
+| Cloud             | Render         | PaaS Deployment             |
+| CI                | GitHub Actions | Continuous Integration      |
+| Environment       | dotenv         | Environment Configuration   |
 
 ---
 
-## Monitoring
-
-Monitoring dilakukan menggunakan:
-
-* Prometheus
-* Grafana
-
-untuk mengumpulkan metrics serta memvisualisasikan performa aplikasi secara real-time.
-
----
-
-# 📈 Architecture Evolution
-
-| Phase      | Architecture                        |
-| ---------- | ----------------------------------- |
-| Week 1–4   | Monolith (FastAPI + React + SQLite) |
-| Week 5–7   | Docker Compose                      |
-| Week 8     | Integration Testing                 |
-| Week 9–11  | CI/CD Pipeline                      |
-| Week 12–14 | Microservices Architecture          |
-| Week 15–16 | Monitoring & Final Deployment       |
-
----
-
-# 🛠 Technology Stack
-
-| Layer            | Technology      |
-| ---------------- | --------------- |
-| Frontend         | React + Vite    |
-| Backend          | FastAPI         |
-| Authentication   | JWT             |
-| Validation       | Pydantic        |
-| ORM              | SQLAlchemy      |
-| Database         | PostgreSQL 16   |
-| API Gateway      | Nginx           |
-| Containerization | Docker          |
-| Orchestration    | Docker Compose  |
-| CI/CD            | GitHub Actions  |
-| Monitoring       | Prometheus      |
-| Cloud            | Render          |
-| Dashboard        | Grafana         |
-| Documentation    | Swagger OpenAPI |
-
----
-
-# ☁️ Cloud Native Implementation
-
-SafeSpace menerapkan konsep Cloud Computing melalui:
-
-* Containerized Deployment menggunakan Docker
-* Multi-container orchestration menggunakan Docker Compose
-* Microservices Architecture
-* Reverse Proxy menggunakan Nginx
-* Continuous Integration menggunakan GitHub Actions
-* Monitoring menggunakan Prometheus
-* Dashboard Monitoring menggunakan Grafana
-* Environment Configuration menggunakan .env
-* Health Check setiap service
-* API Documentation menggunakan Swagger UI
-
+# Repository Structure
+```text
+CC-KELOMPOK-A-SUKSESSS/
+│
+├── .github/                             # ⚙️ GitHub configuration
+│   └── workflows/                       # CI/CD GitHub Actions
+│
+├── backend/                             # 🧠 Backend utama (FastAPI Monolith)
+│   │
+│   ├── middleware/                      # Middleware aplikasi
+│   ├── routers/                         # Endpoint API modular
+│   ├── scripts/                         # Database seeding & helper scripts
+│   ├── tests/                           # Unit & integration testing
+│   ├── utils/                           # Utility functions
+│   │
+│   ├── auth.py                          # JWT Authentication
+│   ├── config.py                        # Konfigurasi aplikasi
+│   ├── crud.py                          # Business logic & database operation
+│   ├── database.py                      # Database connection
+│   ├── main.py                          # FastAPI entry point
+│   ├── models.py                        # SQLAlchemy database models
+│   ├── schemas.py                       # Pydantic schemas
+│   │
+│   ├── .env.example                     # Template environment variables
+│   ├── .env.development                 # Development configuration
+│   ├── .env.production                  # Production configuration
+│   ├── .env.docker                      # Docker configuration
+│   ├── Dockerfile                       # Backend container image
+│   └── requirements.txt                 # Python dependencies
+│
+├── frontend/                            # 🎨 Frontend Application (React + Vite)
+│   │
+│   ├── public/                          # Public assets
+│   ├── src/                             # Source code React
+│   │   ├── assets/                      # Images & static resources
+│   │   ├── components/                  # Reusable UI components
+│   │   ├── pages/                       # Application pages
+│   │   ├── services/                    # API communication layer
+│   │   └── utils/                       # Frontend helper functions
+│   │
+│   ├── .env.example                     # Frontend environment template
+│   ├── .env.production                  # Production configuration
+│   ├── Dockerfile                       # Production container image
+│   ├── Dockerfile.dev                   # Development container image
+│   ├── nginx.conf                       # Nginx configuration
+│   ├── package.json                     # Dependencies & scripts
+│   └── vite.config.js                   # Vite configuration
+│
+├── services/                            # ☁️ Microservices Implementation
+│   │
+│   ├── auth-service/                    # Authentication Service
+│   ├── item-service/                    # Consultation Service
+│   └── gateway/                         # API Gateway (Nginx)
+│
+├── monitoring/                          # 📊 Observability Configuration
+│   └── prometheus.yml                   # Prometheus configuration
+│
+├── docs/                                # 📚 Project Documentation
+│   ├── architecture.md                  # System architecture
+│   ├── deployment-guide.md              # Deployment guide
+│   ├── operations-guide.md              # Operations guide
+│   ├── api-contract.md                  # API contract documentation
+│   ├── database-schema.md               # Database schema
+│   ├── docker-architecture.md           # Docker architecture
+│   ├── blackbox-testing.md              # Blackbox testing report
+│   ├── swagger-testing.md               # Swagger API testing report
+│   └── release-notes-m3.md              # Release notes
+│
+├── scripts/                             # 🔧 Automation scripts
+│
+├── docker-compose.yml                   # Local deployment
+├── docker-compose.dev.yml               # Development deployment
+├── docker-compose.microservices.yml     # Microservices deployment
+├── docker-compose.prod.yml              # Production deployment
+│
+├── Makefile                             # Automation commands
+├── project_brief.md                     # Project requirements
+├── CODEOWNERS                           # Repository ownership
+├── README.md                            # Main documentation
+└── .gitignore                           # Git ignore rules
 ```
+
+### Struktur Utama
+
+| Folder/File           | Deskripsi                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `backend/`            | Backend utama berbasis FastAPI yang menangani business logic, autentikasi, database, dan API.                |
+| `frontend/`           | Frontend aplikasi menggunakan React dan Vite.                                                                |
+| `services/`           | Implementasi arsitektur microservices yang terdiri dari Auth Service, Consultation Service, dan API Gateway. |
+| `monitoring/`         | Konfigurasi monitoring menggunakan Prometheus.                                                               |
+| `docs/`               | Seluruh dokumentasi proyek, deployment, testing, dan arsitektur sistem.                                      |
+| `scripts/`            | Script otomatisasi dan helper project.                                                                       |
+| `docker-compose*.yml` | Konfigurasi deployment untuk berbagai environment.                                                           |
+| `Makefile`            | Kumpulan perintah otomatis untuk development dan deployment.                                                 |
+| `README.md`           | Dokumentasi utama proyek.                                                                                    |
+
+---
+
+# 🚀 Quick Start
+
+Bagian ini menjelaskan cara menjalankan SafeSpace menggunakan Docker Compose. Metode ini direkomendasikan karena seluruh service, database, monitoring, dan API Gateway akan dijalankan secara otomatis dalam satu perintah.
+
+## 📋 Prerequisites
+
+Pastikan perangkat telah terpasang:
+
+* Docker
+* Docker Compose
+* Git
+
+---
+
+## 1️⃣ Clone Repository
+
+Unduh source code proyek:
+
+```bash
+git clone https://github.com/[organization]/[repository].git
+cd SafeSpace
 ```
+
+---
+
+## 2️⃣ Configure Environment
+
+Buat file environment dari template yang telah disediakan:
+
+```bash
+cp .env.example .env
+```
+
+Kemudian sesuaikan konfigurasi pada file `.env` apabila diperlukan.
+
+---
+
+## 3️⃣ Start All Services
+
+Jalankan seluruh service menggunakan Docker Compose:
+
+```bash
+docker compose -f docker-compose.microservices.yml up -d --build
+```
+
+Perintah tersebut akan menjalankan:
+
+| Service                    | Description                     |
+| -------------------------- | ------------------------------- |
+| API Gateway                | Reverse proxy menggunakan Nginx |
+| Auth Service               | Layanan autentikasi dan JWT     |
+| Consultation Service       | Layanan konsultasi siswa        |
+| PostgreSQL Auth DB         | Database autentikasi            |
+| PostgreSQL Consultation DB | Database konsultasi             |
+| Prometheus                 | Metrics collector               |
+| Grafana                    | Monitoring dashboard            |
+
+---
+
+## 4️⃣ Verify Deployment
+
+Pastikan seluruh container berjalan:
+
+```bash
+docker compose ps
+```
+
+Lakukan pengecekan health endpoint:
+
+```bash
+curl http://localhost:8080/health
+```
+
+Jika service berjalan dengan baik, endpoint akan mengembalikan status **healthy**.
+
+---
+
+## 5️⃣ Access Application
+
+### 🌐 Application URLs
+
+| Service              | URL                           |
+| -------------------- | ----------------------------- |
+| Frontend Application | http://localhost:8080         |
+| Grafana Dashboard    | http://localhost:3002         |
+| Prometheus Dashboard | http://localhost:9090         |
+| Prometheus Targets   | http://localhost:9090/targets |
+
+### 📊 Grafana Login
+
+| Username | Password |
+| -------- | -------- |
+| admin    | admin    |
+
+---
+
+# 💻 Running Without Docker
+
+Untuk kebutuhan development, setiap komponen dapat dijalankan secara terpisah tanpa Docker.
+
+## Backend Service
+
+Install dependency dan jalankan FastAPI:
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Backend akan berjalan pada environment development dengan fitur auto-reload.
+
+---
+
+## Frontend Service
+
+Install dependency dan jalankan React Development Server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend akan dijalankan menggunakan Vite Development Server.
+
+---
+# 📡 API Documentation
+
+SafeSpace menyediakan REST API yang digunakan oleh frontend dan service internal untuk mendukung proses autentikasi, pengelolaan konsultasi, dashboard monitoring, serta layanan publik.
+
+Dokumentasi API lengkap juga dapat diakses melalui Swagger UI setelah aplikasi dijalankan:
+
+```text
+http://localhost:8080/docs
+```
+
+Endpoint dikelompokkan berdasarkan fungsi utama untuk memudahkan proses pengembangan dan integrasi.
+
+---
+
+## 🔐 Authentication API
+
+Authentication API digunakan untuk proses registrasi, login, validasi token, dan pengambilan informasi pengguna yang sedang aktif.
+
+| Method | Endpoint                    | Description                      | Auth |
+| ------ | --------------------------- | -------------------------------- | ---- |
+| POST   | `/auth/counselors/register` | Register akun Guru BK            | ❌    |
+| POST   | `/auth/counselor/login`     | Login Guru BK                    | ❌    |
+| POST   | `/auth/counselor/token`     | Generate JWT Token               | ❌    |
+| GET    | `/auth/me`                  | Informasi user yang sedang login | ✅    |
+| GET    | `/auth/counselor/me`        | Informasi Guru BK aktif          | ✅    |
+
+---
+
+## 📝 Consultation API
+
+Consultation API digunakan untuk mengelola seluruh proses konsultasi antara siswa dan Guru BK.
+
+| Method | Endpoint                            | Description                | Auth |
+| ------ | ----------------------------------- | -------------------------- | ---- |
+| POST   | `/api/consultations`                | Membuat konsultasi baru    | ❌    |
+| GET    | `/api/bk/consultations`             | Melihat seluruh konsultasi | ✅    |
+| GET    | `/api/bk/consultations/{id}`        | Detail konsultasi          | ✅    |
+| PATCH  | `/api/bk/consultations/{id}/accept` | Menerima konsultasi        | ✅    |
+| PATCH  | `/api/bk/consultations/{id}/reject` | Menolak konsultasi         | ✅    |
+| DELETE | `/api/bk/consultations/{id}`        | Menghapus konsultasi       | ✅    |
+
+---
+
+## 📊 Dashboard API
+
+Dashboard API digunakan untuk menampilkan ringkasan statistik konsultasi yang akan ditampilkan pada dashboard Guru BK.
+
+| Method | Endpoint                  | Description                    | Auth |
+| ------ | ------------------------- | ------------------------------ | ---- |
+| GET    | `/api/bk/dashboard/stats` | Statistik dashboard konsultasi | ✅    |
+
+---
+
+## 🌐 Public API
+
+Public API dapat diakses tanpa autentikasi dan digunakan oleh frontend untuk menampilkan data yang bersifat publik.
+
+| Method | Endpoint                  | Description                    | Auth |
+| ------ | ------------------------- | ------------------------------ | ---- |
+| GET    | `/api/public/master-data` | Mengambil data master aplikasi | ❌    |
+| GET    | `/api/public/counselors`  | Daftar Guru BK yang tersedia   | ❌    |
+
+---
+
+## 📈 Monitoring API
+
+Monitoring API digunakan untuk memantau kondisi aplikasi dan membantu proses observability selama development maupun deployment.
+
+| Method | Endpoint                 | Description                            |
+| ------ | ------------------------ | -------------------------------------- |
+| GET    | `/health`                | Status kesehatan aplikasi              |
+| GET    | `/monitoring/health`     | Informasi kesehatan monitoring service |
+| GET    | `/monitoring/error-rate` | Statistik tingkat error aplikasi       |
+| GET    | `/team`                  | Informasi tim pengembang               |
+
+---
+
+## 🔑 Authentication Legend
+
+| Symbol | Description                              |
+| ------ | ---------------------------------------- |
+| ✅      | Endpoint memerlukan JWT Authentication   |
+| ❌      | Endpoint dapat diakses tanpa autentikasi |
+
+---
+
+# 📊 Monitoring & Observability
+
+SafeSpace menerapkan mekanisme monitoring dan observability untuk membantu proses pemantauan performa aplikasi, kesehatan service, serta proses troubleshooting selama pengembangan maupun deployment.
+
+Monitoring dilakukan menggunakan kombinasi **Prometheus** sebagai metrics collector dan **Grafana** sebagai dashboard visualisasi.
+
+### Monitoring Features
+
+* 📈 **Prometheus Metrics** untuk mengumpulkan metrics dari setiap service.
+* 📊 **Grafana Dashboard** untuk memvisualisasikan metrics secara real-time.
+* ❤️ **Health Check Endpoint** untuk memastikan service berjalan dengan baik.
+* ⚠️ **Error Rate Monitoring** untuk memantau tingkat kegagalan request.
+* 🐳 **Container Health Check** untuk memonitor status container Docker.
+* 📝 **Docker Logging** untuk membantu proses debugging dan troubleshooting.
+
+### Monitoring Services
+
+| Service            | URL                             | Description                                  |
+| ------------------ | ------------------------------- | -------------------------------------------- |
+| Grafana Dashboard  | `http://localhost:3002`         | Dashboard visualisasi metrics aplikasi       |
+| Prometheus         | `http://localhost:9090`         | Metrics collector dan monitoring server      |
+| Prometheus Targets | `http://localhost:9090/targets` | Status scraping metrics dari seluruh service |
+
+---
+
+# 🔐 Security
+
+Untuk menjaga keamanan data dan komunikasi antar service, SafeSpace menerapkan beberapa mekanisme keamanan yang umum digunakan pada aplikasi cloud-native.
+
+### Security Features
+
+| Mechanism               | Description                                                            |
+| ----------------------- | ---------------------------------------------------------------------- |
+| JWT Authentication      | Melindungi endpoint yang memerlukan autentikasi pengguna               |
+| OAuth2 Password Flow    | Mendukung proses login dan token generation                            |
+| bcrypt Password Hashing | Menyimpan password dalam bentuk hash yang aman                         |
+| Environment Variables   | Menyimpan konfigurasi sensitif di luar source code                     |
+| CORS Configuration      | Membatasi akses API dari domain yang tidak diizinkan                   |
+| Pydantic Validation     | Melakukan validasi request sebelum diproses                            |
+| Database Isolation      | Setiap service memiliki database terpisah sesuai prinsip microservices |
+
+---
+
 # 🔄 CI/CD Pipeline
 
-SafeSpace menerapkan **Continuous Integration (CI)** menggunakan **GitHub Actions** untuk memastikan setiap perubahan kode telah melalui proses pengujian sebelum digabungkan ke branch utama.
+SafeSpace menerapkan **Continuous Integration (CI)** menggunakan GitHub Actions untuk memastikan setiap perubahan kode telah melalui proses validasi sebelum digabungkan ke branch utama.
 
 Pipeline akan berjalan secara otomatis ketika terjadi:
 
 * Push ke branch `main`
 * Pull Request menuju branch `main`
 
----
-
-## Workflow CI
+### CI Workflow
 
 ```text
 Developer Push
         │
         ▼
- GitHub Actions Trigger
+GitHub Actions Trigger
         │
         ▼
- Test Backend (Pytest)
+Backend Testing (Pytest)
         │
         ▼
- Test Frontend (Vitest)
+Frontend Testing (Vitest)
         │
         ▼
- Build Docker Images
+Frontend Build
         │
         ▼
- Health Check
+Docker Build Validation
         │
         ▼
- Pipeline Success
+Health Check
+        │
+        ▼
+Pipeline Success
 ```
 
----
+### Pipeline Objectives
 
-# 🚀 Quick Start
-
-## Prerequisites
-
-Pastikan perangkat telah terinstall:
-
-* Docker Desktop
-* Docker Compose
-* Git
+* ✅ Menjaga kualitas source code
+* ✅ Memastikan seluruh test berhasil dijalankan
+* ✅ Memvalidasi proses build aplikasi
+* ✅ Mengurangi risiko deployment error
 
 ---
 
-## Clone Repository
+# ⚙️ Environment Variables
+
+SafeSpace menggunakan file `.env` untuk menyimpan konfigurasi aplikasi yang dapat berbeda pada setiap environment.
+
+Untuk membuat file konfigurasi lokal:
 
 ```bash
-git clone https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-a-suksesss.git
-
-cd cc-kelompok-a-suksesss
+cp .env.example .env
 ```
 
+Kemudian sesuaikan nilai konfigurasi sesuai kebutuhan.
+
+### Main Configuration
+
+| Variable                    | Description                                |
+| --------------------------- | ------------------------------------------ |
+| DATABASE_URL                | URL koneksi database PostgreSQL            |
+| SECRET_KEY                  | Kunci rahasia untuk JWT Authentication     |
+| ACCESS_TOKEN_EXPIRE_MINUTES | Masa berlaku access token                  |
+| API_V1_PREFIX               | Prefix endpoint API                        |
+| CORS_ORIGINS                | Daftar origin yang diizinkan mengakses API |
+| LOG_LEVEL                   | Level logging aplikasi                     |
+
+> Disarankan untuk tidak menyimpan informasi sensitif secara langsung pada source code dan selalu menggunakan environment variables untuk konfigurasi rahasia.
 ---
 
-## Copy Environment
+# 📚 Project Documentation
 
-Backend menggunakan file environment.
+Seluruh dokumentasi proyek disimpan pada folder `docs/` untuk memudahkan proses pengembangan, deployment, pengujian, dan pemeliharaan aplikasi.
 
-```bash
-cp backend/.env.example backend/.env
-```
-
-Kemudian sesuaikan konfigurasi sesuai kebutuhan.
-
----
-
-## Menjalankan Project
-
-```bash
-docker compose up -d
-```
-
-Cek container:
-
-```bash
-docker compose ps
-```
-
----
-
-## Akses Service
-
-| Service      | URL                          |
-| ------------ | ---------------------------- |
-| Frontend     | http://localhost:3000        |
-| Backend API  | http://localhost:8000        |
-| Swagger      | http://localhost:8000/docs   |
-| Health Check | http://localhost:8000/health |
+| Category | Document | Description |
+|----------|----------|-------------|
+| Architecture | 📄 [Architecture Guide](docs/architecture.md) | Dokumentasi arsitektur sistem dan microservices. |
+| Deployment | 🚀 [Deployment Guide](docs/deployment-guide.md) | Panduan deployment aplikasi. |
+| API | 🔌 [API Contract](docs/api-contract.md) | Dokumentasi endpoint API. |
+| Testing | 🧪 [Blackbox Testing](docs/blackbox-testing.md) | Pengujian fungsional aplikasi. |
+| Testing | 🔍 [Swagger API Testing](docs/swagger-testing.md) | Pengujian endpoint API. |
+| Database | 🗄️ [Database Schema](docs/database-schema.md) | Struktur dan relasi database. |
+| Infrastructure | 🐳 [Docker Architecture](docs/docker-architecture.md) | Dokumentasi container dan network. |
+| Operations | ⚙️ [Operations Guide](docs/operations-guide.md) | Panduan operasional aplikasi. |
+| Release | 📝 [Release Notes](docs/release-notes-m3.md) | Riwayat perkembangan proyek. |
 
 ---
 
-# 🐳 Docker Compose
+# Development Roadmap
 
-SafeSpace menggunakan Docker Compose untuk menjalankan beberapa service secara bersamaan.
-
-Service yang tersedia:
-
-* PostgreSQL
-* Backend FastAPI
-* Frontend React
-* Docker Network
-* Docker Volume
-
-Container saling berkomunikasi melalui bridge network bernama:
-
-```
-safespace-network
-```
-
----
-
-# ☁️ Microservices Architecture
-
-Selain arsitektur monolith, SafeSpace juga menyediakan implementasi microservices.
-
-Untuk menjalankan:
-
-```bash
-docker compose -f docker-compose.microservices.yml up -d --build
-```
+| Week | Target               | Status |
+| ---- | -------------------- | ------ |
+| 1    | Setup Project        | ✅      |
+| 2    | REST API             | ✅      |
+| 3    | Frontend Integration | ✅      |
+| 4    | Authentication       | ✅      |
+| 5    | Docker               | ✅      |
+| 6    | Docker Compose       | ✅      |
+| 7    | Container Testing    | ✅      |
+| 8    | Midterm Demo         | ✅      |
+| 9    | GitHub Actions       | ✅      |
+| 10   | CI Pipeline          | ✅      |
+| 11   | Cloud Deployment     | ✅      |
+| 12   | Microservices        | ✅      |
+| 13   | API Gateway          | ✅      |
+| 14   | Monitoring           | ✅      |
+| 15   | Security Hardening   | ✅      |
+| 16   | Final UAS Demo       | ⏳      |
 
 ---
 
-## Services
-
-| Service               | Port |
-| --------------------- | ---- |
-| API Gateway           | 8080 |
-| Auth Service          | 8001 |
-| Consultation Service  | 8002 |
-| Auth Database         | 5434 |
-| Consultation Database | 5435 |
-| Prometheus            | 9090 |
-| Grafana               | 3002 |
-
----
-
-## Gateway
-
-Gateway menggunakan Nginx sebagai reverse proxy.
-
-Routing:
-
-```
-/auth/*
-```
-
-akan diarahkan menuju Auth Service.
-
-Sedangkan:
-
-```
-/api/public/*
-```
-
-akan diarahkan menuju Consultation Service.
-
----
-
-# 📡 API Documentation
-
-Dokumentasi API tersedia melalui Swagger UI.
-
-```
-http://localhost:8000/docs
-```
-
----
-
-## Authentication
-
-| Method | Endpoint                  |
-| ------ | ------------------------- |
-| POST   | /auth/counselors/register |
-| POST   | /auth/counselor/login     |
-| POST   | /auth/counselor/token     |
-| GET    | /auth/me                  |
-| GET    | /auth/counselor/me        |
-
----
-
-## Consultation API
-
-| Method | Endpoint                          |
-| ------ | --------------------------------- |
-| POST   | /api/consultations                |
-| GET    | /api/bk/consultations             |
-| GET    | /api/bk/consultations/{id}        |
-| PATCH  | /api/bk/consultations/{id}/accept |
-| PATCH  | /api/bk/consultations/{id}/reject |
-| DELETE | /api/bk/consultations/{id}        |
-
----
-
-## Dashboard
-
-| Method | Endpoint                |
-| ------ | ----------------------- |
-| GET    | /api/bk/dashboard/stats |
-
----
-
-## Public API
-
-| Method | Endpoint                |
-| ------ | ----------------------- |
-| GET    | /api/public/master-data |
-| GET    | /api/public/counselors  |
-
----
-
-## Development API
-
-| Method | Endpoint                  |
-| ------ | ------------------------- |
-| POST   | /api/dev/seed/master-data |
-| POST   | /api/dev/seed/counselors  |
-
----
-
-## Other API
-
-| Method | Endpoint |
-| ------ | -------- |
-| GET    | /health  |
-| GET    | /team    |
-
----
-
-# 📊 Monitoring
-
-SafeSpace telah mendukung monitoring menggunakan **Prometheus** dan **Grafana**.
-
-Monitoring mempermudah developer dalam melihat kondisi service secara real-time.
-
----
-
-## 📈 Grafana Dashboard
-
-Grafana dapat diakses melalui:
-
-```
-http://localhost:3002
-```
-
-Default Login:
-
-```
-Username : admin
-
-Password : admin
-```
-
-Grafana digunakan untuk menampilkan visualisasi metrics yang dikumpulkan dari Prometheus.
-
----
-
-## 📊 Prometheus
-
-Prometheus dapat diakses melalui:
-
-```
-http://localhost:9090/targets
-```
-
-Halaman tersebut menampilkan status scraping metrics dari seluruh microservices yang berjalan.
-
-Monitoring dilakukan secara periodik terhadap endpoint `/metrics`.
-
----
-
-# 🔐 Security
-
-SafeSpace menerapkan beberapa mekanisme keamanan, antara lain:
-
-* JWT Authentication
-* Password Hashing
-* Input Validation menggunakan Pydantic
-* Environment Variable Configuration
-* CORS Configuration
-* Database Isolation
-* Container Isolation
-* Docker Network Isolation
-* API Gateway Separation
-* Health Check Monitoring
-
----
-
-# 🧪 Testing
-
-SafeSpace telah melalui beberapa jenis pengujian.
-
----
-
-## Swagger Testing
-
-Seluruh endpoint diuji menggunakan Swagger UI untuk memastikan request dan response berjalan sesuai spesifikasi.
-
----
-
-## Blackbox Testing
-
-Pengujian dilakukan dari sisi pengguna untuk memastikan seluruh fitur berjalan sesuai kebutuhan sistem.
-
----
-
-## Health Check
-
-Setiap service memiliki endpoint:
-
-```
-/health
-```
-
-yang digunakan untuk memastikan kondisi service dalam keadaan aktif dan siap digunakan.
-
-# 📂 Project Structure
-
-```text
-SafeSpace/
-│
-├── backend/
-│   ├── routers/
-│   ├── scripts/
-│   ├── auth.py
-│   ├── crud.py
-│   ├── database.py
-│   ├── main.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── requirements.txt
-│   └── Dockerfile
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │    ├── components/
-│   │    ├── services/
-│   │    ├── assets/
-│   │    └── App.jsx
-│   ├── package.json
-│   └── Dockerfile
-│
-├── services/
-│   ├── auth-service/
-│   ├── item-service/
-│   └── gateway/
-│
-├── monitoring/
-│   ├── prometheus.yml
-│   └── grafana-data/
-│
-├── docs/
-│
-├── scripts/
-│
-├── docker-compose.yml
-├── docker-compose.microservices.yml
-├── README.md
-└── .env.example
-```
-
----
-
-# 📄 Documentation
-
-Seluruh dokumentasi project disimpan pada folder **docs/**.
-
-| Document            | Description                                     |
-| ------------------- | ----------------------------------------------- |
-| Architecture Guide  | Dokumentasi arsitektur sistem dan microservices |
-| Deployment Guide    | Panduan deployment Docker dan cloud             |
-| Operations Guide    | Panduan operasional aplikasi                    |
-| API Contract        | Dokumentasi endpoint API                        |
-| Release Notes       | Riwayat perubahan aplikasi                      |
-
----
-
-## Planned Documentation
-
-Dokumen berikut akan tersedia pada folder `docs/`:
-
-```text
-docs/
-
-├── architecture-guide.md
-├── deployment-guide.md
-├── operations-guide.md
-├── api-contract.md
-├── release-notes.md
-├── docker-architecture.md
-├── database-schema.md
-├── swagger-testing.md
-├── blackbox-testing.md
-└── ui-testing.md
-```
-
----
-
-# 📊 Monitoring Dashboard
-
-SafeSpace telah mendukung monitoring service menggunakan Prometheus dan Grafana.
-
-## Grafana Dashboard
-
-```
-http://localhost:3002
-```
-
-Default Login
-
-```
-Username : admin
-
-Password : admin
-```
-
-Grafana digunakan untuk memvisualisasikan metrics seluruh service yang sedang berjalan.
-
----
-
-## Prometheus Targets
-
-```
-http://localhost:9090/targets
-```
-
-Halaman ini menampilkan status scraping metrics seluruh microservices.
-
-Prometheus melakukan pengambilan data metrics secara otomatis dari endpoint `/metrics`.
-
----
-
-# 🌐 Deployment Architecture
-
-Implementasi deployment SafeSpace terdiri atas beberapa container:
-
-* Frontend React
-* API Gateway (Nginx)
-* Auth Service
-* Consultation Service
-* PostgreSQL Auth Database
-* PostgreSQL Consultation Database
-* Prometheus
-* Grafana
-
-Seluruh container saling terhubung menggunakan Docker Network sehingga komunikasi antar service dapat berjalan secara aman.
-
----
-
-# ⚙️ Environment Configuration
-
-Konfigurasi aplikasi menggunakan file environment.
-
-Contoh konfigurasi:
-
-```env
-APP_NAME=SafeSpace
-ENVIRONMENT=development
-DATABASE_URL=postgresql://...
-SECRET_KEY=your-secret-key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
-Konfigurasi ini mempermudah deployment pada berbagai environment tanpa perlu mengubah source code.
-
----
-
-# 👥 Development Team
-
-| Nama                       | Role               |
-| -------------------------- | ------------------ |
-| Rendy Rifandi Kurnia       | Backend Developer  |
-| Riska Fadlun K. Purba      | Frontend Developer |
-| Rizki Abdul Aziz           | DevOps Engineer    |
-| Siti Nur Azizah Putri Awni | QA & Documentation |
-
----
-
-# 🤝 Contribution
-
-Project ini dikembangkan secara kolaboratif oleh Tim SafeSpace.
-
-Kontribusi dilakukan melalui:
-
-* Feature Branch
-* Pull Request
-* Code Review
-* GitHub Actions CI
-* Docker Build Validation
-
-Seluruh perubahan kode harus melewati proses testing sebelum digabungkan ke branch utama.
-
----
-
-# 📅 Development Roadmap
-
-| Week | Milestone                  | Status |
-| ---- | -------------------------- | ------ |
-| 1    | Hello World & Setup        | ✅      |
-| 2    | REST API & Database        | ✅      |
-| 3    | React Frontend             | ✅      |
-| 4    | Full Stack Integration     | ✅      |
-| 5    | Docker Containerization    | ✅      |
-| 6    | Docker Compose             | ✅      |
-| 7    | Multi Container Deployment | ✅      |
-| 8    | Midterm Demonstration      | ✅      |
-| 9    | CI Pipeline                | ✅      |
-| 10   | Automated Testing          | ✅      |
-| 11   | Cloud Deployment           | ✅      |
-| 12   | Auth Microservice          | ✅      |
-| 13   | Consultation Microservice  | ✅      |
-| 14   | API Gateway & Monitoring   | ✅      |
-| 15   | Final Documentation        | ✅      |
-| 16   | Final Demonstration        | ⬜      |
+# Team Members
+
+| Name                         | Role                    | Main Contribution                        |
+| ---------------------------- | ----------------------- | ---------------------------------------- |
+| Rendy Rifandi Kurnia         | Lead Backend            | Authentication API & Backend Development |
+| Riska Fadlun Khairiyah Purba | Lead Frontend           | React UI Development                     |
+| Rizki Abdul Aziz             | Lead DevOps             | Docker, Gateway, CI Pipeline             |
+| Siti Nur Azizah Putri Awni   | Lead QA & Documentation | Testing & Documentation                  |
 
 ---
 

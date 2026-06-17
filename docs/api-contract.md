@@ -1,565 +1,414 @@
-# 📡 API Contract — SafeSpace Cloud Microservices
+# API Contract — SafeSpace
+
+## 1. Overview
+
+Dokumen ini menjelaskan kontrak API yang digunakan pada aplikasi **SafeSpace**, sebuah platform layanan konsultasi dan bimbingan konseling berbasis cloud-native microservices.
+
+API dikembangkan menggunakan framework **FastAPI** dan diakses melalui **API Gateway (Nginx)** sebagai entry point utama. Seluruh komunikasi antar service menggunakan format data JSON.
 
 ---
 
-# SafeSpace Cloud Native Platform
+## 2. Base URLs
 
-Dokumen ini menjelaskan kontrak API (API Contract) yang digunakan pada aplikasi **SafeSpace**, sebuah platform layanan bimbingan konseling berbasis cloud-native microservices.
-
-Dokumen ini digunakan sebagai acuan komunikasi antar service maupun integrasi frontend dengan backend.
-
----
-
-# 🌐 Base URLs
-
-## Local Development
-
-| Service          | URL                        |
-| ---------------- | -------------------------- |
-| Frontend         | http://localhost:3000      |
-| API Gateway      | http://localhost:8080      |
-| Backend Monolith | http://localhost:8000      |
-| Swagger API      | http://localhost:8000/docs |
-| Prometheus       | http://localhost:9090      |
-| Grafana          | http://localhost:3002      |
+| Environment       | URL                               |
+| ----------------- | --------------------------------- |
+| Local Development | http://localhost:8080             |
+| Production        | https://safespace-db.onrender.com |
 
 ---
 
-## Production
+## 3. Authentication
 
-| Service     | URL                                    |
-| ----------- | -------------------------------------- |
-| Frontend    | https://safespace-itk.onrender.com     |
-| Backend API | https://safespace-db.onrender.com      |
-| Swagger API | https://safespace-db.onrender.com/docs |
+Endpoint yang memerlukan autentikasi menggunakan **JSON Web Token (JWT)** yang dikirim melalui HTTP Header.
 
----
-
-# 🔐 Authentication
-
-Endpoint yang bersifat protected memerlukan JWT Token.
-
-Header:
+### Header Format
 
 ```http
 Authorization: Bearer <access_token>
 ```
 
-Token diperoleh melalui endpoint login counselor.
+Token diperoleh melalui endpoint login:
 
-```
+```http
 POST /auth/counselor/login
 ```
 
-atau
+Token digunakan untuk mengakses endpoint dashboard dan manajemen konsultasi yang memerlukan hak akses Guru BK.
 
-```
-POST /auth/counselor/token
-```
+---
 
-Default token expiration:
+## 4. Content Type
 
-```
-30 Minutes
-```
+Seluruh request dan response menggunakan format:
 
-Konfigurasi dapat diubah melalui:
-
-```
-ACCESS_TOKEN_EXPIRE_MINUTES
+```http
+Content-Type: application/json
 ```
 
 ---
 
-# 📦 Response Format
+## 5. Standard Error Response
 
-## Success Response
+Apabila terjadi kesalahan, API akan mengembalikan format response berikut:
 
 ```json
 {
-    "message": "success",
-    "data": {}
+  "detail": "Error message"
 }
 ```
 
-atau sesuai schema endpoint.
+### HTTP Status Codes
+
+| Status Code | Description           |
+| ----------- | --------------------- |
+| 200         | Success               |
+| 201         | Resource Created      |
+| 400         | Bad Request           |
+| 401         | Unauthorized          |
+| 403         | Forbidden             |
+| 404         | Resource Not Found    |
+| 422         | Validation Error      |
+| 500         | Internal Server Error |
 
 ---
 
-## Error Response
+# 6. Auth Service
 
-```json
-{
-    "detail": "Error message description"
-}
-```
+Service autentikasi bertanggung jawab terhadap proses registrasi, login, validasi token, dan pengelolaan informasi pengguna.
 
 ---
 
-# 📋 HTTP Status Codes
+## 6.1 Register Counselor
 
-| Code | Description           |
-| ---- | --------------------- |
-| 200  | Success               |
-| 201  | Resource Created      |
-| 204  | Deleted Successfully  |
-| 400  | Bad Request           |
-| 401  | Unauthorized          |
-| 403  | Forbidden             |
-| 404  | Resource Not Found    |
-| 422  | Validation Error      |
-| 500  | Internal Server Error |
-| 503  | Service Unavailable   |
+| Attribute      | Value                       |
+| -------------- | --------------------------- |
+| Method         | POST                        |
+| Endpoint       | `/auth/counselors/register` |
+| Authentication | No                          |
 
----
+### Description
 
-# 🔐 Authentication Service
+Digunakan untuk membuat akun Guru BK baru.
 
-## Register Counselor
-
-```
-POST /auth/counselors/register
-```
-
-Authentication:
-
-```
-Public
-```
-
-Body
+### Success Response
 
 ```json
 {
-    "name": "string",
-    "email": "string",
-    "password": "string"
-}
-```
-
-Response
-
-```json
-{
-    "id": 1,
-    "email": "guru@example.com",
-    "name": "Guru BK"
+  "id": 1,
+  "email": "counselor@example.com",
+  "name": "Counselor Name"
 }
 ```
 
 ---
 
-## Login Counselor
+## 6.2 Login Counselor
 
-```
-POST /auth/counselor/login
-```
+| Attribute      | Value                   |
+| -------------- | ----------------------- |
+| Method         | POST                    |
+| Endpoint       | `/auth/counselor/login` |
+| Authentication | No                      |
 
-Authentication
+### Description
 
-```
-Public
-```
+Digunakan untuk melakukan autentikasi dan memperoleh JWT Token.
 
-Body
-
-```json
-{
-    "email": "guru@example.com",
-    "password": "password"
-}
-```
-
-Response
+### Success Response
 
 ```json
 {
-    "access_token": "...",
-    "token_type": "bearer"
+  "access_token": "jwt_token",
+  "token_type": "bearer"
 }
 ```
 
 ---
 
-## OAuth2 Login
+## 6.3 OAuth Login
 
-```
-POST /auth/counselor/token
-```
+| Attribute      | Value                   |
+| -------------- | ----------------------- |
+| Method         | POST                    |
+| Endpoint       | `/auth/counselor/token` |
+| Authentication | No                      |
 
-Digunakan untuk Swagger Authorization (OAuth2).
+### Description
 
----
-
-## Current User
-
-```
-GET /auth/me
-```
-
-Authentication
-
-```
-Required
-```
-
-Response
-
-```json
-{
-    "id": 1,
-    "email": "guru@example.com"
-}
-```
+Endpoint OAuth2 yang digunakan oleh Swagger UI untuk proses login.
 
 ---
 
-## Current Counselor
+## 6.4 Get Current User
 
-```
-GET /auth/counselor/me
-```
+| Attribute      | Value      |
+| -------------- | ---------- |
+| Method         | GET        |
+| Endpoint       | `/auth/me` |
+| Authentication | Yes        |
 
-Authentication
+### Description
 
-```
-Required
-```
-
-Mengembalikan data counselor yang sedang login.
+Mengambil informasi user yang sedang login.
 
 ---
 
-# 👨‍🎓 Public API
+## 6.5 Get Current Counselor
+
+| Attribute      | Value                |
+| -------------- | -------------------- |
+| Method         | GET                  |
+| Endpoint       | `/auth/counselor/me` |
+| Authentication | Yes                  |
+
+### Description
+
+Mengambil informasi Guru BK yang sedang aktif.
 
 ---
 
-## Get Public Counselors
+# 7. Consultation Service
 
-```
-GET /api/public/counselors
-```
-
-Authentication
-
-```
-Public
-```
-
-Response
-
-```json
-[
-    {
-        "id": 1,
-        "name": "Guru BK"
-    }
-]
-```
+Service konsultasi bertanggung jawab terhadap seluruh proses pengajuan dan pengelolaan konsultasi siswa.
 
 ---
 
-## Get Master Data
+## 7.1 Create Consultation
 
-```
-GET /api/public/master-data
-```
+| Attribute      | Value                |
+| -------------- | -------------------- |
+| Method         | POST                 |
+| Endpoint       | `/api/consultations` |
+| Authentication | No                   |
 
-Authentication
+### Description
 
-```
-Public
-```
-
-Mengembalikan data kelas, topik konseling, dan data pendukung lainnya.
+Digunakan oleh siswa untuk membuat pengajuan konsultasi baru.
 
 ---
 
-# 💬 Consultation Service
+## 7.2 Get Consultation List
+
+| Attribute      | Value                   |
+| -------------- | ----------------------- |
+| Method         | GET                     |
+| Endpoint       | `/api/bk/consultations` |
+| Authentication | Yes                     |
+
+### Description
+
+Menampilkan seluruh konsultasi yang menjadi tanggung jawab Guru BK.
 
 ---
 
-## Create Guest Consultation
+## 7.3 Get Consultation Detail
 
-```
-POST /api/consultations
-```
+| Attribute      | Value                        |
+| -------------- | ---------------------------- |
+| Method         | GET                          |
+| Endpoint       | `/api/bk/consultations/{id}` |
+| Authentication | Yes                          |
 
-Authentication
+### Description
 
-```
-Public
-```
-
-Body
-
-```json
-{
-    "student_name": "string",
-    "class_name": "string",
-    "topic": "string",
-    "message": "string",
-    "counselor_id": 1
-}
-```
-
-Response
-
-```json
-{
-    "tracking_code": "ABC123"
-}
-```
+Menampilkan detail konsultasi berdasarkan ID.
 
 ---
 
-# 👩‍🏫 BK Dashboard Service
+## 7.4 Accept Consultation
 
----
+| Attribute      | Value                               |
+| -------------- | ----------------------------------- |
+| Method         | PATCH                               |
+| Endpoint       | `/api/bk/consultations/{id}/accept` |
+| Authentication | Yes                                 |
 
-## Dashboard Statistics
-
-```
-GET /api/bk/dashboard/stats
-```
-
-Authentication
-
-```
-Required
-```
-
-Mengembalikan statistik konsultasi counselor.
-
----
-
-## List Consultations
-
-```
-GET /api/bk/consultations
-```
-
-Authentication
-
-```
-Required
-```
-
-Mengembalikan seluruh konsultasi milik counselor yang sedang login.
-
----
-
-## Consultation Detail
-
-```
-GET /api/bk/consultations/{consultation_id}
-```
-
-Authentication
-
-```
-Required
-```
-
-Mengembalikan detail konsultasi berdasarkan ID.
-
----
-
-## Accept Consultation
-
-```
-PATCH /api/bk/consultations/{consultation_id}/accept
-```
-
-Authentication
-
-```
-Required
-```
+### Description
 
 Mengubah status konsultasi menjadi Accepted.
 
 ---
 
-## Reject Consultation
+## 7.5 Reject Consultation
 
-```
-PATCH /api/bk/consultations/{consultation_id}/reject
-```
+| Attribute      | Value                               |
+| -------------- | ----------------------------------- |
+| Method         | PATCH                               |
+| Endpoint       | `/api/bk/consultations/{id}/reject` |
+| Authentication | Yes                                 |
 
-Authentication
-
-```
-Required
-```
+### Description
 
 Mengubah status konsultasi menjadi Rejected.
 
 ---
 
-## Delete Consultation
+## 7.6 Delete Consultation
 
-```
-DELETE /api/bk/consultations/{consultation_id}
-```
+| Attribute      | Value                        |
+| -------------- | ---------------------------- |
+| Method         | DELETE                       |
+| Endpoint       | `/api/bk/consultations/{id}` |
+| Authentication | Yes                          |
 
-Authentication
+### Description
 
-```
-Required
-```
-
-Menghapus data konsultasi.
-
-Response
-
-```
-204 No Content
-```
+Menghapus data konsultasi dari sistem.
 
 ---
 
-# ⚙️ Development Endpoints
+# 8. Dashboard Service
 
-Digunakan hanya pada environment development.
-
----
-
-## Seed Master Data
-
-```
-POST /api/dev/seed/master-data
-```
-
-Mengisi data master awal.
+Service dashboard digunakan untuk menyediakan statistik konsultasi yang ditampilkan pada dashboard Guru BK.
 
 ---
 
-## Seed Counselors
+## 8.1 Dashboard Statistics
 
-```
-POST /api/dev/seed/counselors
-```
+| Attribute      | Value                     |
+| -------------- | ------------------------- |
+| Method         | GET                       |
+| Endpoint       | `/api/bk/dashboard/stats` |
+| Authentication | Yes                       |
 
-Mengisi data counselor awal.
+### Description
 
----
-
-# ❤️ Health Check
-
-```
-GET /health
-```
-
-Authentication
-
-```
-Public
-```
-
-Response
-
-```json
-{
-    "status": "healthy"
-}
-```
-
-Digunakan untuk:
-
-* Docker Health Check
-* CI/CD Validation
-* Monitoring Service
-* Deployment Verification
+Menampilkan statistik konsultasi berdasarkan status.
 
 ---
 
-# 👥 Team Information
+# 9. Public Service
 
-```
-GET /team
-```
-
-Authentication
-
-```
-Public
-```
-
-Mengembalikan informasi tim pengembang SafeSpace.
+Endpoint publik yang dapat diakses tanpa proses autentikasi.
 
 ---
 
-# 🌐 API Gateway
+## 9.1 Master Data
 
-Pada arsitektur microservices, seluruh request akan diteruskan melalui API Gateway (Nginx).
+| Attribute      | Value                     |
+| -------------- | ------------------------- |
+| Method         | GET                       |
+| Endpoint       | `/api/public/master-data` |
+| Authentication | No                        |
 
-Routing:
+### Description
 
-```
-/auth/*
-→ Auth Service
-
-/api/public/*
-→ Item Service
-
-/items/*
-→ Item Service
-
-/health
-→ Auth Service
-```
-
-Gateway bertugas sebagai reverse proxy dan entry point seluruh service.
+Mengambil data master yang digunakan oleh aplikasi.
 
 ---
 
-# 📊 Monitoring Endpoints
+## 9.2 Counselor List
 
-## Prometheus
+| Attribute      | Value                    |
+| -------------- | ------------------------ |
+| Method         | GET                      |
+| Endpoint       | `/api/public/counselors` |
+| Authentication | No                       |
 
-```
-http://localhost:9090
-```
+### Description
 
-Targets
-
-```
-http://localhost:9090/targets
-```
-
-Digunakan untuk monitoring metrics seluruh microservices.
+Mengambil daftar Guru BK yang tersedia.
 
 ---
 
-## Grafana Dashboard
+# 10. Monitoring Service
 
-```
-http://localhost:3002
-```
-
-Credential:
-
-```
-Username : admin
-Password : admin
-```
-
-Dashboard digunakan untuk visualisasi metrics Prometheus secara realtime.
+Service monitoring digunakan untuk mendukung observability dan health checking aplikasi.
 
 ---
 
-# 🔒 Security Notes
+## 10.1 Health Check
 
-* Authentication menggunakan JWT Bearer Token.
-* Environment variables digunakan untuk seluruh secret aplikasi.
-* Database dipisahkan untuk masing-masing service.
-* Validasi input dilakukan menggunakan Pydantic.
-* CORS dikonfigurasi melalui environment.
-* Docker Network digunakan untuk komunikasi internal antar service.
+| Attribute      | Value     |
+| -------------- | --------- |
+| Method         | GET       |
+| Endpoint       | `/health` |
+| Authentication | No        |
+
+### Description
+
+Memastikan aplikasi berjalan dengan baik.
 
 ---
 
-**SafeSpace API Contract v3.0.0**
-Cloud Native Counseling Platform
-Institut Teknologi Kalimantan — Komputasi Awan
+## 10.2 Monitoring Health
+
+| Attribute      | Value                |
+| -------------- | -------------------- |
+| Method         | GET                  |
+| Endpoint       | `/monitoring/health` |
+| Authentication | No                   |
+
+### Description
+
+Menampilkan status kesehatan monitoring service.
+
+---
+
+## 10.3 Error Rate Monitoring
+
+| Attribute      | Value                    |
+| -------------- | ------------------------ |
+| Method         | GET                      |
+| Endpoint       | `/monitoring/error-rate` |
+| Authentication | No                       |
+
+### Description
+
+Menampilkan informasi tingkat error aplikasi.
+
+---
+
+## 10.4 Team Information
+
+| Attribute      | Value   |
+| -------------- | ------- |
+| Method         | GET     |
+| Endpoint       | `/team` |
+| Authentication | No      |
+
+### Description
+
+Menampilkan informasi tim pengembang.
+
+---
+
+# 11. Service Communication
+
+SafeSpace menerapkan arsitektur microservices dengan pola komunikasi sebagai berikut:
+
+```text
+Frontend
+    │
+    ▼
+API Gateway (Nginx)
+    │
+ ┌──┴──────────────┐
+ ▼                 ▼
+Auth Service   Consultation Service
+    │                 │
+    ▼                 ▼
+Auth DB      Consultation DB
+```
+
+Consultation Service akan melakukan validasi token ke Auth Service untuk memastikan pengguna memiliki hak akses yang sesuai sebelum mengakses endpoint yang dilindungi.
+
+---
+
+# 12. API Documentation
+
+Dokumentasi API interaktif tersedia melalui Swagger UI:
+
+### Local
+
+```text
+http://localhost:8080/docs
+```
+
+### Production
+
+```text
+https://safespace-db.onrender.com/docs
+```
+
+Swagger digunakan sebagai referensi utama selama proses pengembangan, pengujian, dan integrasi API.
