@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001';
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002';
 
 function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
   const [health, setHealth] = useState(null);
@@ -78,19 +79,19 @@ function ServiceCard({ name, icon, healthUrl, metricsUrl }) {
           <div className="metric-grid">
             <div className="metric-item">
               <span className="metric-label">Total Requests</span>
-              <span className="metric-value">{metrics.total_requests}</span>
+              <span className="metric-value">{metrics.request_count || 0}</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Errors</span>
-              <span className="metric-value">{metrics.total_errors}</span>
+              <span className="metric-value">{metrics.error_count || 0}</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Error Rate</span>
-              <span className="metric-value">{metrics.error_rate_percent}%</span>
+              <span className="metric-value">{(metrics.error_rate * 100).toFixed(1)}%</span>
             </div>
             <div className="metric-item">
               <span className="metric-label">Uptime</span>
-              <span className="metric-value">{Math.round((metrics.uptime_seconds || 0) / 60)}m</span>
+              <span className="metric-value">{metrics.uptime || '0m'}</span>
             </div>
           </div>
         </div>
@@ -142,21 +143,50 @@ export default function StatusPage() {
         <ServiceCard
           name="Backend API"
           icon="⚙️"
-          healthUrl={`${API_URL}/health`}
-          metricsUrl={`${API_URL}/metrics`}
+          healthUrl={`${AUTH_API_URL}/health`}
+          metricsUrl={`${AUTH_API_URL}/custom-metrics`}
         />
         <ServiceCard
           name="Database"
           icon="🗄️"
-          healthUrl={`${API_URL}/health`}
-          metricsUrl={null}
+          healthUrl={`${ITEM_API_URL}/health`}
+          metricsUrl={`${ITEM_API_URL}/custom-metrics`}
         />
-        <ServiceCard
-          name="Frontend"
-          icon="🎨"
-          healthUrl={window.location.origin}
-          metricsUrl={null}
-        />
+        {/* Frontend*/}
+        <div className="status-card">
+          <div className="status-card-header">
+            <h3 className="status-card-title">🎨 Frontend</h3>
+            <span 
+              className="status-badge" 
+              style={{ 
+                background: '#10b98120', 
+                color: '#10b981',
+                border: '1px solid #10b98140'
+              }}
+            >
+              LIVE
+            </span>
+          </div>
+          
+          <div className="status-metrics" style={{ marginTop: 'auto' }}>
+            <div className="metric-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div className="metric-item">
+                <span className="metric-label">Environment</span>
+                <span className="metric-value" style={{ fontSize: '1rem' }}>Production</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Framework</span>
+                <span className="metric-value" style={{ fontSize: '1rem' }}>React + Vite</span>
+              </div>
+              <div className="metric-item" style={{ gridColumn: 'span 2' }}>
+                <span className="metric-label">Client Status</span>
+                <span className="metric-value" style={{ fontSize: '0.975rem', color: '#3b82f6' }}>
+                  Terhubung dan Aktif (✓ )
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

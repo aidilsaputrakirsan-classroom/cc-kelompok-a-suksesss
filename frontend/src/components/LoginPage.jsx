@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import RetryButton from './RetryButton'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001'
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002'
 
 async function safeFetch(url, options = {}) {
   try {
@@ -48,7 +49,7 @@ export default function LoginPage({ onLoginSuccess, onRegisterSuccess, serviceDo
     setLoginErrorType(null)
     setLL(true)
     try {
-      const res = await safeFetch(`${API_URL}/api/bk/login`, {
+      const res = await safeFetch(`${AUTH_API_URL}/api/bk/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -89,7 +90,7 @@ export default function LoginPage({ onLoginSuccess, onRegisterSuccess, serviceDo
         ...(registerData.phone.trim() ? { phone: registerData.phone.trim() } : {}),
         ...(registerData.specialization.trim() ? { specialization: registerData.specialization.trim() } : {}),
       }
-      const res = await safeFetch(`${API_URL}/api/bk/register`, {
+      const res = await safeFetch(`${AUTH_API_URL}/api/bk/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

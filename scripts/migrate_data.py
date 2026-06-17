@@ -1,70 +1,89 @@
 """
-Data Migration Script
-Migrasi data dari monolith (1 database) ke microservices (2 database).
+Data Migration Script: SafeSpace
+Migrasi data dari Monolith Lokal (1 skema) ke Supabase Cloud Microservices (2 skema).
 """
 import os
 import sys
 from sqlalchemy import create_engine, text
 
-# Database URLs
-MONOLITH_DB_URL = os.getenv("MONOLITH_DB_URL", "postgresql://postgres:postgres@localhost:5432/cloudapp")
-AUTH_DB_URL = os.getenv("AUTH_DB_URL", "postgresql://postgres:postgres@localhost:5434/auth_db")
-ITEM_DB_URL = os.getenv("ITEM_DB_URL", "postgresql://postgres:postgres@localhost:5435/item_db")
+# 1. SETUP URL DATABASE
+LOCAL_MONOLITH_URL = os.getenv("LOCAL_MONOLITH_URL", "postgresql://postgres:1@localhost:5432/safespace")
+
+# Ganti URL ini dengan Transaction/Session URL dari Supabase-mu
+SUPABASE_CLOUD_URL = os.getenv("SUPABASE_CLOUD_URL", "postgresql://postgres:ccsuksesss123@db.ktetsqegdezieyhroegb.supabase.co:5432/postgres")
+
+# 2. PEMETAAN TABEL KE SKEMA MICROSERVICES
+MIGRATION_PLAN = {
+    "auth_service": [
+        "users"
+    ],
+    "item_service": [
+        "school_classes",
+        "topics",
+        "places",
+        "time_slots",
+        "students",
+        "consultations"
+    ]
+}
+
+def migrate_table(src_conn, dst_conn, table_name, target_schema):
+    print(f"  🔄 Memigrasi tabel '{table_name}' ke skema '{target_schema}'...")
+    
+    try:
+        # Ambil semua data dari tabel monolith lokal
+        rows = src_conn.execute(text(f"SELECT * FROM {table_name}")).mappings().fetchall()
+        
+        if not rows:
+            print(f"      ⏩ Tabel kosong. Dilewati.")
+            return
+
+        # Ambil daftar nama kolom secara dinamis
+        columns = list(rows[0].keys())
+        col_names = ", ".join(columns)
+        placeholders = ", ".join([f":{col}" for col in columns])
+        
+        # Susun query INSERT dinamis menuju skema spesifik di Supabase
+        insert_query = text(f"""
+            INSERT INTO {target_schema}.{table_name} ({col_names})
+            VALUES ({placeholders})
+            ON CONFLICT (id) DO NOTHING
+        """)
+
+        # Eksekusi insert massal
+        dst_conn.execute(insert_query, [dict(row) for row in rows])
+        dst_conn.commit()
+        print(f"      ✅ Sukses memigrasi {len(rows)} baris data.")
+
+    except Exception as e:
+        print(f"      ❌ Gagal memigrasi '{table_name}': {e}")
+        dst_conn.rollback()
 
 def migrate():
-    print("=" * 50)
-    print("DATA MIGRATION: Monolith → Microservices")
-    print("=" * 50)
+    print("=" * 60)
+    print("🚀 DATA MIGRATION: SafeSpace Local → Supabase Cloud")
+    print("=" * 60)
 
-    monolith = create_engine(MONOLITH_DB_URL)
-    auth_db = create_engine(AUTH_DB_URL)
-    item_db = create_engine(ITEM_DB_URL)
+    # Buat mesin koneksi
+    src_engine = create_engine(LOCAL_MONOLITH_URL)
+    dst_engine = create_engine(SUPABASE_CLOUD_URL)
 
-    # Step 1: Migrate users to auth_db
-    print("\n[1/2] Migrating users → auth_db...")
-    with monolith.connect() as src:
-        users = src.execute(text("SELECT * FROM users")).fetchall()
-        print(f"    Found {len(users)} users in monolith")
-        with auth_db.connect() as dst:
-            for user in users:
-                dst.execute(text("""
-                    INSERT INTO users (id, email, name, hashed_password, created_at)
-                    VALUES (:id, :email, :name, :hashed_password, :created_at)
-                    ON CONFLICT (id) DO NOTHING
-                """), {
-                    "id": user.id, "email": user.email, "name": user.name,
-                    "hashed_password": user.hashed_password, "created_at": user.created_at,
-                })
-                dst.commit()
-            print(f"    ✅ Migrated {len(users)} users")
+    with src_engine.connect() as src_conn:
+        with dst_engine.connect() as dst_conn:
+            
+            # Eksekusi berdasarkan peta migrasi
+            for schema, tables in MIGRATION_PLAN.items():
+                print(f"\n📂 Memproses Skema: {schema.upper()}")
+                for table_name in tables:
+                    migrate_table(src_conn, dst_conn, table_name, schema)
 
-    # Step 2: Migrate items to item_db
-    print("\n[2/2] Migrating items → item_db...")
-    with monolith.connect() as src:
-        items = src.execute(text("SELECT * FROM items")).fetchall()
-        print(f"    Found {len(items)} items in monolith")
-        with item_db.connect() as dst:
-            for item in items:
-                dst.execute(text("""
-                    INSERT INTO items (id, name, description, price, quantity, owner_id, created_at)
-                    VALUES (:id, :name, :description, :price, :quantity, :owner_id, :created_at)
-                    ON CONFLICT (id) DO NOTHING
-                """), {
-                    "id": item.id, "name": item.name, "description": item.description,
-                    "price": item.price, "quantity": item.quantity,
-                    "owner_id": item.owner_id, "created_at": item.created_at,
-                })
-                dst.commit()
-            print(f"    ✅ Migrated {len(items)} items")
-
-    print("\n" + "=" * 50)
-    print("MIGRATION COMPLETE!")
-    print("=" * 50)
+    print("\n" + "=" * 60)
+    print("🎉 MIGRATION COMPLETE!")
+    print("=" * 60)
 
 if __name__ == "__main__":
     try:
         migrate()
     except Exception as e:
-        print(f"\n❌ Migration failed: {e}")
-        print("Pastikan semua database accessible dan tabel sudah dibuat.")
+        print(f"\n❌ Migrasi terhenti total: {e}")
         sys.exit(1)

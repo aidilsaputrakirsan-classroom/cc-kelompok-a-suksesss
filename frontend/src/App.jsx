@@ -15,7 +15,8 @@ import SortBar from './components/SortBar'
 import Spinner from './components/Spinner'
 import Toast from './components/Toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001'
+const ITEM_API_URL = import.meta.env.VITE_ITEM_API_URL || 'http://localhost:8002'
 
 // ---------- safeFetch (sama seperti asli) ----------
 async function safeFetch(url, options = {}) {
@@ -47,7 +48,7 @@ async function safeFetch(url, options = {}) {
 export default function App() {
   const [view, setView] = useState('home')
   const [showAbout, setShowAbout] = useState(false)
-  const { healthStatus, checkHealth } = useServiceHealth(API_URL)
+  const { healthStatus, checkHealth } = useServiceHealth(AUTH_API_URL)
   const [toasts, setToasts] = useState([])
 
   const addToast = (message, type = 'success') => {
@@ -58,10 +59,10 @@ export default function App() {
   }
 
   useEffect(() => {
-    safeFetch(`${API_URL}/health`)
+    safeFetch(`${AUTH_API_URL}/health`)
       .then(r => r.json())
-      .then(d => console.log('✅ Backend:', d))
-      .catch(() => console.warn('⚠️ Backend tidak terhubung'))
+      .then(d => console.log('✅ Backend Terhubung:', d))
+      .catch(() => console.warn('⚠️ Backend Tidak Terhubung'))
   }, [])
 
   if (showAbout) {
@@ -263,8 +264,8 @@ function BKDashboardView({ serviceDown, addToast }) {
       if (sq) params.append('search', sq)
 
       const [sRes, cRes] = await Promise.all([
-        safeFetch(`${API_URL}/api/bk/dashboard/stats`, { headers: h }),
-        safeFetch(`${API_URL}/api/bk/consultations?${params}`, { headers: h }),
+        safeFetch(`${ITEM_API_URL}/api/bk/dashboard/stats`, { headers: h }),
+        safeFetch(`${ITEM_API_URL}/api/bk/consultations?${params}`, { headers: h }),
       ])
       if (!sRes.ok) {
         const e = await sRes.json().catch(() => ({}))
@@ -319,7 +320,7 @@ function BKDashboardView({ serviceDown, addToast }) {
   const updateStatus = async (id, action) => {
     setAE('')
     try {
-      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}/${action}`, {
+      const res = await safeFetch(`${ITEM_API_URL}/api/bk/consultations/${id}/${action}`, {
         method: 'PATCH',
         headers,
       })
@@ -375,7 +376,7 @@ function BKDashboardView({ serviceDown, addToast }) {
     setAE('')
     setDeletingId(id)
     try {
-      const res = await safeFetch(`${API_URL}/api/bk/consultations/${id}`, {
+      const res = await safeFetch(`${ITEM_API_URL}/api/bk/consultations/${id}`, {
         method: 'DELETE',
         headers,
       })

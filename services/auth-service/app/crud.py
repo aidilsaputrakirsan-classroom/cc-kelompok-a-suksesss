@@ -2,10 +2,11 @@ from sqlalchemy.orm import Session
 
 from app.auth import create_access_token, hash_password, verify_password
 from app.models import User
-from app.schemas import UserCreate
+from app.models import UserRole
+from app.schemas import CounselorRegisterRequest, CounselorLoginRequest, UserCreate, UserLogin
 
 
-def create_user(db: Session, payload: UserCreate) -> User | None:
+def create_counselor(db: Session, payload: CounselorRegisterRequest) -> User | None:
     existing = db.query(User).filter(User.email == payload.email.lower()).first()
     if existing is not None:
         return None
@@ -14,6 +15,9 @@ def create_user(db: Session, payload: UserCreate) -> User | None:
         email=payload.email.lower(),
         name=payload.name,
         hashed_password=hash_password(payload.password),
+        role=UserRole.COUNSELOR,
+        phone=payload.phone,
+        specialization=payload.specialization,
         is_active=True,
     )
     db.add(user)
@@ -22,9 +26,11 @@ def create_user(db: Session, payload: UserCreate) -> User | None:
     return user
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
+def authenticate_counselor(db: Session, email: str, password: str) -> User | None:
     user = db.query(User).filter(User.email == email.lower()).first()
     if user is None or not user.is_active:
+        return None
+    if user.role != UserRole.COUNSELOR:
         return None
     if not verify_password(password, user.hashed_password):
         return None
@@ -36,4 +42,16 @@ def get_user_by_id(db: Session, user_id: int) -> User | None:
 
 
 def issue_access_token(user: User) -> str:
-    return create_access_token(data={"sub": str(user.id), "email": user.email, "role": user.role.value})
+    return create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "role": user.role.value,
+        }
+    )
+
+
+# Backwards-compatible aliases.
+create_user = create_counselor
+authenticate_user = authenticate_counselor
