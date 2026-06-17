@@ -181,7 +181,7 @@ export default function StatusPage() {
               <div className="metric-item" style={{ gridColumn: 'span 2' }}>
                 <span className="metric-label">Client Status</span>
                 <span className="metric-value" style={{ fontSize: '0.975rem', color: '#3b82f6' }}>
-                  Terhubung dan Aktif (✓ )
+                  (✓ ) Terhubung dan Aktif
                 </span>
               </div>
             </div>
