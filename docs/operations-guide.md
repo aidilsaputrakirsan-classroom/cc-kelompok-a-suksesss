@@ -67,8 +67,6 @@ docker compose -f docker-compose.microservices.yml down
 
 Sistem terdiri dari beberapa service:
 
-* auth-db
-* item-db
 * auth-service
 * item-service
 * gateway (Nginx)
@@ -84,12 +82,10 @@ Setiap service berjalan pada container terpisah.
 
 | Service       | Port |
 | ------------- | ---- |
-| Frontend      | 3000 |
+| Frontend      |  -   |
 | Gateway       | 8080 |
 | Auth Service  | 8001 |
 | Item Service  | 8002 |
-| Auth Database | 5434 |
-| Item Database | 5435 |
 | Prometheus    | 9090 |
 | Grafana       | 3002 |
 
